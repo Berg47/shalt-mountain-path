@@ -1,0 +1,22 @@
+{
+  "name": "shalt-mountain-path",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 4173",
+    "build": "tsc --noEmit && vite build",
+    "start": "node server.mjs",
+    "check": "tsc --noEmit",
+    "test": "node --import tsx tests/systems.test.ts"
+  },
+  "dependencies": {
+    "phaser": "3.90.0",
+    "serve-handler": "6.1.7"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.3",
+    "typescript": "~5.8.3",
+    "vite": "^6.1.0"
+  }
+}
