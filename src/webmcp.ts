@@ -1,0 +1,10 @@
+import type {GameModel} from './systems/GameModel';
+import {RECIPES,type RecipeId} from './data/config';
+interface ModelContext {registerTool(tool:{name:string;description:string;inputSchema:object;annotations:{readOnlyHint:boolean;untrustedContentHint:boolean};execute:(input:unknown)=>unknown},options:{signal:AbortSignal}):void|Promise<void>}
+export function registerGameTools(model:GameModel,refresh:()=>void){
+ const ctx=(document as Document&{modelContext?:ModelContext}).modelContext;if(!ctx?.registerTool)return ()=>{};const lifecycle=new AbortController();
+ const register=(name:string,description:string,inputSchema:object,readOnlyHint:boolean,execute:(input:unknown)=>unknown)=>{try{void Promise.resolve(ctx.registerTool({name,description,inputSchema,annotations:{readOnlyHint,untrustedContentHint:false},execute},{signal:lifecycle.signal})).catch(()=>{});}catch{}};
+ register('read_survival_progress','Read current health, inventory, level, age and discovered places without changing the game.',{type:'object',properties:{},additionalProperties:false},true,input=>{if(!input||typeof input!=='object'||Object.keys(input).length)throw Error('Expected empty object');return {health:Math.ceil(model.player.health),hunger:Math.ceil(model.player.hunger),level:model.xp.level,age:model.age,day:model.day.day,region:model.region,inventory:model.inventory.snapshot(),buildings:model.buildings.objects.map(b=>b.kind),nextStep:model.goal().text};});
+ register('craft_survival_item','Craft an available axe, pickaxe or bag using the current inventory, exactly as in the crafting menu. Consumes recipe resources on success.',{type:'object',properties:{recipe:{type:'string',enum:['axe','pickaxe','bag']}},required:['recipe'],additionalProperties:false},false,input=>{if(!input||typeof input!=='object'||Object.keys(input).length!==1||!('recipe'in input)||typeof input.recipe!=='string'||!(input.recipe in RECIPES))throw Error('Unknown recipe');const id=input.recipe as RecipeId;const result=model.craft(id)===true;refresh();return {crafted:result,recipe:id,inventory:model.inventory.snapshot()};});
+ return ()=>lifecycle.abort();
+}
