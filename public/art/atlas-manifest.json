@@ -1,0 +1,269 @@
+{
+  "atlas": "shalt-sprite-atlas.png",
+  "atlasDimensions": [
+    1254,
+    1254
+  ],
+  "alpha": true,
+  "boxConvention": "left, top, right-exclusive, bottom-exclusive",
+  "note": "Use these custom boxes rather than exact fourths; hero and tower rise above their nominal last-row cells. No magenta keying is needed. Crop bounds ignore alpha below 16 to exclude isolated nearly transparent noise, plus 6 pixels padding; original image unchanged.",
+  "sprites": {
+    "broadleaf": {
+      "row": 0,
+      "column": 0,
+      "cropBox": [
+        17,
+        9,
+        307,
+        316
+      ],
+      "contentBounds": [
+        23,
+        15,
+        301,
+        310
+      ]
+    },
+    "conifer": {
+      "row": 0,
+      "column": 1,
+      "cropBox": [
+        360,
+        3,
+        578,
+        317
+      ],
+      "contentBounds": [
+        366,
+        9,
+        572,
+        311
+      ]
+    },
+    "boulder": {
+      "row": 0,
+      "column": 2,
+      "cropBox": [
+        643,
+        89,
+        916,
+        300
+      ],
+      "contentBounds": [
+        649,
+        95,
+        910,
+        294
+      ]
+    },
+    "berry": {
+      "row": 0,
+      "column": 3,
+      "cropBox": [
+        953,
+        29,
+        1242,
+        303
+      ],
+      "contentBounds": [
+        959,
+        35,
+        1236,
+        297
+      ]
+    },
+    "grass": {
+      "row": 1,
+      "column": 0,
+      "cropBox": [
+        18,
+        346,
+        283,
+        598
+      ],
+      "contentBounds": [
+        24,
+        352,
+        277,
+        592
+      ]
+    },
+    "branches": {
+      "row": 1,
+      "column": 1,
+      "cropBox": [
+        325,
+        366,
+        611,
+        586
+      ],
+      "contentBounds": [
+        331,
+        372,
+        605,
+        580
+      ]
+    },
+    "pebbles": {
+      "row": 1,
+      "column": 2,
+      "cropBox": [
+        660,
+        412,
+        908,
+        562
+      ],
+      "contentBounds": [
+        666,
+        418,
+        902,
+        556
+      ]
+    },
+    "timber": {
+      "row": 1,
+      "column": 3,
+      "cropBox": [
+        952,
+        367,
+        1243,
+        582
+      ],
+      "contentBounds": [
+        958,
+        373,
+        1237,
+        576
+      ]
+    },
+    "campfire": {
+      "row": 2,
+      "column": 0,
+      "cropBox": [
+        45,
+        643,
+        278,
+        867
+      ],
+      "contentBounds": [
+        51,
+        649,
+        272,
+        861
+      ]
+    },
+    "leanTo": {
+      "row": 2,
+      "column": 1,
+      "cropBox": [
+        321,
+        626,
+        616,
+        902
+      ],
+      "contentBounds": [
+        327,
+        632,
+        610,
+        896
+      ]
+    },
+    "leafyHut": {
+      "row": 2,
+      "column": 2,
+      "cropBox": [
+        637,
+        618,
+        927,
+        911
+      ],
+      "contentBounds": [
+        643,
+        624,
+        921,
+        905
+      ]
+    },
+    "cabin": {
+      "row": 2,
+      "column": 3,
+      "cropBox": [
+        951,
+        619,
+        1234,
+        898
+      ],
+      "contentBounds": [
+        957,
+        625,
+        1228,
+        892
+      ]
+    },
+    "hero": {
+      "row": 3,
+      "column": 0,
+      "cropBox": [
+        87,
+        890,
+        232,
+        1233
+      ],
+      "contentBounds": [
+        93,
+        896,
+        226,
+        1227
+      ]
+    },
+    "hare": {
+      "row": 3,
+      "column": 1,
+      "cropBox": [
+        355,
+        931,
+        554,
+        1203
+      ],
+      "contentBounds": [
+        361,
+        937,
+        548,
+        1197
+      ]
+    },
+    "boar": {
+      "row": 3,
+      "column": 2,
+      "cropBox": [
+        635,
+        964,
+        914,
+        1207
+      ],
+      "contentBounds": [
+        641,
+        970,
+        908,
+        1201
+      ]
+    },
+    "tower": {
+      "row": 3,
+      "column": 3,
+      "cropBox": [
+        979,
+        902,
+        1204,
+        1240
+      ],
+      "contentBounds": [
+        985,
+        908,
+        1198,
+        1234
+      ]
+    }
+  },
+  "contentBoundsAlphaThreshold": 16
+}
