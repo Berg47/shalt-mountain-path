@@ -40,7 +40,7 @@ export class UI {
   const action=target.dataset.action;
   if(action==='close')this.open(null);
   else if(action==='eat'&&this.selected){this.model.eat(this.selected);this.renderPanel();}
-  else if(action==='discard'&&this.selected){this.model.inventory.remove(this.selected,1);this.model.dirty++;this.renderPanel();this.model.toast('Один предмет оставлен');}
+  else if(action==='discard'&&this.selected){if(this.selected==='wolfMantle'&&this.model.inventory.equipment.mantle==='wolfMantle'&&this.model.inventory.count('wolfMantle')===1)this.model.unequip('mantle');this.model.inventory.remove(this.selected,1);this.model.dirty++;this.renderPanel();this.model.toast('Один предмет оставлен');}
   else if(action==='cook'){this.model.cook();this.renderPanel();}
   else if(action==='interact')this.model.interact();
   else if(action==='attack')this.model.attack();
