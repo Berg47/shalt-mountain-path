@@ -35,7 +35,7 @@ export class GameScene extends Phaser.Scene {
  }
  zoom(){return this.scale.width<650?1.05:this.scale.width<1000?1.12:1.22;}
  resize(){this.cameras.main.setZoom(this.zoom());}
- beginBuild(kind:BuildingId){this.building=kind;this.placement={x:this.model.player.x+100*this.model.player.facing,y:this.model.player.y+50};this.ui.placement(kind);}
+ beginBuild(kind:BuildingId){if(this.model.location==='cave'){this.model.toast('В пещере нельзя строить лагерь');return;}this.building=kind;this.placement={x:this.model.player.x+100*this.model.player.facing,y:this.model.player.y+50};this.ui.placement(kind);}
  cancelBuild(){this.building=null;this.ui?.placement(null);}
  updatePlacement(pointer:Phaser.Input.Pointer){const p=this.cameras.main.getWorldPoint(pointer.x,pointer.y);this.placement={x:p.x,y:p.y};}
  confirmBuild(){if(this.building&&this.model.build(this.building,this.placement.x,this.placement.y))this.cancelBuild();}
@@ -46,8 +46,16 @@ export class GameScene extends Phaser.Scene {
   this.model.update(dt,input);this.focus.setPosition(this.model.player.x,this.model.player.y-30);this.worldRenderer.draw(dt,this.building,this.placement);
   this.uiTimer+=dt;if(this.uiTimer>.12){this.uiTimer=0;this.ui.update();}
   for(const event of this.model.events.splice(0)){
-   if(event.type==='toast')this.ui.toast(event.text!);else if(event.type==='discover')this.ui.discover(event.text!);else if(event.type==='level'){this.ui.discover(event.text!,true);this.audio.play('level');}else if(event.type==='trial'){this.ui.trial();this.audio.play('level');}else if(event.type==='adulthood'){this.ui.adulthood();this.audio.play('level');}else if(event.type==='death')this.ui.death();else{this.worldRenderer.event(event);this.audio.play(event.type);if(event.type==='damage')this.cameras.main.shake(100,.003);}
+   if(event.type==='toast')this.ui.toast(event.text!);
+   else if(event.type==='discover')this.ui.discover(event.text!);
+   else if(event.type==='level'){this.ui.discover(event.text!,true);this.audio.play('level');}
+   else if(event.type==='location'){this.cameras.main.centerOn(this.model.player.x,this.model.player.y-25);this.ui.discover(event.text!);}
+   else if(event.type==='wolfVictory'){this.ui.discover(event.text!,true);this.worldRenderer.event(event);this.audio.play('level');this.cameras.main.shake(180,.004);}
+   else if(event.type==='trial'){this.ui.trial();this.audio.play('level');}
+   else if(event.type==='adulthood'){this.ui.adulthood();this.audio.play('level');}
+   else if(event.type==='death')this.ui.death();
+   else{this.worldRenderer.event(event);this.audio.play(event.type);if(event.type==='damage')this.cameras.main.shake(100,.003);}
   }
-  if(!this.model.paused)this.audio.update(dt,this.model.day.night,Math.abs(this.model.player.x-riverX(this.model.player.y))<240,this.model.buildings.nearFire(this.model.player));
+  if(!this.model.paused){const outside=this.model.location==='world';this.audio.update(dt,this.model.day.night,outside&&Math.abs(this.model.player.x-riverX(this.model.player.y))<240,outside&&this.model.buildings.nearFire(this.model.player));}
  }
 }
