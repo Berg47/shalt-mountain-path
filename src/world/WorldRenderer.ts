@@ -238,24 +238,76 @@ function makeWolfTexture(scene:Phaser.Scene){
 function makeMantleTexture(scene:Phaser.Scene){
  if(scene.textures.exists('wolf-cloak'))scene.textures.remove('wolf-cloak');
  if(scene.textures.exists('wolf-headpiece'))scene.textures.remove('wolf-headpiece');
- // Open shoulder cloak: stays behind the body and never covers the face.
- let t=scene.textures.createCanvas('wolf-cloak',360,430)!;let c=t.getContext();c.clearRect(0,0,360,430);c.imageSmoothingEnabled=true;
- let g=c.createLinearGradient(60,65,300,405);g.addColorStop(0,'#333a3a');g.addColorStop(.28,'#1b2222');g.addColorStop(.72,'#0c1112');g.addColorStop(1,'#050708');
- c.fillStyle=g;c.beginPath();c.moveTo(92,70);c.quadraticCurveTo(180,35,268,70);c.lineTo(324,362);c.lineTo(274,342);c.lineTo(232,406);c.lineTo(184,360);c.lineTo(137,407);c.lineTo(91,343);c.lineTo(38,366);c.closePath();c.fill();
- // Open front cut removes the "black sack" look.
- c.globalCompositeOperation='destination-out';c.beginPath();c.moveTo(154,76);c.quadraticCurveTo(180,113,206,76);c.lineTo(225,326);c.quadraticCurveTo(181,360,135,326);c.closePath();c.fill();c.globalCompositeOperation='source-over';
- c.strokeStyle='rgba(150,159,154,.17)';c.lineWidth=4;c.lineCap='round';
- for(const [x1,y1,x2,y2] of [[93,104,112,337],[267,104,247,338],[116,86,147,305],[244,86,212,302]] as const){c.beginPath();c.moveTo(x1,y1);c.quadraticCurveTo((x1+x2)/2-8,(y1+y2)/2,x2,y2);c.stroke();}
- c.strokeStyle='rgba(0,0,0,.36)';c.lineWidth=12;c.beginPath();c.moveTo(75,323);c.quadraticCurveTo(180,382,287,321);c.stroke();t.refresh();
- // Wolf-head trophy worn on the crown. Snout sits above forehead, face remains open.
- t=scene.textures.createCanvas('wolf-headpiece',260,190)!;c=t.getContext();c.clearRect(0,0,260,190);c.imageSmoothingEnabled=true;
- g=c.createLinearGradient(45,25,220,168);g.addColorStop(0,'#3a4140');g.addColorStop(.45,'#171d1e');g.addColorStop(1,'#080b0c');c.fillStyle=g;
- c.beginPath();c.ellipse(130,100,82,55,0,Math.PI,Math.PI*2);c.lineTo(191,130);c.quadraticCurveTo(130,163,69,130);c.closePath();c.fill();
- c.beginPath();c.moveTo(72,95);c.lineTo(80,17);c.lineTo(124,87);c.closePath();c.fill();c.beginPath();c.moveTo(139,87);c.lineTo(190,17);c.lineTo(191,100);c.closePath();c.fill();
- c.fillStyle='#111617';c.beginPath();c.moveTo(104,97);c.quadraticCurveTo(130,76,156,97);c.lineTo(171,121);c.quadraticCurveTo(130,136,89,121);c.closePath();c.fill();
- c.fillStyle='#050708';c.beginPath();c.ellipse(130,116,11,7,0,0,Math.PI*2);c.fill();
- c.fillStyle='rgba(166,174,168,.16)';c.beginPath();c.ellipse(103,91,8,5,0,0,Math.PI*2);c.fill();c.beginPath();c.ellipse(157,91,8,5,0,0,Math.PI*2);c.fill();
- c.strokeStyle='rgba(164,172,166,.16)';c.lineWidth=3;for(let x=78;x<184;x+=15){c.beginPath();c.moveTo(x,72);c.lineTo(x+(x<130?8:-8),128);c.stroke();}
+
+ // Painted at higher resolution, then scaled down in-game to match the soft atlas artwork.
+ let t=scene.textures.createCanvas('wolf-cloak',620,760)!;let c=t.getContext(),rand=seeded(44117);
+ c.clearRect(0,0,620,760);c.imageSmoothingEnabled=true;
+ let g=c.createLinearGradient(90,70,530,700);
+ g.addColorStop(0,'#39413f');g.addColorStop(.25,'#242c2a');g.addColorStop(.62,'#151b1a');g.addColorStop(1,'#080b0b');
+ c.fillStyle=g;
+ c.beginPath();
+ c.moveTo(168,104);c.quadraticCurveTo(310,52,452,104);
+ c.lineTo(530,614);c.lineTo(477,592);c.lineTo(425,704);c.lineTo(366,646);
+ c.lineTo(310,730);c.lineTo(252,648);c.lineTo(195,706);c.lineTo(142,592);c.lineTo(88,621);c.closePath();c.fill();
+
+ // Wide open front so the cloak reads as a cape and never as a black robe.
+ c.globalCompositeOperation='destination-out';
+ c.beginPath();c.moveTo(252,112);c.quadraticCurveTo(310,178,368,112);
+ c.lineTo(398,584);c.quadraticCurveTo(310,647,221,584);c.closePath();c.fill();
+ c.globalCompositeOperation='source-over';
+
+ // Thick wolf-fur collar sitting on shoulders.
+ g=c.createLinearGradient(112,88,505,210);
+ g.addColorStop(0,'#4b5551');g.addColorStop(.45,'#303936');g.addColorStop(1,'#171d1c');
+ c.fillStyle=g;c.beginPath();
+ c.moveTo(126,118);c.lineTo(171,70);c.lineTo(221,103);c.lineTo(260,61);c.lineTo(310,96);
+ c.lineTo(358,61);c.lineTo(399,103);c.lineTo(449,70);c.lineTo(496,118);
+ c.lineTo(467,199);c.lineTo(409,183);c.lineTo(367,222);c.lineTo(310,185);
+ c.lineTo(253,222);c.lineTo(211,183);c.lineTo(154,199);c.closePath();c.fill();
+
+ // Hand-painted fur strokes: visible enough after downscaling, but still at the game's detail level.
+ c.lineCap='round';
+ for(let i=0;i<210;i++){
+  const side=i%2===0?-1:1;
+  const x=310+side*(52+rand()*195),y=105+rand()*515,len=12+rand()*37;
+  c.strokeStyle=rand()>.64?'rgba(179,185,176,.16)':rand()>.27?'rgba(104,115,110,.15)':'rgba(226,219,195,.06)';
+  c.lineWidth=2+rand()*4;c.beginPath();c.moveTo(x,y);c.lineTo(x+side*(4+rand()*13),y+len);c.stroke();
+ }
+ // Larger seam/fold cues match the readable folds in the hero atlas.
+ c.strokeStyle='rgba(177,184,174,.12)';c.lineWidth=7;
+ for(const [x1,y1,x2,y2] of [[162,212,183,592],[213,179,242,557],[458,212,437,592],[407,179,377,557]] as const){
+  c.beginPath();c.moveTo(x1,y1);c.quadraticCurveTo((x1+x2)/2+(x1<310?-14:14),(y1+y2)/2,x2,y2);c.stroke();
+ }
+ c.strokeStyle='rgba(1,4,4,.32)';c.lineWidth=17;c.beginPath();c.moveTo(126,574);c.quadraticCurveTo(310,680,495,570);c.stroke();
+ t.refresh();
+
+ // Trophy head: compact, sitting on the crown; the player's eyes/nose/mouth stay unobstructed.
+ t=scene.textures.createCanvas('wolf-headpiece',420,270)!;c=t.getContext();rand=seeded(44118);
+ c.clearRect(0,0,420,270);c.imageSmoothingEnabled=true;
+ g=c.createLinearGradient(80,32,345,235);g.addColorStop(0,'#46504c');g.addColorStop(.35,'#2d3633');g.addColorStop(.72,'#171e1d');g.addColorStop(1,'#090d0d');
+ c.fillStyle=g;
+ c.beginPath();c.moveTo(105,132);c.quadraticCurveTo(121,73,210,58);c.quadraticCurveTo(298,74,316,132);
+ c.quadraticCurveTo(287,175,251,186);c.lineTo(229,221);c.lineTo(210,242);c.lineTo(190,221);c.lineTo(169,186);
+ c.quadraticCurveTo(132,174,105,132);c.closePath();c.fill();
+ // Ears.
+ c.beginPath();c.moveTo(122,111);c.lineTo(120,19);c.lineTo(184,85);c.closePath();c.fill();
+ c.beginPath();c.moveTo(236,85);c.lineTo(301,21);c.lineTo(299,116);c.closePath();c.fill();
+ c.fillStyle='#1b2220';c.beginPath();c.moveTo(139,92);c.lineTo(137,46);c.lineTo(171,88);c.closePath();c.fill();
+ c.beginPath();c.moveTo(249,88);c.lineTo(286,48);c.lineTo(284,96);c.closePath();c.fill();
+ // Short snout projects forward but remains above the hero's forehead in-game.
+ c.fillStyle='#111716';c.beginPath();c.moveTo(171,134);c.quadraticCurveTo(210,111,249,134);c.lineTo(272,163);
+ c.quadraticCurveTo(210,187,148,163);c.closePath();c.fill();
+ c.fillStyle='#050808';c.beginPath();c.ellipse(210,158,18,10,0,0,Math.PI*2);c.fill();
+ // Fur texture and dull eyes; no flashy boss glow on clothing.
+ c.lineCap='round';
+ for(let i=0;i<90;i++){
+  const x=118+rand()*184,y=72+rand()*100;
+  c.strokeStyle=rand()>.55?'rgba(174,182,174,.13)':'rgba(91,103,99,.14)';
+  c.lineWidth=2+rand()*3;c.beginPath();c.moveTo(x,y);c.lineTo(x+(rand()-.5)*13,y+8+rand()*18);c.stroke();
+ }
+ c.fillStyle='#82877b';c.beginPath();c.ellipse(177,126,7,4,0,0,Math.PI*2);c.fill();
+ c.beginPath();c.ellipse(243,126,7,4,0,0,Math.PI*2);c.fill();
+ c.strokeStyle='rgba(199,203,188,.12)';c.lineWidth=3;c.beginPath();c.moveTo(163,154);c.lineTo(104,146);c.moveTo(257,154);c.lineTo(316,146);c.stroke();
  t.refresh();
 }
 
@@ -388,9 +440,9 @@ export class WorldRenderer {
   this.enemySprites=model.enemies.map(e=>scene.add.image(e.x,e.y,'enemy-'+e.kind).setOrigin(.5,.9).setDisplaySize(e.kind==='chaborz'?104:e.kind==='shield'?74:68,e.kind==='chaborz'?148:e.kind==='shield'?108:102).setDepth(e.y));
   this.enemyShadows=model.enemies.map(e=>scene.add.ellipse(e.x,e.y,e.kind==='chaborz'?60:42,e.kind==='chaborz'?18:13,0x081c17,.34).setDepth(e.y-1));
   this.playerShadow=scene.add.ellipse(model.player.x,model.player.y,33,13,0x081c17,.36);
-  this.playerCloak=scene.add.image(model.player.x,model.player.y,'wolf-cloak').setOrigin(.5,.9).setDisplaySize(54,72).setDepth(model.player.y-.3).setVisible(false);
+  this.playerCloak=scene.add.image(model.player.x,model.player.y,'wolf-cloak').setOrigin(.5,.9).setDisplaySize(60,82).setDepth(model.player.y-.3).setVisible(false);
   this.player=this.sprite('hero',model.player.x,model.player.y);
-  this.playerWolfHead=scene.add.image(model.player.x,model.player.y-58,'wolf-headpiece').setOrigin(.5,.55).setDisplaySize(37,27).setDepth(model.player.y+.4).setVisible(false);
+  this.playerWolfHead=scene.add.image(model.player.x,model.player.y-64,'wolf-headpiece').setOrigin(.5,.58).setDisplaySize(39,25).setDepth(model.player.y+.4).setVisible(false);
   this.caveWolfShadow=scene.add.ellipse(CAVE.wolfSpawn.x,CAVE.wolfSpawn.y+6,172,30,0x020303,.62).setDepth(CAVE.wolfSpawn.y-1).setVisible(false);
   this.caveWolfSprite=scene.add.image(CAVE.wolfSpawn.x,CAVE.wolfSpawn.y,'black-wolf').setOrigin(.5,.84).setDisplaySize(218,133).setDepth(CAVE.wolfSpawn.y).setVisible(false);
   // Full-world blackout prevents the outside mountain art from bleeding into the interior on tall phones.
@@ -422,8 +474,8 @@ export class WorldRenderer {
   const normal=heights.hero/this.player.height;this.player.setScale(normal*(1+(p.actionTimer>0?.035:0)),normal*(p.actionTimer>0?.87:1));
   this.playerShadow.setPosition(p.x,p.y+1).setDepth(p.y-1);
   const mantle=m.inventory.equipment.mantle==='wolfMantle';
-  this.playerCloak.setVisible(mantle).setPosition(p.x,p.y-bob+2+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y-.35).setAngle(moving?Math.sin(p.walk)*1.2:0).setAlpha(this.player.alpha);
-  this.playerWolfHead.setVisible(mantle).setPosition(p.x,p.y-bob-62+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y+.45).setAngle(moving?Math.sin(p.walk)*1.1:0).setAlpha(this.player.alpha);
+  this.playerCloak.setVisible(mantle).setPosition(p.x,p.y-bob+3+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y-.35).setAngle(moving?Math.sin(p.walk)*1.05:0).setAlpha(this.player.alpha);
+  this.playerWolfHead.setVisible(mantle).setPosition(p.x,p.y-bob-66+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y+.45).setAngle(moving?Math.sin(p.walk)*.85:0).setAlpha(this.player.alpha);
   const cave=m.location==='cave';for(const obj of this.caveObjects)(obj as any).setVisible(cave);for(const obj of this.worldDecor)(obj as any).setVisible(!cave);
   const view=camera.worldView;
   for(const n of m.world.nodes){const img=this.nodeSprites[n.id];const visible=!cave&&!n.depleted&&n.x>view.x-270&&n.x<view.right+270&&n.y>view.y-100&&n.y<view.bottom+310;img.setVisible(visible);if(!visible)continue;if(n.kind==='tree'||n.kind==='pine'){const hide=p.y<n.y&&p.y>n.y-img.displayHeight&&Math.abs(p.x-n.x)<img.displayWidth*.4;img.setAlpha(hide?.48:1);img.setRotation(Math.sin(this.wind*.6+n.id)*.007);}}
