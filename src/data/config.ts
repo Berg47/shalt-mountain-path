@@ -19,8 +19,8 @@ export const SETTINGS = {
 } as const;
 
 export const CAVE = {
- name:'Пещера Чёрного Волка',entrance:{x:1710,y:330},exit:{x:1710,y:850},playerSpawn:{x:1710,y:770},wolfSpawn:{x:1710,y:500},
- bounds:{cx:1710,cy:590,rx:430,ry:350},respawnDays:3,
+ name:'Пещера Чёрного Волка',entrance:{x:1710,y:330},exit:{x:1710,y:848},playerSpawn:{x:1710,y:748},wolfSpawn:{x:1710,y:500},
+ bounds:{cx:1710,cy:590,rx:440,ry:365},respawnDays:3,
 } as const;
 
 export const ITEMS:Record<ResourceId,{name:string,short:string,icon:string,description:string}> = {
@@ -35,7 +35,7 @@ export const ITEMS:Record<ResourceId,{name:string,short:string,icon:string,descr
  metal:{name:'Металл',short:'металла',icon:'metal',description:'Редкая добыча с разбойников. Нужен для верстака и улучшения шалта.'},
  wolfFang:{name:'Клык Чёрного Волка',short:'клыка',icon:'wolfFang',description:'Редкий трофей из пещеры. Пока хранится в сумке.'},
  wolfHide:{name:'Шкура Чёрного Волка',short:'шкуры',icon:'wolfHide',description:'Тяжёлая чёрная шкура босса. Пригодится позже.'},
- wolfMantle:{name:'Накидка Чёрного Волка',short:'накидки',icon:'wolfMantle',description:'Уникальная цельная накидка с волчьей головой-капюшоном. Можно надеть в разделе «Персонаж».'},
+ wolfMantle:{name:'Накидка Чёрного Волка',short:'накидки',icon:'wolfMantle',description:'Трофейная чёрная накидка-плащ. Волчья голова лежит сверху на макушке как головной убор и не закрывает лицо.'},
 };
 export const TOOLS:Record<ToolId,{name:string,description:string}> = {
  shalt:{name:'Шалт',description:'Первый кинжал, вручённый дедушкой. Для охоты и защиты.'},
