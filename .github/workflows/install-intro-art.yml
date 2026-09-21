@@ -1,0 +1,36 @@
+name: Install intro artwork
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.asset-upload/READY'
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reconstruct full-resolution images
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public/art
+          cat .asset-upload/family/chunk-* | base64 -d > public/art/shalt-family-final.jpg
+          cat .asset-upload/mother/chunk-* | base64 -d > public/art/shalt-mother-farewell-final.jpg
+          echo "07e3ead817c68898efac3042acd0caf4b8ab655bc5f39f057e8c0edf933da449  public/art/shalt-family-final.jpg" | sha256sum -c -
+          echo "eedfc0f10fd5cbf34ccac9e2e33880f0972623964c3702b6b4bdc10041abd95f  public/art/shalt-mother-farewell-final.jpg" | sha256sum -c -
+          rm -rf .asset-upload
+          rm -f .github/workflows/install-intro-art.yml
+      - name: Commit binary assets
+        run: |
+          git config user.name "Shalt automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "Install full-resolution intro artwork"
+          git push origin HEAD:main
