@@ -1,6 +1,6 @@
 export type ResourceId = 'branch'|'wood'|'stone'|'grass'|'berry'|'meat'|'hide'|'cooked'|'metal'|'wolfFang'|'wolfHide'|'wolfMantle';
 export type ToolId = 'shalt'|'axe'|'pickaxe';
-export type EquipmentSlot = 'weapon'|'headwear'|'clothing'|'mantle'|'shoes';
+export type EquipmentSlot = 'weapon'|'headwear'|'clothing'|'mantle'|'shoes'|'belt';
 export type EquipmentId = ToolId|'wolfMantle';
 export type RecipeId = 'axe'|'pickaxe'|'bag'|'bag3'|'shalt2'|'shalt3';
 export type BuildingId = 'fire'|'canopy'|'hut'|'workbench';
