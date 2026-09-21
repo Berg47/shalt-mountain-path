@@ -88,7 +88,7 @@ export class UI {
   const titles:Record<EquipmentSlot,string>={weapon:'Оружие',headwear:'Головной убор',clothing:'Одежда',mantle:'Накидка',shoes:'Обувь',belt:'Пояс'};
   let options='';
   if(slot==='weapon'){options=m.inventory.tools.map(t=>`<button class="equipment-choice ${eq.weapon===t?'equipped':''}" data-choose-equipment="${t}" data-target-slot="weapon"><span>${icon(t)}</span><div><strong>${t==='shalt'?`Шалт ${m.inventory.shaltLevel}`:TOOLS[t].name}</strong><small>${eq.weapon===t?'Надето':'Выбрать'}</small></div>${eq.weapon===t?icon('check'):''}</button>`).join('');}
-  else if(slot==='mantle'&&m.inventory.count('wolfMantle')){const on=eq.mantle==='wolfMantle';options=`<button class="equipment-choice ${on?'equipped':''}" data-choose-equipment="wolfMantle" data-target-slot="mantle"><span>${icon('wolfMantle')}</span><div><strong>${ITEMS.wolfMantle.name}</strong><small>${on?'Надето':'Надеть'}</small></div>${on?icon('check'):''}</button>`;}
+  else if(slot==='mantle'&&m.inventory.count('wolfMantle')){const on=eq.mantle==='wolfMantle';options=`<button class="equipment-choice ${on?'equipped':''}" data-choose-equipment="wolfMantle" data-target-slot="mantle"><span>${icon('wolfMantle')}</span><div><strong>${ITEMS.wolfMantle.name}</strong><small>${on?'Надето · +10 выносливости · +10 урона · +5 HP':'Надеть · +10 выносливости · +10 урона · +5 HP'}</small></div>${on?icon('check'):''}</button>`;}
   if(!options){const iconName=slot==='headwear'?'headwear':slot==='clothing'?'clothing':slot==='shoes'?'shoes':slot==='belt'?'belt':slot==='mantle'?'wolfMantle':'weapon';options=`<div class="equipment-empty">${icon(iconName)}<strong>Пока пусто</strong><p>В рюкзаке нет предметов для этого слота.</p></div>`;}
   const canRemove=slot!=='weapon'&&eq[slot]!==null;
   return `<div class="equipment-picker-backdrop"><section class="equipment-picker" role="dialog" aria-label="Выбор: ${titles[slot]}"><header><div><small>ЭКИПИРОВКА</small><h3>${titles[slot]}</h3></div><button class="icon-button" data-action="close-equipment" aria-label="Закрыть">${icon('close')}</button></header><div class="equipment-choice-list">${options}</div>${canRemove?`<button class="text-button equipment-remove" data-action="unequip-equipment" data-target-slot="${slot}">Снять предмет</button>`:''}</section></div>`;
@@ -117,7 +117,6 @@ export class UI {
       ${mantleEquipped?'<span class="preview-wolf-cloak"></span>':''}
       <div class="actual-game-hero"></div>
       <span class="hero-clean-chest"></span>
-      ${mantleEquipped?'<span class="preview-wolf-head"></span>':''}
      </div>
      <div class="character-ground"></div>
      <div class="character-caption"><strong>Герой · ${m.age} лет</strong><span>Уровень ${m.xp.level}</span></div>
