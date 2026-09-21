@@ -279,6 +279,8 @@ export class WorldRenderer {
  glow:Phaser.GameObjects.Image[]=[];lightTexture:Phaser.Textures.CanvasTexture;wind=0;
  constructor(public scene:Phaser.Scene,public model:GameModel){
   setupFrames(scene);makeTerrain(scene,model.world);
+  if(scene.textures.exists('glow'))scene.textures.remove('glow');this.lightTexture=scene.textures.createCanvas('glow',256,256)!;
+  const lightContext=this.lightTexture.getContext(),lightGradient=lightContext.createRadialGradient(128,128,0,128,128,125);lightGradient.addColorStop(0,'rgba(255,174,59,.85)');lightGradient.addColorStop(.3,'rgba(255,155,47,.45)');lightGradient.addColorStop(1,'rgba(255,155,47,0)');lightContext.fillStyle=lightGradient;lightContext.fillRect(0,0,256,256);this.lightTexture.refresh();
   this.nodeSprites=model.world.nodes.map(n=>{const img=this.sprite(n.kind,n.x,n.y);if(n.kind==='tree'||n.kind==='pine')img.setScale(img.scaleX*(.82+seeded(n.id+99)()*.38));return img;});
   // Village edge and rugged northern boundary, using the same painted atlas.
   this.sprite('tower',600,1730);this.sprite('cabin',810,1810);this.sprite('cabin',440,1870);
@@ -301,8 +303,6 @@ export class WorldRenderer {
   this.ring=scene.add.graphics().setDepth(5000);this.effects=scene.add.graphics().setDepth(5001);
   this.atmosphere=scene.add.graphics().setScrollFactor(0).setDepth(9998);
   this.ghost=this.sprite('fire',0,0).setAlpha(.65).setVisible(false).setDepth(4900);
-  if(scene.textures.exists('glow'))scene.textures.remove('glow');this.lightTexture=scene.textures.createCanvas('glow',256,256)!;
-  const c=this.lightTexture.getContext(),g=c.createRadialGradient(128,128,0,128,128,125);g.addColorStop(0,'rgba(255,174,59,.85)');g.addColorStop(.3,'rgba(255,155,47,.45)');g.addColorStop(1,'rgba(255,155,47,0)');c.fillStyle=g;c.fillRect(0,0,256,256);this.lightTexture.refresh();
  }
  sprite(frame:string,x:number,y:number){const img=frame==='workbench'?this.scene.add.image(x,y,'workbench'):this.scene.add.image(x,y,'atlas',frame);img.setOrigin(.5,.89).setDepth(y);const h=heights[frame]??64;img.setScale(h/img.height);return img;}
  draw(dt:number,building:BuildingId|null,placement:PointLike){
@@ -312,7 +312,7 @@ export class WorldRenderer {
   const normal=heights.hero/this.player.height;this.player.setScale(normal*(1+(p.actionTimer>0?.035:0)),normal*(p.actionTimer>0?.87:1));
   this.playerShadow.setPosition(p.x,p.y+1).setDepth(p.y-1);
   const mantle=m.inventory.equipment.mantle==='wolfMantle';this.playerMantle.setVisible(mantle).setPosition(p.x,p.y-bob-4+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y+.25).setAngle(moving?Math.sin(p.walk)*1.5:0).setAlpha(this.player.alpha);
-  const cave=m.location==='cave';for(const obj of this.caveObjects)(obj as Phaser.GameObjects.Components.Visible).setVisible(cave);
+  const cave=m.location==='cave';for(const obj of this.caveObjects)(obj as any).setVisible(cave);
   const view=camera.worldView;
   for(const n of m.world.nodes){const img=this.nodeSprites[n.id];const visible=!cave&&!n.depleted&&n.x>view.x-270&&n.x<view.right+270&&n.y>view.y-100&&n.y<view.bottom+310;img.setVisible(visible);if(!visible)continue;if(n.kind==='tree'||n.kind==='pine'){const hide=p.y<n.y&&p.y>n.y-img.displayHeight&&Math.abs(p.x-n.x)<img.displayWidth*.4;img.setAlpha(hide?.48:1);img.setRotation(Math.sin(this.wind*.6+n.id)*.007);}}
   for(const a of m.animals){const img=this.animalSprites[a.id],shadow=this.animalShadows[a.id];img.setVisible(!cave&&(a.state!=='dead'||!!(a.lootMeat||a.lootHide))).setPosition(a.x,a.y-(a.state==='flee'?Math.abs(Math.sin(a.walk))*5:0)).setDepth(a.y).setFlipX(a.facing<0).setAngle(a.state==='dead'?80:0).setAlpha(a.state==='dead'?.65:1);shadow.setPosition(a.x,a.y).setDepth(a.y-1).setVisible(img.visible);}
