@@ -65,7 +65,7 @@ export class GameModel {
   this.save();
  }
  exitCave(){
-  if(this.location!=='cave')return;this.location='world';this.player.x=CAVE.entrance.x;this.player.y=CAVE.entrance.y+95;this.player.vx=this.player.vy=0;this.player.invulnerable=1;
+  if(this.location!=='cave')return;this.location='world';this.player.x=CAVE.entrance.x;this.player.y=CAVE.entrance.y+145;this.player.vx=this.player.vy=0;this.player.invulnerable=1.2;
   this.region='Вход в пещеру';this.emit({type:'location',text:'Вход в пещеру'});this.save();
  }
  rewardWolf(){
@@ -135,11 +135,11 @@ export class GameModel {
  interaction():Interaction|null{
   const p=this.player;const candidates:({d:number}&Interaction)[]=[];
   if(this.location==='cave'){
-   const exitD=distance(p,CAVE.exit);if(exitD<105)candidates.push({d:exitD,kind:'caveExit',target:CAVE.exit,label:'Выйти из пещеры'});
+   const exitD=distance(p,CAVE.exit);if(exitD<165)candidates.push({d:exitD-70,kind:'caveExit',target:CAVE.exit,label:'Выйти из пещеры'});
    const w=this.caveWolf,d=distance(p,w);if(w.state==='dead'&&Object.values(w.loot).some(n=>!!n)&&d<120)candidates.push({d:d-35,kind:'wolfLoot',target:w,label:'Забрать трофеи Чёрного Волка'});
    return candidates.sort((a,b)=>a.d-b.d)[0]??null;
   }
-  const caveD=distance(p,CAVE.entrance);if(caveD<105)candidates.push({d:caveD-15,kind:'caveEnter',target:CAVE.entrance,label:'Войти в пещеру'});
+  const caveD=distance(p,CAVE.entrance);if(caveD<135)candidates.push({d:caveD-30,kind:'caveEnter',target:CAVE.entrance,label:'Войти в пещеру'});
   for(const n of this.world.nodes){if(n.depleted)continue;const d=distance(p,n);if(d<92)candidates.push({d,kind:'node',target:n,label:(NODE_DATA[n.kind].tool?'Добыть: ':'Собрать: ')+NODE_DATA[n.kind].name});}
   for(const a of this.animals){const d=distance(p,a);if(a.state==='dead'&&(a.lootMeat||a.lootHide)&&d<95)candidates.push({d:d-30,kind:'loot',target:a,label:'Забрать добычу'});}
   for(const e of this.enemies){const d=distance(p,e);if(e.active&&e.state==='dead'&&Object.values(e.loot).some(n=>n)&&d<105)candidates.push({d:d-35,kind:'enemyLoot',target:e,label:e.kind==='chaborz'?'Осмотреть Чаборза':'Обыскать разбойника'});}
