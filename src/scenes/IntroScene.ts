@@ -3,8 +3,8 @@ import {SaveSystem} from '../systems/SaveSystem';
 import {icon} from '../ui/icons';
 import {AudioSystem} from '../systems/AudioSystem';
 
-const FAMILY_ART='/art/shalt-family-final.jpg';
-const MOTHER_ART='/art/shalt-mother-farewell-final.jpg';
+const FAMILY_ART='/art/shalt-family-final.webp';
+const MOTHER_ART='/art/shalt-mother-farewell-final.webp';
 const VALLEY_ART='/art/shalt-valley.png';
 
 const STORY=[
