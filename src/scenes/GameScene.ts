@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import {HERO_ART} from '../data/heroArt';
 import {GameModel} from '../systems/GameModel';
 import {SaveSystem} from '../systems/SaveSystem';
 import {WorldRenderer} from '../world/WorldRenderer';
@@ -12,7 +13,14 @@ export class GameScene extends Phaser.Scene {
  model!:GameModel;worldRenderer!:WorldRenderer;ui!:UI;audio=new AudioSystem();stick={x:0,y:0,sprint:false};keys!:Record<string,Phaser.Input.Keyboard.Key>;
  building:BuildingId|null=null;placement={x:0,y:0};uiTimer=0;focus!:Phaser.GameObjects.Zone;abort=new AbortController();cleanupTools=()=>{};
  constructor(){super('GameScene');}
- preload(){if(!this.textures.exists('atlas')){const label=this.add.text(this.scale.width/2,this.scale.height/2,'Тропа открывается…',{fontFamily:'Georgia',fontSize:'22px',color:'#d8ceac'}).setOrigin(.5);this.load.image('atlas','/art/shalt-sprite-atlas.png');this.load.once('complete',()=>label.destroy());this.load.on('loaderror',()=>{document.getElementById('ui')!.innerHTML='<div class="fatal">Не удалось загрузить рисунки. Обнови страницу, когда появится соединение.</div>';});}}
+ preload(){
+  const label=this.add.text(this.scale.width/2,this.scale.height/2,'Тропа открывается…',{fontFamily:'Georgia',fontSize:'22px',color:'#d8ceac'}).setOrigin(.5);
+  if(!this.textures.exists('atlas'))this.load.image('atlas','/art/shalt-sprite-atlas.png');
+  for(const art of Object.values(HERO_ART))if(!this.textures.exists(art.key))this.load.image(art.key,art.url);
+  this.load.once('complete',()=>label.destroy());
+  this.load.on('loaderror',()=>{document.getElementById('ui')!.innerHTML='<div class="fatal">Не удалось загрузить рисунки. Обнови страницу, когда появится соединение.</div>';});
+ }
+
  create(data:{save:ReturnType<typeof SaveSystem.pack>|null}){
   this.abort=new AbortController();this.model=new GameModel(data.save);this.worldRenderer=new WorldRenderer(this,this.model);this.building=null;
   this.focus=this.add.zone(this.model.player.x,this.model.player.y-25,1,1);const cam=this.cameras.main;cam.setBounds(0,0,SETTINGS.world.width,SETTINGS.world.height);cam.setZoom(this.zoom());cam.startFollow(this.focus,true,.085,.085);cam.centerOn(this.model.player.x,this.model.player.y);cam.fadeIn(650,12,31,24);

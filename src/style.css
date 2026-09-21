@@ -290,38 +290,9 @@
  z-index:3;
 }
 .actual-game-hero{
- position:absolute;inset:0;
- width:145px;height:343px;
- background-image:url('/art/shalt-sprite-atlas.png');
- background-repeat:no-repeat;
- background-size:1254px 1254px;
- background-position:-87px -890px;
- z-index:2;
-}
-.preview-wolf-cloak{
- position:absolute;left:22px;top:62px;width:101px;height:245px;z-index:1;
- background:
-  linear-gradient(102deg,transparent 0 13%,rgba(30,35,34,.94) 14% 44%,rgba(17,23,22,.96) 51%,rgba(34,40,38,.91) 86%,transparent 87%),
-  repeating-linear-gradient(98deg,rgba(149,156,147,.07) 0 2px,transparent 2px 8px);
- clip-path:polygon(23% 2%,77% 2%,94% 19%,88% 49%,100% 86%,74% 78%,61% 100%,49% 82%,37% 100%,25% 80%,0 88%,11% 48%,5% 20%);
- filter:drop-shadow(0 5px 5px rgba(0,0,0,.35));
-}
-.preview-wolf-cloak:after{
- content:'';position:absolute;left:12px;right:12px;top:2px;height:45px;border-radius:50% 50% 36% 36%;
- background:repeating-linear-gradient(115deg,#313937 0 7px,#222a28 7px 13px,#3c4441 13px 17px);
- clip-path:polygon(0 25%,14% 5%,28% 18%,42% 0,58% 0,72% 18%,86% 5%,100% 25%,90% 75%,70% 95%,50% 75%,30% 95%,10% 75%);
- opacity:.95;
-}
-.preview-wolf-head{
- position:absolute;left:47px;top:3px;width:52px;height:52px;z-index:4;
- background:linear-gradient(145deg,#39413f,#171e1e 58%,#090d0d);
- clip-path:polygon(8% 30%,17% 0,38% 22%,50% 13%,62% 22%,84% 0,91% 31%,100% 52%,78% 63%,68% 83%,50% 100%,32% 83%,22% 63%,0 52%);
- filter:drop-shadow(0 3px 3px rgba(0,0,0,.45));
-}
-.preview-wolf-head:before{
- content:'';position:absolute;left:13px;top:24px;width:27px;height:17px;border-radius:50% 50% 44% 44%;
- background:linear-gradient(180deg,#262e2d,#0d1212);
- box-shadow:-8px -4px 0 -6px #8e9690,8px -4px 0 -6px #8e9690;
+ display:block;position:absolute;left:50%;top:0;transform:translateX(-50%);
+ width:auto;height:100%;max-width:none;object-fit:contain;
+ pointer-events:none;user-select:none;
 }
 .character-ground{
  position:absolute;left:50%;bottom:54px;transform:translateX(-50%);
@@ -368,47 +339,6 @@
 /* Equipment picker + clean base coat update. */
 .equipment-square{cursor:pointer}
 .equipment-square:active{transform:translateY(1px) scale(.985)}
-.hero-clean-chest{
- position:absolute;left:31px;top:82px;width:83px;height:46px;z-index:3;pointer-events:none;
- clip-path:polygon(8% 10%,31% 0,50% 9%,69% 0,92% 10%,86% 100%,14% 100%);
- background:
-  linear-gradient(90deg,transparent 49%,rgba(9,17,22,.42) 49% 51%,transparent 51%),
-  linear-gradient(180deg,rgba(63,81,91,.96),rgba(34,50,60,.98) 55%,rgba(29,44,53,.99));
- box-shadow:inset 0 1px rgba(160,177,181,.10),inset 0 -8px 12px rgba(6,15,20,.12);
-}
-.hero-clean-chest:after{
- content:'';position:absolute;left:10px;right:10px;top:8px;height:28px;
- background:
-  linear-gradient(105deg,transparent 0 21%,rgba(139,153,157,.08) 22% 24%,transparent 25% 75%,rgba(139,153,157,.08) 76% 78%,transparent 79%);
- opacity:.75;
-}
-.preview-wolf-head{
- left:53px!important;top:-23px!important;width:40px!important;height:43px!important;
- background:
-  radial-gradient(ellipse at 50% 62%,#141b1a 0 29%,transparent 30%),
-  linear-gradient(145deg,#46504c,#252d2b 48%,#0d1212)!important;
- clip-path:polygon(6% 39%,15% 0,39% 27%,50% 18%,61% 27%,85% 0,94% 39%,100% 58%,76% 67%,64% 87%,50% 100%,36% 87%,24% 67%,0 58%)!important;
- filter:drop-shadow(0 3px 4px rgba(0,0,0,.42))!important;
-}
-.preview-wolf-head:before{
- left:9px!important;top:22px!important;width:22px!important;height:12px!important;
- background:linear-gradient(180deg,#303936,#101515)!important;
- box-shadow:-6px -4px 0 -5px #89918a,6px -4px 0 -5px #89918a!important;
-}
-.preview-wolf-cloak{
- left:20px!important;top:62px!important;width:105px!important;height:245px!important;
- background:
-  repeating-linear-gradient(112deg,rgba(151,160,154,.10) 0 2px,transparent 2px 8px),
-  linear-gradient(102deg,transparent 0 10%,#303936 11% 28%,#1c2422 43%,#111716 58%,#28302e 84%,transparent 85%)!important;
- clip-path:polygon(20% 1%,80% 1%,95% 17%,89% 51%,100% 88%,77% 80%,62% 100%,50% 84%,38% 100%,23% 81%,0 90%,11% 50%,5% 18%)!important;
-}
-.preview-wolf-cloak:after{
- left:8px!important;right:8px!important;top:-1px!important;height:42px!important;
- background:
-  repeating-linear-gradient(118deg,#46504b 0 5px,#2d3633 5px 10px,#3a4440 10px 15px)!important;
- opacity:.92!important;
-}
-
 .equipment-picker-backdrop{
  position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
  padding:18px;background:rgba(3,13,10,.68);backdrop-filter:blur(4px);
@@ -451,72 +381,4 @@
  .equipment-choice{min-height:58px;grid-template-columns:38px minmax(0,1fr) 18px;padding:8px}
  .equipment-choice>span{width:36px;height:36px}.equipment-choice>span .icon{width:23px;height:23px}
  .equipment-choice strong{font-size:13px}
-}
-
-
-/* Wolf cloak final pass: no hood/headpiece, clean tunic and darker wolf-hide fur. */
-.hero-clean-chest{
- left:38px!important;top:80px!important;width:69px!important;height:34px!important;
- background:none!important;box-shadow:none!important;clip-path:none!important;
-}
-.hero-clean-chest:before,.hero-clean-chest:after{
- content:'';position:absolute;top:3px;width:28px;height:25px;
- background:
-  linear-gradient(180deg,rgba(75,93,102,.98),rgba(43,63,74,.99) 54%,rgba(34,52,62,.99));
- filter:drop-shadow(0 1px 1px rgba(0,0,0,.12));
-}
-.hero-clean-chest:before{
- left:0;clip-path:polygon(5% 18%,72% 0,100% 22%,90% 92%,20% 100%);
-}
-.hero-clean-chest:after{
- right:0;clip-path:polygon(95% 18%,28% 0,0 22%,10% 92%,80% 100%);
-}
-.preview-wolf-head,.preview-wolf-head:before{display:none!important}
-.preview-wolf-cloak{
- left:14px!important;top:50px!important;width:117px!important;height:266px!important;
- background:
-  repeating-linear-gradient(110deg,rgba(185,192,183,.10) 0 2px,transparent 2px 8px),
-  radial-gradient(ellipse at 50% 13%,rgba(77,88,83,.34),transparent 34%),
-  linear-gradient(103deg,transparent 0 7%,#343d3a 8% 22%,#242c2a 37%,#131918 55%,#222a28 80%,#313936 91%,transparent 92%)!important;
- clip-path:polygon(17% 2%,83% 2%,97% 17%,90% 52%,100% 91%,80% 82%,66% 100%,52% 85%,38% 100%,23% 82%,0 92%,10% 51%,3% 18%)!important;
- filter:drop-shadow(0 7px 7px rgba(0,0,0,.42))!important;
-}
-.preview-wolf-cloak:before{
- content:'';position:absolute;left:4px;right:4px;top:5px;height:60px;
- background:
-  repeating-linear-gradient(118deg,#4c5651 0 5px,#303936 5px 11px,#222927 11px 16px,#414b47 16px 21px);
- clip-path:polygon(0 34%,9% 14%,18% 25%,29% 4%,40% 21%,50% 9%,60% 21%,71% 4%,82% 25%,91% 14%,100% 34%,91% 82%,78% 70%,66% 96%,50% 75%,34% 96%,22% 70%,9% 82%);
- opacity:.96;
-}
-.preview-wolf-cloak:after{
- content:'';position:absolute;inset:65px 13px 18px;
- background:
-  repeating-linear-gradient(100deg,rgba(173,181,173,.055) 0 2px,transparent 2px 13px),
-  linear-gradient(90deg,rgba(255,255,255,.045),transparent 25% 75%,rgba(255,255,255,.035));
- clip-path:polygon(0 0,100% 0,88% 100%,64% 91%,50% 100%,36% 91%,12% 100%);
- opacity:.85;
-}
-
-
-/* Precise gazyr removal: two small tunic-texture patches, no chest rectangle. */
-.hero-clean-chest{display:none!important}
-.hero-gazyr-cover{
- position:absolute;z-index:3;pointer-events:none;
- background-image:url('/art/shalt-sprite-atlas.png');
- background-repeat:no-repeat;
- background-size:1254px 1254px;
- border-radius:4px;
- filter:drop-shadow(0 1px 1px rgba(0,0,0,.08));
-}
-.hero-gazyr-cover-left{
- left:31px;top:106px;width:47px;height:23px;
- background-position:-149px -1044px;
- transform:rotate(-5.7deg);
- clip-path:polygon(2% 15%,96% 0,100% 78%,6% 100%);
-}
-.hero-gazyr-cover-right{
- left:84px;top:98px;width:38px;height:23px;
- background-position:-172px -1041px;
- transform:rotate(3.2deg);
- clip-path:polygon(4% 0,98% 10%,94% 100%,0 84%);
 }

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import {heroArt} from '../data/heroArt';
 import {SETTINGS,NODE_DATA,ENEMIES,CAVE,type BuildingId} from '../data/config';
 import {seeded,riverX,distance,type World} from './World';
 import type {GameModel,GameEvent} from '../systems/GameModel';
@@ -235,58 +236,6 @@ function makeWolfTexture(scene:Phaser.Scene){
  t.refresh();
 }
 
-function makeMantleTexture(scene:Phaser.Scene){
- if(scene.textures.exists('wolf-cloak'))scene.textures.remove('wolf-cloak');
- if(scene.textures.exists('wolf-collar'))scene.textures.remove('wolf-collar');
-
- // Long black wolf-hide cloak, painted at high resolution and scaled down to the atlas style.
- let t=scene.textures.createCanvas('wolf-cloak',720,900)!;let c=t.getContext(),rand=seeded(44117);
- c.clearRect(0,0,720,900);c.imageSmoothingEnabled=true;
- let g=c.createLinearGradient(100,70,620,850);
- g.addColorStop(0,'#343c3a');g.addColorStop(.20,'#252c2b');g.addColorStop(.50,'#171d1c');g.addColorStop(.78,'#0d1212');g.addColorStop(1,'#060909');
- c.fillStyle=g;c.beginPath();
- c.moveTo(166,135);c.quadraticCurveTo(360,74,554,135);
- c.lineTo(632,704);c.lineTo(580,680);c.lineTo(526,825);c.lineTo(464,772);
- c.lineTo(402,870);c.lineTo(356,793);c.lineTo(306,870);c.lineTo(248,776);
- c.lineTo(188,828);c.lineTo(136,688);c.lineTo(82,718);c.closePath();c.fill();
-
- // Open front: the tunic and belt remain clearly visible.
- c.globalCompositeOperation='destination-out';c.beginPath();
- c.moveTo(286,130);c.quadraticCurveTo(360,190,434,130);
- c.lineTo(462,650);c.quadraticCurveTo(360,719,257,650);c.closePath();c.fill();
- c.globalCompositeOperation='source-over';
-
- // Broad dark folds so the cape reads well even at a 90 px game height.
- c.lineCap='round';
- for(const [x1,y1,x2,y2] of [[145,225,188,690],[212,185,253,714],[508,185,466,714],[575,225,530,690]] as const){
-  c.strokeStyle='rgba(146,156,150,.12)';c.lineWidth=12;c.beginPath();c.moveTo(x1,y1);c.quadraticCurveTo((x1+x2)/2+(x1<360?-18:18),(y1+y2)/2,x2,y2);c.stroke();
-  c.strokeStyle='rgba(0,0,0,.24)';c.lineWidth=7;c.beginPath();c.moveTo(x1+10,y1+18);c.quadraticCurveTo((x1+x2)/2,(y1+y2)/2,x2+8,y2);c.stroke();
- }
- // Fur fibres along sides and lower edge.
- for(let i=0;i<330;i++){
-  const side=i%2===0?-1:1;
-  const x=360+side*(118+rand()*225),y=132+rand()*630,len=14+rand()*42;
-  c.strokeStyle=rand()>.67?'rgba(178,186,178,.16)':rand()>.27?'rgba(94,106,101,.17)':'rgba(220,217,200,.055)';
-  c.lineWidth=2+rand()*4;c.beginPath();c.moveTo(x,y);c.lineTo(x+side*(5+rand()*16),y+len);c.stroke();
- }
- c.strokeStyle='rgba(0,0,0,.34)';c.lineWidth=22;c.beginPath();c.moveTo(116,667);c.quadraticCurveTo(360,812,606,665);c.stroke();
- t.refresh();
-
- // Separate fur collar sits over the shoulders, never over the head or face.
- t=scene.textures.createCanvas('wolf-collar',520,190)!;c=t.getContext();rand=seeded(44119);
- c.clearRect(0,0,520,190);c.imageSmoothingEnabled=true;
- g=c.createLinearGradient(35,22,485,175);g.addColorStop(0,'#4a5550');g.addColorStop(.34,'#303936');g.addColorStop(.72,'#1b2221');g.addColorStop(1,'#0e1313');
- c.fillStyle=g;c.beginPath();
- c.moveTo(26,79);c.lineTo(72,39);c.lineTo(118,61);c.lineTo(164,24);c.lineTo(213,57);c.lineTo(260,35);
- c.lineTo(307,57);c.lineTo(356,24);c.lineTo(402,61);c.lineTo(448,39);c.lineTo(494,79);
- c.lineTo(467,153);c.lineTo(410,135);c.lineTo(362,170);c.lineTo(309,140);c.lineTo(260,158);
- c.lineTo(211,140);c.lineTo(158,170);c.lineTo(110,135);c.lineTo(53,153);c.closePath();c.fill();
- // Small centre opening around neck/chest.
- c.globalCompositeOperation='destination-out';c.beginPath();c.moveTo(222,52);c.quadraticCurveTo(260,88,298,52);c.lineTo(309,148);c.quadraticCurveTo(260,166,211,148);c.closePath();c.fill();c.globalCompositeOperation='source-over';
- c.lineCap='round';for(let i=0;i<150;i++){const x=48+rand()*424,y=38+rand()*105;c.strokeStyle=rand()>.55?'rgba(184,191,181,.15)':'rgba(103,116,110,.18)';c.lineWidth=2+rand()*4;c.beginPath();c.moveTo(x,y);c.lineTo(x+(rand()-.5)*18,y+10+rand()*24);c.stroke();}
- t.refresh();
-}
-
 function makeBonesTexture(scene:Phaser.Scene){
  if(scene.textures.exists('cave-bones'))return;
  const W=220,H=120,t=scene.textures.createCanvas('cave-bones',W,H)!;const c=t.getContext();
@@ -351,28 +300,9 @@ function makeCaveExitTexture(scene:Phaser.Scene){
  t.refresh();
 }
 
-function makeHeroChestPatchTexture(scene:Phaser.Scene){
- if(scene.textures.exists('hero-clean-chest'))scene.textures.remove('hero-clean-chest');
- const [sx,sy,sw,sh]=FRAMES.hero;
- const t=scene.textures.createCanvas('hero-clean-chest',sw,sh)!;const c=t.getContext();
- c.clearRect(0,0,sw,sh);c.imageSmoothingEnabled=true;
- const atlas=scene.textures.get('atlas').getSourceImage() as CanvasImageSource;
-
- // Cover only the two gazyr areas with clean cloth sampled from the hero's own tunic.
- const patch=(tx:number,ty:number,tw:number,th:number,srcX:number,srcY:number,rot:number)=>{
-  c.save();c.translate(tx+tw/2,ty+th/2);c.rotate(rot);c.beginPath();
-  c.roundRect(-tw/2,-th/2,tw,th,4);c.clip();
-  c.drawImage(atlas,sx+srcX,sy+srcY,tw,th,-tw/2,-th/2,tw,th);
-  c.restore();
- };
- patch(31,106,47,23,31,154,-.10);
- patch(84,98,38,23,85,151,.055);
- t.refresh();
-}
-
 export function setupFrames(scene:Phaser.Scene){
  const t=scene.textures.get('atlas');for(const [name,b]of Object.entries(FRAMES))if(!t.has(name))t.add(name,0,...b);
- makeWorkbenchTexture(scene);makeEnemyTexture(scene,'dagger');makeEnemyTexture(scene,'shield');makeEnemyTexture(scene,'chaborz');makeWolfTexture(scene);makeMantleTexture(scene);makeHeroChestPatchTexture(scene);makeBonesTexture(scene);makeTorchTexture(scene);makeCaveInteriorTexture(scene);makeCaveExitTexture(scene);
+ makeWorkbenchTexture(scene);makeEnemyTexture(scene,'dagger');makeEnemyTexture(scene,'shield');makeEnemyTexture(scene,'chaborz');makeWolfTexture(scene);makeBonesTexture(scene);makeTorchTexture(scene);makeCaveInteriorTexture(scene);makeCaveExitTexture(scene);
 }
 
 function makeTerrain(scene:Phaser.Scene,world:World){
@@ -411,7 +341,7 @@ function makeTerrain(scene:Phaser.Scene,world:World){
 
 export class WorldRenderer {
  nodeSprites:Phaser.GameObjects.Image[]=[];animalSprites:Phaser.GameObjects.Image[]=[];animalShadows:Phaser.GameObjects.Ellipse[]=[];enemySprites:Phaser.GameObjects.Image[]=[];enemyShadows:Phaser.GameObjects.Ellipse[]=[];buildingSprites=new Map<number,Phaser.GameObjects.Image>();
- player:Phaser.GameObjects.Image;playerCloak:Phaser.GameObjects.Image;playerCloakCollar:Phaser.GameObjects.Image;playerChestPatch:Phaser.GameObjects.Image;playerShadow:Phaser.GameObjects.Ellipse;ring:Phaser.GameObjects.Graphics;effects:Phaser.GameObjects.Graphics;atmosphere:Phaser.GameObjects.Graphics;ghost:Phaser.GameObjects.Image;
+ player:Phaser.GameObjects.Image;playerShadow:Phaser.GameObjects.Ellipse;ring:Phaser.GameObjects.Graphics;effects:Phaser.GameObjects.Graphics;atmosphere:Phaser.GameObjects.Graphics;ghost:Phaser.GameObjects.Image;
  caveWolfSprite:Phaser.GameObjects.Image;caveWolfShadow:Phaser.GameObjects.Ellipse;caveObjects:Phaser.GameObjects.GameObject[]=[];caveLights:Phaser.GameObjects.Image[]=[];worldDecor:Phaser.GameObjects.GameObject[]=[];
  glow:Phaser.GameObjects.Image[]=[];lightTexture:Phaser.Textures.CanvasTexture;wind=0;
  constructor(public scene:Phaser.Scene,public model:GameModel){
@@ -435,10 +365,8 @@ export class WorldRenderer {
   this.enemySprites=model.enemies.map(e=>scene.add.image(e.x,e.y,'enemy-'+e.kind).setOrigin(.5,.9).setDisplaySize(e.kind==='chaborz'?104:e.kind==='shield'?74:68,e.kind==='chaborz'?148:e.kind==='shield'?108:102).setDepth(e.y));
   this.enemyShadows=model.enemies.map(e=>scene.add.ellipse(e.x,e.y,e.kind==='chaborz'?60:42,e.kind==='chaborz'?18:13,0x081c17,.34).setDepth(e.y-1));
   this.playerShadow=scene.add.ellipse(model.player.x,model.player.y,33,13,0x081c17,.36);
-  this.playerCloak=scene.add.image(model.player.x,model.player.y,'wolf-cloak').setOrigin(.5,.9).setDisplaySize(66,91).setDepth(model.player.y-.3).setVisible(false);
-  this.player=this.sprite('hero',model.player.x,model.player.y);
-  this.playerChestPatch=scene.add.image(model.player.x,model.player.y,'hero-clean-chest').setOrigin(.5,.89).setDepth(model.player.y+.2);
-  this.playerCloakCollar=scene.add.image(model.player.x,model.player.y-53,'wolf-collar').setOrigin(.5,.5).setDisplaySize(55,20).setDepth(model.player.y+.34).setVisible(false);
+  this.player=scene.add.image(model.player.x,model.player.y,heroArt(model.inventory.equipment.mantle).key).setOrigin(.5,.98).setDepth(model.player.y);
+  this.player.setScale(heights.hero/this.player.height);
   this.caveWolfShadow=scene.add.ellipse(CAVE.wolfSpawn.x,CAVE.wolfSpawn.y+6,172,30,0x020303,.62).setDepth(CAVE.wolfSpawn.y-1).setVisible(false);
   this.caveWolfSprite=scene.add.image(CAVE.wolfSpawn.x,CAVE.wolfSpawn.y,'black-wolf').setOrigin(.5,.84).setDisplaySize(218,133).setDepth(CAVE.wolfSpawn.y).setVisible(false);
   // Full-world blackout prevents the outside mountain art from bleeding into the interior on tall phones.
@@ -466,13 +394,11 @@ export class WorldRenderer {
  draw(dt:number,building:BuildingId|null,placement:PointLike){
   const m=this.model,p=m.player,s=this.scene,camera=s.cameras.main;this.wind+=dt;
   const moving=Math.hypot(p.vx,p.vy)>2&&!m.paused;const bob=moving?Math.abs(Math.sin(p.walk))*3:Math.sin(this.wind*2)*.6;
+  const art=heroArt(m.inventory.equipment.mantle);
+  if(this.player.texture.key!==art.key)this.player.setTexture(art.key);
   this.player.setPosition(p.x,p.y-bob+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y).setAngle(moving?Math.sin(p.walk)*2:0).setAlpha(p.invulnerable>0&&Math.sin(this.wind*32)>0?.45:1);
   const normal=heights.hero/this.player.height;this.player.setScale(normal*(1+(p.actionTimer>0?.035:0)),normal*(p.actionTimer>0?.87:1));
   this.playerShadow.setPosition(p.x,p.y+1).setDepth(p.y-1);
-  this.playerChestPatch.setPosition(p.x,p.y-bob+(p.actionTimer>0?8:0)).setDepth(p.y+.2).setFlipX(p.facing<0).setAngle(moving?Math.sin(p.walk)*2:0).setAlpha(this.player.alpha).setScale(this.player.scaleX,this.player.scaleY);
-  const mantle=m.inventory.equipment.mantle==='wolfMantle';
-  this.playerCloak.setVisible(mantle).setPosition(p.x,p.y-bob+4+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y-.35).setAngle(moving?Math.sin(p.walk)*.95:0).setAlpha(this.player.alpha);
-  this.playerCloakCollar.setVisible(mantle).setPosition(p.x,p.y-bob-53+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y+.34).setAngle(moving?Math.sin(p.walk)*.8:0).setAlpha(this.player.alpha);
   const cave=m.location==='cave';for(const obj of this.caveObjects)(obj as any).setVisible(cave);for(const obj of this.worldDecor)(obj as any).setVisible(!cave);
   const view=camera.worldView;
   for(const n of m.world.nodes){const img=this.nodeSprites[n.id];const visible=!cave&&!n.depleted&&n.x>view.x-270&&n.x<view.right+270&&n.y>view.y-100&&n.y<view.bottom+310;img.setVisible(visible);if(!visible)continue;if(n.kind==='tree'||n.kind==='pine'){const hide=p.y<n.y&&p.y>n.y-img.displayHeight&&Math.abs(p.x-n.x)<img.displayWidth*.4;img.setAlpha(hide?.48:1);img.setRotation(Math.sin(this.wind*.6+n.id)*.007);}}

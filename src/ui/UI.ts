@@ -1,3 +1,4 @@
+import {heroArt} from '../data/heroArt';
 import {icon,itemIcon} from './icons';
 import {ITEMS,TOOLS,RECIPES,BUILDINGS,REGIONS,SETTINGS,type RecipeId,type ResourceId,type ToolId,type BuildingId,type Cost,type EquipmentSlot} from '../data/config';
 import type {GameModel} from '../systems/GameModel';
@@ -114,9 +115,7 @@ export class UI {
     <section class="character-center" aria-label="Игровой персонаж">
      <div class="character-aura"></div>
      <div class="character-figure" aria-hidden="true">
-      ${mantleEquipped?'<span class="preview-wolf-cloak"></span>':''}
-      <div class="actual-game-hero"></div>
-      <span class="hero-gazyr-cover hero-gazyr-cover-left"></span><span class="hero-gazyr-cover hero-gazyr-cover-right"></span>
+      <img class="actual-game-hero" src="${heroArt(m.inventory.equipment.mantle).url}" alt="" width="480" height="992" draggable="false">
      </div>
      <div class="character-ground"></div>
      <div class="character-caption"><strong>Герой · ${m.age} лет</strong><span>Уровень ${m.xp.level}</span></div>
