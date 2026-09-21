@@ -47,7 +47,7 @@ const paths:Record<string,string>={
  belt:'M3 9h18v6H3V9Zm7 0v6m4-6v6M7 12h10',
  wolfFang:'M8 3c1 8 2 14 4 18 3-5 4-11 4-18-2 3-6 3-8 0Z',
  wolfHide:'M5 3c2 3 4 3 7 3s5 0 7-3l2 5c-5 3-5 5 0 8l-2 5c-3-3-11-3-14 0l-2-5c5-3 5-5 0-8l2-5Z',
- wolfMantle:'M7 8 4 4l4 1 4-3 4 3 4-1-3 4 2 13H5L7 8Zm1-3 2 5 2-3 2 3 2-5M9 12c1-2 5-2 6 0',
+ wolfMantle:'M6 5c2 2 4 3 6 3s4-1 6-3l2 4-2 12-4-3-2 4-2-4-4 3L4 9l2-4Zm2 3c1 1 2 2 4 2s3-1 4-2',
 
 };
 export const icon=(name:string,cls='')=>`<svg class="icon ${cls}" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[name]||paths.leaf}"/></svg>`;
