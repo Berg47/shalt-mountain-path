@@ -211,6 +211,9 @@ export class GameModel {
   const messages:Partial<Record<RecipeId,string>>={
    bag:'Кожаная сумка II готова. Теперь 16 ячеек.',
    bag3:'Укреплённая сумка III готова. Теперь 24 ячейки.',
+   bag4:'Походная сумка IV готова. Теперь 32 ячейки.',
+   bag5:'Большая походная сумка V готова. Теперь 40 ячеек.',
+   bag6:'Тяжёлая походная сумка VI готова. Теперь 48 ячеек.',
    shalt2:'Шалт улучшен до II уровня. Урон: 38.',
    shalt3:'Шалт закалён до III уровня. Урон: 44.',
   };
@@ -282,6 +285,9 @@ export class GameModel {
   if(this.inventory.shaltLevel<2)return {title:'Укрепить шалт',text:'Используй металл, камень и кожу, чтобы улучшить свой первый шалт.',progress:`Металл ${this.inventory.count('metal')}/2 · Камень ${this.inventory.count('stone')}/2`,action:'Ремесло',panel:'craft'};
   if(this.inventory.bagLevel<3)return {title:'Сумка III',text:'У верстака сделай большую укреплённую сумку.',progress:`Шкуры ${this.inventory.count('hide')}/6 · Металл ${this.inventory.count('metal')}/3`,action:'Ремесло',panel:'craft'};
   if(this.inventory.shaltLevel<3)return {title:'Закалить шалт',text:'У верстака доведи шалт до III уровня.',progress:`Металл ${this.inventory.count('metal')}/5 · Камень ${this.inventory.count('stone')}/3`,action:'Ремесло',panel:'craft'};
+  if(this.inventory.bagLevel<4)return {title:'Сумка IV',text:'Улучши сумку для дальних походов.',progress:`Шкуры ${this.inventory.count('hide')}/8 · Металл ${this.inventory.count('metal')}/5`,action:'Ремесло',panel:'craft'};
+  if(this.inventory.bagLevel<5)return {title:'Сумка V',text:'Сделай ещё более вместительную походную сумку.',progress:`Шкуры ${this.inventory.count('hide')}/10 · Металл ${this.inventory.count('metal')}/8`,action:'Ремесло',panel:'craft'};
+  if(this.inventory.bagLevel<6)return {title:'Сумка VI',text:'Создай максимальное улучшение сумки.',progress:`Шкуры ${this.inventory.count('hide')}/14 · Металл ${this.inventory.count('metal')}/12`,action:'Ремесло',panel:'craft'};
   return {title:'Путь продолжается',text:'Исследуй долину, сражайся с разбойниками и переживай ночи в своём лагере.',progress:`Ночей пережито: ${this.nights} · Мест ${this.discovered.size}/${REGIONS.length}`,action:'Карта',panel:'map'};
  }
 }
