@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import {SETTINGS,NODE_DATA,ENEMIES,type BuildingId} from '../data/config';
+import {SETTINGS,NODE_DATA,ENEMIES,CAVE,type BuildingId} from '../data/config';
 import {seeded,riverX,distance,type World} from './World';
 import type {GameModel,GameEvent} from '../systems/GameModel';
 
@@ -176,9 +176,66 @@ function makeEnemyTexture(scene:Phaser.Scene,kind:'dagger'|'shield'|'chaborz'){
 
  t.refresh();
 }
+
+function makeWolfTexture(scene:Phaser.Scene){
+ if(scene.textures.exists('black-wolf'))return;
+ const W=620,H=390,t=scene.textures.createCanvas('black-wolf',W,H)!;const c=t.getContext();
+ c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
+ const shadow=c.createRadialGradient(315,330,10,315,330,235);shadow.addColorStop(0,'rgba(0,0,0,.52)');shadow.addColorStop(1,'rgba(0,0,0,0)');
+ c.fillStyle=shadow;c.beginPath();c.ellipse(315,330,235,39,0,0,Math.PI*2);c.fill();
+ let g=c.createLinearGradient(80,90,500,320);g.addColorStop(0,'#242a2b');g.addColorStop(.4,'#111617');g.addColorStop(1,'#050809');
+ c.fillStyle=g;c.beginPath();c.ellipse(290,215,192,92,-.06,0,Math.PI*2);c.fill();
+ c.beginPath();c.ellipse(445,165,88,70,-.25,0,Math.PI*2);c.fill();
+ c.beginPath();c.moveTo(405,123);c.lineTo(419,40);c.lineTo(462,117);c.closePath();c.fill();
+ c.beginPath();c.moveTo(458,111);c.lineTo(505,45);c.lineTo(501,139);c.closePath();c.fill();
+ c.beginPath();c.moveTo(486,165);c.quadraticCurveTo(560,151,585,187);c.quadraticCurveTo(545,214,480,201);c.closePath();c.fill();
+ c.strokeStyle='#090d0e';c.lineWidth=34;c.lineCap='round';
+ c.beginPath();c.moveTo(165,245);c.lineTo(119,332);c.moveTo(245,253);c.lineTo(224,338);c.moveTo(365,250);c.lineTo(390,336);c.moveTo(435,226);c.lineTo(475,329);c.stroke();
+ c.strokeStyle='#1d2425';c.lineWidth=13;c.beginPath();c.moveTo(98,205);c.quadraticCurveTo(25,176,43,111);c.quadraticCurveTo(75,157,122,172);c.stroke();
+ c.strokeStyle='rgba(128,139,137,.13)';c.lineWidth=8;
+ for(let i=0;i<12;i++){const x=145+i*25;c.beginPath();c.moveTo(x,155+Math.sin(i)*22);c.quadraticCurveTo(x+30,205,x+4,268);c.stroke();}
+ c.fillStyle='#c31318';c.shadowColor='#ff2328';c.shadowBlur=19;c.beginPath();c.ellipse(456,153,8,5,-.1,0,Math.PI*2);c.fill();c.shadowBlur=0;
+ c.fillStyle='#0b0c0c';c.beginPath();c.ellipse(572,184,10,7,0,0,Math.PI*2);c.fill();
+ c.fillStyle='#ded3b5';for(const x of [510,528,546]){c.beginPath();c.moveTo(x,202);c.lineTo(x+5,223);c.lineTo(x+10,200);c.closePath();c.fill();}
+ c.strokeStyle='rgba(228,225,204,.18)';c.lineWidth=3;c.beginPath();c.moveTo(510,174);c.lineTo(565,168);c.moveTo(510,181);c.lineTo(566,187);c.stroke();
+ t.refresh();
+}
+function makeMantleTexture(scene:Phaser.Scene){
+ if(scene.textures.exists('wolf-mantle'))return;
+ const W=260,H=430,t=scene.textures.createCanvas('wolf-mantle',W,H)!;const c=t.getContext(),cx=W/2;
+ c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
+ let g=c.createLinearGradient(45,120,220,390);g.addColorStop(0,'rgba(29,34,35,.98)');g.addColorStop(.55,'rgba(12,16,17,.98)');g.addColorStop(1,'rgba(4,7,8,.98)');
+ c.fillStyle=g;c.beginPath();c.moveTo(72,126);c.quadraticCurveTo(cx,104,188,126);c.lineTo(229,376);c.lineTo(183,350);c.lineTo(147,402);c.lineTo(112,352);c.lineTo(62,382);c.closePath();c.fill();
+ c.fillStyle='#111617';c.beginPath();c.ellipse(cx,88,69,58,0,0,Math.PI*2);c.fill();
+ c.beginPath();c.moveTo(77,70);c.lineTo(86,9);c.lineTo(121,49);c.closePath();c.fill();c.beginPath();c.moveTo(139,48);c.lineTo(177,10);c.lineTo(184,73);c.closePath();c.fill();
+ c.beginPath();c.moveTo(96,91);c.quadraticCurveTo(cx,68,164,91);c.lineTo(151,121);c.lineTo(109,121);c.closePath();c.fill();
+ c.fillStyle='#252b2c';c.beginPath();c.ellipse(108,83,6,4,0,0,Math.PI*2);c.fill();c.beginPath();c.ellipse(152,83,6,4,0,0,Math.PI*2);c.fill();
+ c.strokeStyle='rgba(152,160,155,.13)';c.lineWidth=4;c.beginPath();c.moveTo(82,151);c.quadraticCurveTo(127,220,108,348);c.moveTo(179,151);c.quadraticCurveTo(141,230,151,367);c.stroke();
+ t.refresh();
+}
+function makeBonesTexture(scene:Phaser.Scene){
+ if(scene.textures.exists('cave-bones'))return;
+ const W=220,H=120,t=scene.textures.createCanvas('cave-bones',W,H)!;const c=t.getContext();
+ c.clearRect(0,0,W,H);c.strokeStyle='#b8ad8f';c.fillStyle='#c5b99a';c.lineWidth=9;c.lineCap='round';
+ c.beginPath();c.moveTo(22,96);c.lineTo(105,31);c.moveTo(42,25);c.lineTo(131,99);c.stroke();
+ for(const [x,y] of [[20,96],[105,31],[42,25],[131,99]]){c.beginPath();c.arc(x,y,7,0,Math.PI*2);c.fill();}
+ c.beginPath();c.ellipse(169,55,34,30,0,0,Math.PI*2);c.fill();c.fillRect(147,66,44,22);
+ c.fillStyle='#242422';c.beginPath();c.ellipse(157,52,7,9,0,0,Math.PI*2);c.fill();c.beginPath();c.ellipse(180,52,7,9,0,0,Math.PI*2);c.fill();c.beginPath();c.ellipse(169,66,5,4,0,0,Math.PI*2);c.fill();
+ c.strokeStyle='#7c735d';c.lineWidth=2;for(let x=152;x<188;x+=9){c.beginPath();c.moveTo(x,72);c.lineTo(x,84);c.stroke();}
+ t.refresh();
+}
+function makeTorchTexture(scene:Phaser.Scene){
+ if(scene.textures.exists('cave-torch'))return;
+ const W=90,H=180,t=scene.textures.createCanvas('cave-torch',W,H)!;const c=t.getContext();
+ c.clearRect(0,0,W,H);c.strokeStyle='#5b3c26';c.lineWidth=13;c.lineCap='round';c.beginPath();c.moveTo(47,165);c.lineTo(43,70);c.stroke();
+ const g=c.createRadialGradient(43,47,5,43,47,43);g.addColorStop(0,'#fff0a6');g.addColorStop(.35,'#e99b38');g.addColorStop(1,'#8c321c');
+ c.fillStyle=g;c.beginPath();c.moveTo(44,9);c.bezierCurveTo(15,42,28,69,43,76);c.bezierCurveTo(70,62,68,35,44,9);c.fill();
+ c.fillStyle='#fff3bd';c.beginPath();c.moveTo(44,28);c.bezierCurveTo(31,48,38,62,44,65);c.bezierCurveTo(54,55,55,43,44,28);c.fill();t.refresh();
+}
+
 export function setupFrames(scene:Phaser.Scene){
  const t=scene.textures.get('atlas');for(const [name,b]of Object.entries(FRAMES))if(!t.has(name))t.add(name,0,...b);
- makeWorkbenchTexture(scene);makeEnemyTexture(scene,'dagger');makeEnemyTexture(scene,'shield');makeEnemyTexture(scene,'chaborz');
+ makeWorkbenchTexture(scene);makeEnemyTexture(scene,'dagger');makeEnemyTexture(scene,'shield');makeEnemyTexture(scene,'chaborz');makeWolfTexture(scene);makeMantleTexture(scene);makeBonesTexture(scene);makeTorchTexture(scene);
 }
 
 function makeTerrain(scene:Phaser.Scene,world:World){
@@ -217,7 +274,8 @@ function makeTerrain(scene:Phaser.Scene,world:World){
 
 export class WorldRenderer {
  nodeSprites:Phaser.GameObjects.Image[]=[];animalSprites:Phaser.GameObjects.Image[]=[];animalShadows:Phaser.GameObjects.Ellipse[]=[];enemySprites:Phaser.GameObjects.Image[]=[];enemyShadows:Phaser.GameObjects.Ellipse[]=[];buildingSprites=new Map<number,Phaser.GameObjects.Image>();
- player:Phaser.GameObjects.Image;playerShadow:Phaser.GameObjects.Ellipse;ring:Phaser.GameObjects.Graphics;effects:Phaser.GameObjects.Graphics;atmosphere:Phaser.GameObjects.Graphics;ghost:Phaser.GameObjects.Image;
+ player:Phaser.GameObjects.Image;playerMantle:Phaser.GameObjects.Image;playerShadow:Phaser.GameObjects.Ellipse;ring:Phaser.GameObjects.Graphics;effects:Phaser.GameObjects.Graphics;atmosphere:Phaser.GameObjects.Graphics;ghost:Phaser.GameObjects.Image;
+ caveWolfSprite:Phaser.GameObjects.Image;caveWolfShadow:Phaser.GameObjects.Ellipse;caveObjects:Phaser.GameObjects.GameObject[]=[];caveLights:Phaser.GameObjects.Image[]=[];
  glow:Phaser.GameObjects.Image[]=[];lightTexture:Phaser.Textures.CanvasTexture;wind=0;
  constructor(public scene:Phaser.Scene,public model:GameModel){
   setupFrames(scene);makeTerrain(scene,model.world);
@@ -231,6 +289,15 @@ export class WorldRenderer {
   this.enemyShadows=model.enemies.map(e=>scene.add.ellipse(e.x,e.y,e.kind==='chaborz'?60:42,e.kind==='chaborz'?18:13,0x081c17,.34).setDepth(e.y-1));
   this.playerShadow=scene.add.ellipse(model.player.x,model.player.y,33,13,0x081c17,.36);
   this.player=this.sprite('hero',model.player.x,model.player.y);
+  this.playerMantle=scene.add.image(model.player.x,model.player.y,'wolf-mantle').setOrigin(.5,.89).setDisplaySize(76,102).setDepth(model.player.y+.2).setVisible(false);
+  this.caveWolfShadow=scene.add.ellipse(CAVE.wolfSpawn.x,CAVE.wolfSpawn.y,150,27,0x030404,.58).setDepth(CAVE.wolfSpawn.y-1).setVisible(false);
+  this.caveWolfSprite=scene.add.image(CAVE.wolfSpawn.x,CAVE.wolfSpawn.y,'black-wolf').setOrigin(.5,.82).setDisplaySize(186,118).setDepth(CAVE.wolfSpawn.y).setVisible(false);
+  const caveBg=scene.add.rectangle(CAVE.bounds.cx,CAVE.bounds.cy,1150,920,0x080d0d,.99).setDepth(-42).setVisible(false);
+  const caveFloor=scene.add.ellipse(CAVE.bounds.cx,CAVE.bounds.cy,890,710,0x171c1b,1).setDepth(-41).setVisible(false);
+  this.caveObjects.push(caveBg,caveFloor);
+  const wallRand=seeded(7801);for(let i=0;i<22;i++){const a=i/22*Math.PI*2,rx=CAVE.bounds.rx*(.96+wallRand()*.10),ry=CAVE.bounds.ry*(.95+wallRand()*.09);const x=CAVE.bounds.cx+Math.cos(a)*rx,y=CAVE.bounds.cy+Math.sin(a)*ry;const rock=this.sprite('rock',x,y).setDisplaySize(120+wallRand()*95,78+wallRand()*75).setVisible(false);this.caveObjects.push(rock);}
+  for(const [x,y,s] of [[1500,545,.72],[1895,612,.82],[1585,676,.62],[1810,405,.66],[1425,475,.55]] as const){const bones=scene.add.image(x,y,'cave-bones').setDisplaySize(105*s,58*s).setRotation((wallRand()-.5)*1.7).setDepth(y-2).setVisible(false);this.caveObjects.push(bones);}
+  for(const [x,y] of [[1450,500],[1970,515],[1510,720],[1905,705]] as const){const torch=scene.add.image(x,y,'cave-torch').setDisplaySize(30,61).setDepth(y).setVisible(false);this.caveObjects.push(torch);const light=scene.add.image(x,y-28,'glow').setDisplaySize(310,250).setBlendMode(Phaser.BlendModes.ADD).setDepth(9999).setVisible(false);this.caveLights.push(light);}
   this.ring=scene.add.graphics().setDepth(5000);this.effects=scene.add.graphics().setDepth(5001);
   this.atmosphere=scene.add.graphics().setScrollFactor(0).setDepth(9998);
   this.ghost=this.sprite('fire',0,0).setAlpha(.65).setVisible(false).setDepth(4900);
@@ -244,28 +311,41 @@ export class WorldRenderer {
   this.player.setPosition(p.x,p.y-bob+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y).setAngle(moving?Math.sin(p.walk)*2:0).setAlpha(p.invulnerable>0&&Math.sin(this.wind*32)>0?.45:1);
   const normal=heights.hero/this.player.height;this.player.setScale(normal*(1+(p.actionTimer>0?.035:0)),normal*(p.actionTimer>0?.87:1));
   this.playerShadow.setPosition(p.x,p.y+1).setDepth(p.y-1);
+  const mantle=m.inventory.equipment.mantle==='wolfMantle';this.playerMantle.setVisible(mantle).setPosition(p.x,p.y-bob-4+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y+.25).setAngle(moving?Math.sin(p.walk)*1.5:0).setAlpha(this.player.alpha);
+  const cave=m.location==='cave';for(const obj of this.caveObjects)(obj as Phaser.GameObjects.Components.Visible).setVisible(cave);
   const view=camera.worldView;
-  for(const n of m.world.nodes){const img=this.nodeSprites[n.id];const visible=!n.depleted&&n.x>view.x-270&&n.x<view.right+270&&n.y>view.y-100&&n.y<view.bottom+310;img.setVisible(visible);if(!visible)continue;if(n.kind==='tree'||n.kind==='pine'){const hide=p.y<n.y&&p.y>n.y-img.displayHeight&&Math.abs(p.x-n.x)<img.displayWidth*.4;img.setAlpha(hide?.48:1);img.setRotation(Math.sin(this.wind*.6+n.id)*.007);}}
-  for(const a of m.animals){const img=this.animalSprites[a.id],shadow=this.animalShadows[a.id];img.setVisible(a.state!=='dead'||!!(a.lootMeat||a.lootHide)).setPosition(a.x,a.y-(a.state==='flee'?Math.abs(Math.sin(a.walk))*5:0)).setDepth(a.y).setFlipX(a.facing<0).setAngle(a.state==='dead'?80:0).setAlpha(a.state==='dead'?.65:1);shadow.setPosition(a.x,a.y).setDepth(a.y-1).setVisible(img.visible);}
-  for(const e of m.enemies){const img=this.enemySprites[e.id],shadow=this.enemyShadows[e.id],visible=e.active&&(e.state!=='dead'||Object.values(e.loot).some(n=>n));const bob=e.state==='chase'?Math.abs(Math.sin(e.walk))*2:0;img.setVisible(visible).setPosition(e.x,e.y-bob).setDepth(e.y).setFlipX(e.facing<0).setAngle(e.state==='dead'?82:e.state==='windup'?(e.facing>0?-7:7):0).setAlpha(e.state==='dead'?.62:1);shadow.setVisible(visible).setPosition(e.x,e.y).setDepth(e.y-1);}
-  for(const b of m.buildings.objects){if(!this.buildingSprites.has(b.id)){this.buildingSprites.set(b.id,this.sprite(b.kind,b.x,b.y));if(b.kind==='fire'){const light=s.add.image(b.x,b.y-20,'glow').setDisplaySize(360,290).setBlendMode(Phaser.BlendModes.ADD).setDepth(9999);light.setData('id',b.id);this.glow.push(light);}}const img=this.buildingSprites.get(b.id)!;if(b.kind==='fire')img.setScale(heights.fire/img.height*(.98+Math.sin(this.wind*9+b.id)*.025));img.setAlpha(Math.min(1,b.born/1.5));}
+  for(const n of m.world.nodes){const img=this.nodeSprites[n.id];const visible=!cave&&!n.depleted&&n.x>view.x-270&&n.x<view.right+270&&n.y>view.y-100&&n.y<view.bottom+310;img.setVisible(visible);if(!visible)continue;if(n.kind==='tree'||n.kind==='pine'){const hide=p.y<n.y&&p.y>n.y-img.displayHeight&&Math.abs(p.x-n.x)<img.displayWidth*.4;img.setAlpha(hide?.48:1);img.setRotation(Math.sin(this.wind*.6+n.id)*.007);}}
+  for(const a of m.animals){const img=this.animalSprites[a.id],shadow=this.animalShadows[a.id];img.setVisible(!cave&&(a.state!=='dead'||!!(a.lootMeat||a.lootHide))).setPosition(a.x,a.y-(a.state==='flee'?Math.abs(Math.sin(a.walk))*5:0)).setDepth(a.y).setFlipX(a.facing<0).setAngle(a.state==='dead'?80:0).setAlpha(a.state==='dead'?.65:1);shadow.setPosition(a.x,a.y).setDepth(a.y-1).setVisible(img.visible);}
+  for(const e of m.enemies){const img=this.enemySprites[e.id],shadow=this.enemyShadows[e.id],visible=!cave&&e.active&&(e.state!=='dead'||Object.values(e.loot).some(n=>n));const bob=e.state==='chase'?Math.abs(Math.sin(e.walk))*2:0;img.setVisible(visible).setPosition(e.x,e.y-bob).setDepth(e.y).setFlipX(e.facing<0).setAngle(e.state==='dead'?82:e.state==='windup'?(e.facing>0?-7:7):0).setAlpha(e.state==='dead'?.62:1);shadow.setVisible(visible).setPosition(e.x,e.y).setDepth(e.y-1);}
+  for(const b of m.buildings.objects){if(!this.buildingSprites.has(b.id)){this.buildingSprites.set(b.id,this.sprite(b.kind,b.x,b.y));if(b.kind==='fire'){const light=s.add.image(b.x,b.y-20,'glow').setDisplaySize(360,290).setBlendMode(Phaser.BlendModes.ADD).setDepth(9999);light.setData('id',b.id);this.glow.push(light);}}const img=this.buildingSprites.get(b.id)!;img.setVisible(!cave);if(b.kind==='fire')img.setScale(heights.fire/img.height*(.98+Math.sin(this.wind*9+b.id)*.025));img.setAlpha(Math.min(1,b.born/1.5));}
+  const wolf=m.caveWolf,wolfVisible=cave&&wolf.active&&(wolf.state!=='dead'||Object.values(wolf.loot).some(n=>!!n));const wolfBob=wolf.state==='chase'?Math.abs(Math.sin(wolf.walk))*3:0;
+  this.caveWolfSprite.setVisible(wolfVisible).setPosition(wolf.x,wolf.y-wolfBob).setDepth(wolf.y).setFlipX(wolf.facing<0).setAngle(wolf.state==='dead'?86:wolf.state==='windup'?(wolf.facing>0?-6:6):0).setAlpha(wolf.state==='dead'?.70:1);
+  this.caveWolfShadow.setVisible(wolfVisible).setPosition(wolf.x,wolf.y).setDepth(wolf.y-1);
   this.ring.clear();const interaction=m.interaction();if(interaction&&!m.paused&&!building){const n=interaction.target;this.ring.lineStyle(1.5,0xe1d2a2,.85);this.ring.strokeEllipse(n.x,n.y+2,interaction.kind==='node'&&NODE_DATA[interaction.target.kind].tool?67:43,19);}
   if(building){const valid=m.buildings.valid(building,placement.x,placement.y,p);this.ghost.setVisible(true);if(building==='workbench')this.ghost.setTexture('workbench');else this.ghost.setTexture('atlas',building);this.ghost.setPosition(placement.x,placement.y).setTint(valid?0xbddaad:0xe48476).setScale(heights[building]/this.ghost.height);this.ring.lineStyle(2,valid?0xbddaad:0xe48476,.9);this.ring.strokeEllipse(placement.x,placement.y,BUILDING_RADIUS[building]*2,BUILDING_RADIUS[building]);}else this.ghost.setVisible(false);
   this.effects.clear();
-  for(const a of m.animals){if(a.state==='windup'){this.effects.lineStyle(2,0xdc825f,.9).strokeEllipse(a.x,a.y,75,31);this.effects.fillStyle(0xf1b780,1).fillTriangle(a.x,a.y-84,a.x-5,a.y-95,a.x+5,a.y-95);}if(a.hp< (a.kind==='boar'?105:24)&&a.state!=='dead'){this.effects.fillStyle(0x13281d,.8).fillRoundedRect(a.x-22,a.y-80,44,4,2);this.effects.fillStyle(0xc6835c,1).fillRoundedRect(a.x-22,a.y-80,44*a.hp/(a.kind==='boar'?105:24),4,2);}}
-  for(const e of m.enemies){if(!e.active||e.state==='dead')continue;const max=ENEMIES[e.kind].hp,w=e.kind==='chaborz'?70:48,y=e.y-(e.kind==='chaborz'?145:105);if(e.state==='windup'){this.effects.lineStyle(e.kind==='chaborz'?4:2,e.kind==='chaborz'?0xd5a25e:0xd87b62,.92).strokeEllipse(e.x,e.y,e.kind==='chaborz'?132:82,e.kind==='chaborz'?48:30);}if(e.hp<max){this.effects.fillStyle(0x13281d,.85).fillRoundedRect(e.x-w/2,y,w,5,2);this.effects.fillStyle(e.kind==='chaborz'?0xb77a4e:0xc6835c,1).fillRoundedRect(e.x-w/2,y,w*e.hp/max,5,2);}}
+  if(!cave)for(const a of m.animals){if(a.state==='windup'){this.effects.lineStyle(2,0xdc825f,.9).strokeEllipse(a.x,a.y,75,31);this.effects.fillStyle(0xf1b780,1).fillTriangle(a.x,a.y-84,a.x-5,a.y-95,a.x+5,a.y-95);}if(a.hp< (a.kind==='boar'?105:24)&&a.state!=='dead'){this.effects.fillStyle(0x13281d,.8).fillRoundedRect(a.x-22,a.y-80,44,4,2);this.effects.fillStyle(0xc6835c,1).fillRoundedRect(a.x-22,a.y-80,44*a.hp/(a.kind==='boar'?105:24),4,2);}}
+  if(!cave)for(const e of m.enemies){if(!e.active||e.state==='dead')continue;const max=ENEMIES[e.kind].hp,w=e.kind==='chaborz'?70:48,y=e.y-(e.kind==='chaborz'?145:105);if(e.state==='windup'){this.effects.lineStyle(e.kind==='chaborz'?4:2,e.kind==='chaborz'?0xd5a25e:0xd87b62,.92).strokeEllipse(e.x,e.y,e.kind==='chaborz'?132:82,e.kind==='chaborz'?48:30);}if(e.hp<max){this.effects.fillStyle(0x13281d,.85).fillRoundedRect(e.x-w/2,y,w,5,2);this.effects.fillStyle(e.kind==='chaborz'?0xb77a4e:0xc6835c,1).fillRoundedRect(e.x-w/2,y,w*e.hp/max,5,2);}}
+  if(cave&&wolf.active&&wolf.state!=='dead'){if(wolf.state==='windup'){this.effects.lineStyle(4,0xc31d24,.9).strokeEllipse(wolf.x,wolf.y,158,58);this.effects.fillStyle(0xe6373d,.95).fillTriangle(wolf.x,wolf.y-103,wolf.x-7,wolf.y-117,wolf.x+7,wolf.y-117);}if(wolf.hp<wolf.maxHp){this.effects.fillStyle(0x090b0b,.9).fillRoundedRect(wolf.x-58,wolf.y-117,116,7,3);this.effects.fillStyle(0xb51f25,1).fillRoundedRect(wolf.x-58,wolf.y-117,116*wolf.hp/wolf.maxHp,7,3);}}
   if(p.attackTimer>.36){const progress=(.6-p.attackTimer)/.24;this.effects.lineStyle(3,0xf6e7bd,.8*(1-progress));this.effects.beginPath();this.effects.arc(p.x+p.facing*8,p.y-30,53,p.facing>0?-.9+progress:Math.PI-.9+progress,p.facing>0?.5+progress:Math.PI+.5+progress);this.effects.strokePath();}
   // Moving glints in the river; no continuously rebuilt terrain texture.
-  this.effects.lineStyle(1,0xc5e9db,.24);for(let i=0;i<40;i++){const y=(i*71+this.wind*16)%2600,x=riverX(y)+Math.sin(i*6)*35;if(y>view.y&&y<view.bottom)this.effects.lineBetween(x,y,x+10+Math.sin(i)*8,y+2);}
+  if(!cave){this.effects.lineStyle(1,0xc5e9db,.24);for(let i=0;i<40;i++){const y=(i*71+this.wind*16)%2600,x=riverX(y)+Math.sin(i*6)*35;if(y>view.y&&y<view.bottom)this.effects.lineBetween(x,y,x+10+Math.sin(i)*8,y+2);}}
   const w=s.scale.width,h=s.scale.height;this.atmosphere.clear();const dark=m.day.darkness;
-  if(dark>0)this.atmosphere.fillStyle(0x071b31,dark).fillRect(0,0,w,h);
-  if(m.day.hour>=17&&m.day.hour<20)this.atmosphere.fillStyle(0xc77d3b,.07*Math.sin((m.day.hour-17)/3*Math.PI)).fillRect(0,0,w,h);
-  if(m.weather.kind!=='clear'){
-   this.atmosphere.fillStyle(m.weather.kind==='rain'?0x133544:0xbcd9df,(m.weather.kind==='rain'?.10:.08)*m.weather.blend).fillRect(0,0,w,h);
-   const rain=m.weather.kind==='rain';this.atmosphere.lineStyle(1,0xccdddc,.4*m.weather.blend);this.atmosphere.fillStyle(0xf4f5ed,.68*m.weather.blend);
-   const count=Math.min(110,Math.round(w*h/10000));for(let i=0;i<count;i++){const x=(i*197.3+this.wind*(rain?70:14)+Math.sin(i+this.wind)*8)%(w+100)-50,y=(i*73.7+this.wind*(rain?450:39))%(h+100)-50;if(rain)this.atmosphere.lineBetween(x,y,x-6,y+16);else this.atmosphere.fillCircle(x,y,1.3+i%2);}
+  if(cave){
+   this.atmosphere.fillStyle(0x020607,.34).fillRect(0,0,w,h);
+   for(let i=0;i<this.caveLights.length;i++)this.caveLights[i].setVisible(true).setAlpha(.62+Math.sin(this.wind*8+i*2.1)*.10);
+   for(const glow of this.glow)glow.setVisible(false);
+  }else{
+   for(const light of this.caveLights)light.setVisible(false);
+   if(dark>0)this.atmosphere.fillStyle(0x071b31,dark).fillRect(0,0,w,h);
+   if(m.day.hour>=17&&m.day.hour<20)this.atmosphere.fillStyle(0xc77d3b,.07*Math.sin((m.day.hour-17)/3*Math.PI)).fillRect(0,0,w,h);
+   if(m.weather.kind!=='clear'){
+    this.atmosphere.fillStyle(m.weather.kind==='rain'?0x133544:0xbcd9df,(m.weather.kind==='rain'?.10:.08)*m.weather.blend).fillRect(0,0,w,h);
+    const rain=m.weather.kind==='rain';this.atmosphere.lineStyle(1,0xccdddc,.4*m.weather.blend);this.atmosphere.fillStyle(0xf4f5ed,.68*m.weather.blend);
+    const count=Math.min(110,Math.round(w*h/10000));for(let i=0;i<count;i++){const x=(i*197.3+this.wind*(rain?70:14)+Math.sin(i+this.wind)*8)%(w+100)-50,y=(i*73.7+this.wind*(rain?450:39))%(h+100)-50;if(rain)this.atmosphere.lineBetween(x,y,x-6,y+16);else this.atmosphere.fillCircle(x,y,1.3+i%2);}
+   }
+   for(const glow of this.glow)glow.setVisible(true).setAlpha((.2+dark*.8)*(.95+Math.sin(this.wind*8)*.05));
   }
-  for(const glow of this.glow)glow.setAlpha((.2+dark*.8)*(.95+Math.sin(this.wind*8)*.05));
  }
  event(event:GameEvent){
   if(event.x===undefined||event.y===undefined)return;const {x,y}=event;
