@@ -16,6 +16,43 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Verify upload chunks
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/chunks.sha256 <<'EOF'
+          2abf68ffa18a9afefe35d69223f8cd8036e1a0453bd4eaab9ae5a703a757974e  .asset-upload/webp-family/chunk-000
+          b4a433fd40bdc1726377a2c7435739afa454670a106094e0db436a02158f9866  .asset-upload/webp-family/chunk-001
+          6b77f612caa23bfa844a0af216627a07ae17ab512a835d62c538e958d78ce5bd  .asset-upload/webp-family/chunk-002
+          c8118bc45daf2b2ee685d9abf186cd86303ee79d2550d89f3f9909cf0430afbd  .asset-upload/webp-family/chunk-003
+          23fda756082905308ca445e710101b34d014c7c34cc94ae3a9aa434acc86b8c6  .asset-upload/webp-family/chunk-004
+          f9a0ad71d808cb2601025f34c9f966fb459194a173841a3ec6121c4ddda028c7  .asset-upload/webp-family/chunk-005
+          40bfeeb1d37546a5dae95cafd99d91799dcaad9f7906601d1906f450c9d9a1ed  .asset-upload/webp-family/chunk-006
+          adb381245dccd4869786f9444d8492176ea68f5c8c2f6c0598d7d0d9d1d03e3c  .asset-upload/webp-family/chunk-007
+          11f198dc5f65731ad7c7e1c2c0a70c9239049cd85858762affd75d12aa47ecf0  .asset-upload/webp-family/chunk-008
+          42b40e1867b5dcca8ed5080da41642aa1c024c6e8cc91e79991d13036756c9b9  .asset-upload/webp-family/chunk-009
+          046eca82fa8f2e67192ac46a5078009522aca115b439a9e3ef40de84107ed3a9  .asset-upload/webp-family/chunk-010
+          9b07e411ba93aefaf2281712a5f518a0472a7473217079a98b4ff4222f3fa1e3  .asset-upload/webp-family/chunk-011
+          54cf3bea811922a785f406054d70105a0057efc55096aa674dd416b1ea516c17  .asset-upload/webp-family/chunk-012
+          548c2bfb8622a51373c130d5a003a6bf21ce3f3b09eeed75ed867df6d04da695  .asset-upload/webp-family/chunk-013
+          496d409817475e7a20d0d515fc53483777643ef1ef4c7fd4fec68ec48eccd498  .asset-upload/webp-mother/chunk-000
+          6e3761ded059a6f962882dfce159fca49c83d367b1d2469478aa0f4c6ca63ae3  .asset-upload/webp-mother/chunk-001
+          0b3a6c8e81bdb0f45f5b371be0882ab05b6a17759d855b687ec9b26e4eafdd81  .asset-upload/webp-mother/chunk-002
+          6991de900b23530a58c2d7bb0116e0f01334516ae85d663f1f91398d3d74f44f  .asset-upload/webp-mother/chunk-003
+          e2122b58027adb115f02fd8636bb9e3a9f90a72f1b7fdde72ffd81d9844b54f3  .asset-upload/webp-mother/chunk-004
+          5adc244b8a8b569b5470720e3b5a080b1827ca01d86145fcf9d11657be88b39a  .asset-upload/webp-mother/chunk-005
+          8a85f4050b7b3e45d7b1bab73b0176cd36bdac29819787e5d2670b00a9a1df2f  .asset-upload/webp-mother/chunk-006
+          7b6750506f3a957762558a5344c9d6ec210ab6402a32bc33625612df6564618e  .asset-upload/webp-mother/chunk-007
+          a0e36a6941f5474d20d4e760fdbf26ad0c447680084052de6fdec929373b5ce5  .asset-upload/webp-mother/chunk-008
+          5975c1903f8262ec2652bc1faba05c80b4974eab4b486fb6b49bbe15d50ad5e2  .asset-upload/webp-mother/chunk-009
+          7b44d055297d021b41753fb65a4c3afc44f5f2a3804303111444ac5b24e97d0f  .asset-upload/webp-mother/chunk-010
+          924819b73d9b2aa71b197a4c346d104a5f0426d731ce21f0df6ccfeae605b1a0  .asset-upload/webp-mother/chunk-011
+          7290badd73545eb7d0d27a947aee3f36805a7d439056223c5fc4f8d9202fe576  .asset-upload/webp-mother/chunk-012
+          e503484945181069b60ef8aaf830dcbc88b94c752d5a650c1e9a582ba665a2cb  .asset-upload/webp-mother/chunk-013
+          EOF
+          sha256sum -c /tmp/chunks.sha256
+
       - name: Reconstruct high-quality images
         shell: bash
         run: |
@@ -25,8 +62,10 @@ jobs:
           cat .asset-upload/webp-mother/chunk-* | base64 -d > public/art/shalt-mother-farewell-final.webp
           echo "1db6fa3dccf7324b5519d32d961c893cc69ef0734a6043aae257454833924c73  public/art/shalt-family-final.webp" | sha256sum -c -
           echo "e80fb900e5f8c7ee424ae1a11b63f027578e9b13760f51fee6780f1f12293991  public/art/shalt-mother-farewell-final.webp" | sha256sum -c -
+          rm -f public/art/shalt-family-final.jpg
           rm -rf .asset-upload
           rm -f .github/workflows/install-intro-art.yml
+
       - name: Commit binary assets
         run: |
           git config user.name "Shalt automation"
