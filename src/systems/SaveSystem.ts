@@ -2,11 +2,20 @@ import {SETTINGS,ITEMS,ANIMALS,ENEMIES,type ToolId,type EquipmentSlot} from '../
 import type {GameModel} from './GameModel';
 
 export const SAVE_KEY='shalt.mountain-path.v1';
+export const SAVE_BACKUP_KEY='shalt.mountain-path.v1.backup';
 const EQUIPMENT_SLOTS:EquipmentSlot[]=['weapon','headwear','clothing','mantle','shoes']; // belt is optional for older saves
 
 export class SaveSystem {
+ static progressScore(d:any){return (Number(d?.level)||0)*1e12+(Number(d?.day?.day)||0)*1e9+(Number(d?.experience?.total)||0);}
+ static raw(key:string){try{return JSON.parse(localStorage.getItem(key)||'null');}catch{return null;}}
  static save(model:GameModel){
-  try{const payload=this.pack(model);localStorage.setItem(SAVE_KEY,JSON.stringify(payload));return true;}catch{return false;}
+  try{
+   const payload=this.pack(model),current=this.raw(SAVE_KEY),backup=this.raw(SAVE_BACKUP_KEY);
+   const candidates=[current,backup,payload].filter(Boolean);
+   const best=candidates.sort((a,b)=>this.progressScore(b)-this.progressScore(a))[0];
+   if(best)localStorage.setItem(SAVE_BACKUP_KEY,JSON.stringify(best));
+   localStorage.setItem(SAVE_KEY,JSON.stringify(payload));return true;
+  }catch{return false;}
  }
  static pack(m:GameModel){return {
   version:SETTINGS.version,savedAt:Date.now(),player:m.player.snapshot(),inventory:m.inventory.snapshot(),
@@ -23,7 +32,10 @@ export class SaveSystem {
   enemies:m.enemies.map(e=>({id:e.id,kind:e.kind,x:e.x,y:e.y,hp:e.hp,state:e.state,loot:{...e.loot},respawn:e.respawn,kills:e.kills,active:e.active})),
   discovered:[...m.discovered],elapsed:m.elapsed,nights:m.nights,
  };}
- static read(){try{return this.validate(JSON.parse(localStorage.getItem(SAVE_KEY)||'null'));}catch{return null;}}
+ static read(){const main=this.validate(this.raw(SAVE_KEY));if(main)return main;const backup=this.validate(this.raw(SAVE_BACKUP_KEY));return backup;}
+ static readBackup(){return this.validate(this.raw(SAVE_BACKUP_KEY));}
+ static backupIsAhead(){const main=this.validate(this.raw(SAVE_KEY)),backup=this.readBackup();return !!backup&&(!main||this.progressScore(backup)>this.progressScore(main));}
+ static restoreBackup(){const backup=this.readBackup();if(!backup)return null;try{localStorage.setItem(SAVE_KEY,JSON.stringify(backup));return backup;}catch{return null;}}
  static validate(value:unknown):ReturnType<typeof SaveSystem.pack>|null{
   if(!value||typeof value!=='object')return null;const d=value as any;
   const number=(x:unknown,min:number,max:number)=>typeof x==='number'&&Number.isFinite(x)&&x>=min&&x<=max;
