@@ -91,3 +91,26 @@
  .goal-detail{max-height:min(230px,calc(100dvh - 214px))}
  .goal .goal-detail p{font-size:13px}
 }
+
+
+/* Objective HUD: hidden by default; opened from the right-side action stack. */
+.goal{display:none;left:auto;right:76px;bottom:100px;width:260px;padding:10px 12px;overflow:visible;z-index:4}
+.goal[hidden]{display:none!important}
+.goal.is-open{display:block;width:260px}
+.goal .goal-detail{position:relative;order:initial;padding:0;max-height:min(250px,calc(100dvh - 270px));overflow-y:auto}
+.goal .goal-detail .eyebrow{display:block;margin:2px 34px 6px 0}
+.goal .goal-detail h2{margin-right:34px}
+.bottom-actions #goal-button[aria-expanded="true"]{border-color:var(--gold);color:var(--gold-light);background:#ffffff0d}
+
+@media(pointer:coarse),(max-width:700px){
+ .goal{right:68px;bottom:211px;width:min(250px,calc(100vw - 96px))}
+ .goal.is-open{width:min(250px,calc(100vw - 96px))}
+}
+@media(max-width:700px) and (orientation:portrait){
+ .goal{left:auto;right:62px;bottom:calc(211px + env(safe-area-inset-bottom));width:min(250px,calc(100vw - 88px))}
+ .goal.is-open{width:min(250px,calc(100vw - 88px))}
+}
+@media(max-height:560px) and (orientation:landscape){
+ .goal{left:auto;right:60px;bottom:80px;transform:none;width:250px}
+ .goal.is-open{width:250px}
+}
