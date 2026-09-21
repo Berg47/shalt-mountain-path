@@ -1,4 +1,4 @@
-import {SETTINGS,REGIONS,NODE_DATA,ITEMS,RECIPES,BUILDINGS,ANIMALS,ENEMIES,CAVE,WOLF_MANTLE_BONUS,type RecipeId,type BuildingId,type ResourceId,type ToolId,type EnemyKind,type EquipmentSlot} from '../data/config';
+import {SETTINGS,REGIONS,NODE_DATA,ITEMS,RECIPES,BUILDINGS,ANIMALS,ENEMIES,CAVE,ELDER_QUEST,WOLF_MANTLE_BONUS,type RecipeId,type BuildingId,type ResourceId,type ToolId,type EnemyKind,type EquipmentSlot} from '../data/config';
 import {World,distance,seeded,type ResourceNode,type Point} from '../world/World';
 import {Player} from '../entities/Player';
 import {Animal} from '../entities/Animal';
@@ -23,14 +23,17 @@ export type Interaction=
  |{kind:'caveExit';target:Point;label:string}
  |{kind:'fire';target:BuiltObject;label:string}
  |{kind:'shelter';target:BuiltObject;label:string}
- |{kind:'workbench';target:BuiltObject;label:string};
+ |{kind:'workbench';target:BuiltObject;label:string}
+ |{kind:'elder';target:Point;label:string};
 
 const ENEMY_SEEDS:{kind:EnemyKind;x:number;y:number}[]=[
  {kind:'dagger',x:1740,y:920},{kind:'dagger',x:1810,y:990},{kind:'shield',x:1900,y:930},
  {kind:'dagger',x:2700,y:1010},{kind:'dagger',x:2810,y:1080},{kind:'shield',x:2900,y:980},
  {kind:'dagger',x:820,y:720},{kind:'shield',x:980,y:650},
  {kind:'chaborz',x:1050,y:470},
+ ...ELDER_QUEST.gang,
 ];
+const QUEST_GANG_IDS=new Set(ELDER_QUEST.gang.map((_,i)=>9+i));
 
 export class GameModel {
  world=new World();player=new Player();inventory=new InventorySystem();xp=new ExperienceSystem();day=new DayNightSystem();weather=new WeatherSystem();
@@ -39,10 +42,12 @@ export class GameModel {
  enemies:Enemy[]=[];
  elapsed=0;nights=0;discovered=new Set<string>(['meadow']);events:GameEvent[]=[];paused=false;dead=false;resting=false;region='Солнечные луга';saveTimer=0;lastLevel=1;dirty=0;
  adult=false;trialNotified=false;bossDefeated=false;
+ elderQuestStarted=false;elderQuestKills=0;elderQuestCompleted=false;
  location:'world'|'cave'='world';caveWolf=new Enemy(99,'wolf',CAVE.wolfSpawn.x,CAVE.wolfSpawn.y);caveFirstDefeated=false;caveLastDefeatDay=0;caveNextAvailableDay=0;
  constructor(save?:ReturnType<typeof SaveSystem.pack>|null){
-  this.enemies=ENEMY_SEEDS.map((e,i)=>{const p=this.safeSpawn(e.x,e.y);return new Enemy(i,e.kind,p.x,p.y);});
+  this.enemies=ENEMY_SEEDS.map((e,i)=>{const p=this.safeSpawn(e.x,e.y);const enemy=new Enemy(i,e.kind,p.x,p.y);if(QUEST_GANG_IDS.has(i))enemy.active=false;return enemy;});
   if(save){SaveSystem.restore(this,save);this.lastLevel=this.xp.level;}
+  for(const e of this.enemies)if(QUEST_GANG_IDS.has(e.id)){if(this.elderQuestCompleted)e.active=false;else if(this.elderQuestStarted&&e.state!=='dead')e.active=true;else if(!this.elderQuestStarted)e.active=false;}
   this.syncCaveWolf();this.applyLevelCaps(false);
   const boss=this.enemies.find(e=>e.kind==='chaborz');if(boss)boss.active=this.trialNotified&&!this.bossDefeated;
   if(this.player.health<=0)this.dead=true;
@@ -85,6 +90,24 @@ export class GameModel {
  emit(event:GameEvent){this.events.push(event);this.dirty++;}
  toast(text:string){this.emit({type:'toast',text});}
  get wolfMantleEquipped(){return this.inventory.equipment.mantle==='wolfMantle';}
+ isQuestGang(e:Enemy){return QUEST_GANG_IDS.has(e.id);}
+ startElderQuest(){
+  if(this.elderQuestCompleted){this.toast('Старец: папаха уже заслужена тобой.');return;}
+  if(this.elderQuestStarted){this.toast(this.elderQuestKills>=5?'Старец ждёт тебя у башни за наградой.':`Старец: осталось разбойников — ${5-this.elderQuestKills}.`);return;}
+  this.elderQuestStarted=true;this.elderQuestKills=0;
+  for(const e of this.enemies)if(this.isQuestGang(e)){e.reset();e.active=true;}
+  this.toast('Старец: шайка из пяти разбойников засела на востоке. Одолей всех и возвращайся ко мне.');this.save();
+ }
+ claimElderQuest(){
+  if(!this.elderQuestStarted||this.elderQuestKills<5||this.elderQuestCompleted)return;
+  if(!this.inventory.count('whitePapakha')&&!this.inventory.canAdd('whitePapakha',1)){this.toast('Старец: освободи место в сумке для награды.');return;}
+  if(!this.inventory.count('whitePapakha'))this.inventory.add('whitePapakha',1);
+  const from=this.xp.level,target=Math.min(SETTINGS.levels.length,from+3);
+  this.xp.total=Math.max(this.xp.total,SETTINGS.levels[target-1]);this.elderQuestCompleted=true;
+  this.inventory.equipWearable('whitePapakha');this.lastLevel=this.xp.level;this.applyLevelCaps(true,from);
+  this.emit({type:'level',text:`Награда старца · Белая папаха · уровень ${from} → ${this.xp.level}`});
+  this.toast('Старец вручает тебе белую папаху. +3 уровня.');this.save();
+ }
  applyLevelCaps(grantIncrease:boolean,previousLevel=this.xp.level){
   const bonusHealth=this.wolfMantleEquipped?WOLF_MANTLE_BONUS.health:0,bonusStamina=this.wolfMantleEquipped?WOLF_MANTLE_BONUS.stamina:0;
   const oldHealth=100+(Math.max(1,previousLevel)-1)*2+bonusHealth,oldStamina=100+(Math.max(1,previousLevel)-1)+bonusStamina;
@@ -112,7 +135,7 @@ export class GameModel {
    }
    for(const e of this.enemies){
     e.update(dt,this.player,(x,y)=>this.world.blocked(x,y,14)||this.buildings.blocked(x,y,14),n=>{if(this.player.damage(n))this.emit({type:'damage',amount:n,x:this.player.x,y:this.player.y});});
-    if(e.kind!=='chaborz'&&e.state==='dead'&&Object.values(e.loot).every(n=>!n)&&e.respawn>420&&distance(e,this.player)>650)e.reset();
+    if(e.kind!=='chaborz'&&!this.isQuestGang(e)&&e.state==='dead'&&Object.values(e.loot).every(n=>!n)&&e.respawn>420&&distance(e,this.player)>650)e.reset();
    }
   }else{
    this.syncCaveWolf();const w=this.caveWolf;
@@ -149,6 +172,7 @@ export class GameModel {
    const w=this.caveWolf,d=distance(p,w);if(w.state==='dead'&&Object.values(w.loot).some(n=>!!n)&&d<120)candidates.push({d:d-35,kind:'wolfLoot',target:w,label:'Забрать трофеи Чёрного Волка'});
    return candidates.sort((a,b)=>a.d-b.d)[0]??null;
   }
+  const elderD=distance(p,ELDER_QUEST.elder);if(elderD<125)candidates.push({d:elderD-40,kind:'elder',target:ELDER_QUEST.elder,label:!this.elderQuestStarted?'Поговорить со старцем':this.elderQuestKills>=5&&!this.elderQuestCompleted?'Получить награду у старца':this.elderQuestCompleted?'Поговорить со старцем':`Задание старца · ${this.elderQuestKills}/5`});
   const caveD=distance(p,CAVE.entrance);if(caveD<135)candidates.push({d:caveD-30,kind:'caveEnter',target:CAVE.entrance,label:'Войти в пещеру'});
   for(const n of this.world.nodes){if(n.depleted)continue;const d=distance(p,n);if(d<92)candidates.push({d,kind:'node',target:n,label:(NODE_DATA[n.kind].tool?'Добыть: ':'Собрать: ')+NODE_DATA[n.kind].name});}
   for(const a of this.animals){const d=distance(p,a);if(a.state==='dead'&&(a.lootMeat||a.lootHide)&&d<95)candidates.push({d:d-30,kind:'loot',target:a,label:'Забрать добычу'});}
@@ -161,6 +185,7 @@ export class GameModel {
   const i=this.interaction();if(!i){this.toast(this.location==='cave'?'Подойди к выходу или к поверженному волку':'Подойди ближе к ресурсу, добыче, лагерю или входу в пещеру');return;}
   if(i.kind==='caveEnter'){this.enterCave();return;}
   if(i.kind==='caveExit'){this.exitCave();return;}
+  if(i.kind==='elder'){if(!this.elderQuestStarted)this.startElderQuest();else if(this.elderQuestKills>=5&&!this.elderQuestCompleted)this.claimElderQuest();else this.startElderQuest();return;}
   if(i.kind==='node'){
    const result=this.resources.gather(i.target);if(result.error){this.toast(result.error);return;}
    this.player.actionTimer=.38;
@@ -192,7 +217,7 @@ export class GameModel {
   this.toast(messages[id]??`${RECIPES[id].name} готов`);this.emit({type:'cook'});this.save();return true;
  }
  equip(id:ToolId){if(!this.inventory.tools.includes(id))return false;this.inventory.equipped=id;this.inventory.equipment.weapon=id;this.dirty++;return true;}
- equipWearable(id:'wolfMantle'){const wasOn=this.wolfMantleEquipped;const ok=this.inventory.equipWearable(id);if(ok){if(!wasOn)this.syncEquipmentStats(true);this.toast('Накидка Чёрного Волка надета · +10 выносливости · +10 урона · +5 HP');this.dirty++;this.save();}return ok;}
+ equipWearable(id:'wolfMantle'|'whitePapakha'){const wasOn=this.wolfMantleEquipped;const ok=this.inventory.equipWearable(id);if(ok){if(id==='wolfMantle'&&!wasOn)this.syncEquipmentStats(true);this.toast(id==='whitePapakha'?'Белая папаха надета':'Накидка Чёрного Волка надета · +10 выносливости · +10 урона · +5 HP');this.dirty++;this.save();}return ok;}
  unequip(slot:EquipmentSlot){const wasMantle=slot==='mantle'&&this.wolfMantleEquipped;const ok=this.inventory.unequip(slot);if(ok){if(wasMantle)this.syncEquipmentStats(false);this.dirty++;this.save();}return ok;}
  eat(id:ResourceId){if(this.dead||!['berry','cooked'].includes(id)||!this.inventory.remove(id,1))return false;this.player.hunger=Math.min(100,this.player.hunger+(id==='berry'?12:36));if(id==='berry')this.player.health=Math.min(this.player.maxHealth,this.player.health+5);else this.player.health=Math.min(this.player.maxHealth,this.player.health+8);this.toast(id==='berry'?'Ягоды · +12 сытости · +5 HP':'Жареное мясо · +36 сытости · +8 HP');this.dirty++;return true;}
  cook(){if(this.dead||!this.buildings.nearFire(this.player)){this.toast('Подойди к костру');return false;}if(!this.inventory.count('meat')){this.toast('Нет сырого мяса');return false;}
@@ -231,7 +256,13 @@ export class GameModel {
     this.makeEnemyLoot(e);this.xp.award('bandit:'+e.id,ENEMIES[e.kind].xp,25);
     if(e.kind==='chaborz'){
      this.adult=true;this.bossDefeated=true;e.active=true;this.emit({type:'adulthood',text:'Бой за жизнь завершён'});this.save();
-    }else this.toast(`${ENEMIES[e.kind].name} повержен. Обыщи его.`);
+    }else{
+     if(this.elderQuestStarted&&!this.elderQuestCompleted&&this.isQuestGang(e)){
+      this.elderQuestKills=Math.min(5,this.elderQuestKills+1);
+      this.toast(this.elderQuestKills>=5?'Шайка разбита. Вернись к старцу у центральной башни.':`Разбойник из шайки повержен · ${this.elderQuestKills}/5`);
+      this.save();
+     }else this.toast(`${ENEMIES[e.kind].name} повержен. Обыщи его.`);
+    }
    }
   }
  }
@@ -239,6 +270,9 @@ export class GameModel {
  save(){return SaveSystem.save(this);}
  respawn(){this.dead=false;this.location='world';this.player.health=Math.min(this.player.maxHealth,75);this.player.hunger=65;this.player.temperature=36.8;this.player.stamina=this.player.maxStamina;const shelter=this.buildings.objects.find(b=>b.kind==='canopy'||b.kind==='hut');const base=shelter?{x:shelter.x,y:shelter.y+115}:SETTINGS.start;this.player.x=base.x;this.player.y=base.y;this.player.invulnerable=6;this.toast('Ты пришёл в себя. Припасы и лагерь сохранены.');this.save();}
  goal(){
+  if(this.elderQuestStarted&&!this.elderQuestCompleted)return this.elderQuestKills>=5
+   ?{title:'Вернуться к старцу',text:'Шайка из пяти разбойников уничтожена. Старец ждёт у центральной башни с наградой.',progress:'Награда: белая папаха · +3 уровня',action:'Карта',panel:'map'}
+   :{title:'Задание старца',text:'Уничтожь шайку из пяти разбойников на востоке долины.',progress:`Разбойники ${this.elderQuestKills}/5`,action:'Карта',panel:'map'};
   if(!this.inventory.tools.includes('axe'))return {title:'Первый инструмент',text:'Собери ветки и камни для топора.',progress:`Ветки ${Math.min(3,this.inventory.count('branch'))}/3 · Камни ${Math.min(2,this.inventory.count('stone'))}/2`,action:'Ремесло',panel:'craft'};
   if(!this.buildings.objects.some(b=>b.kind==='fire'))return {title:'Тепло до темноты',text:'Добудь древесину и поставь костёр.',progress:`Древесина ${Math.min(2,this.inventory.count('wood'))}/2 · Ветки ${Math.min(3,this.inventory.count('branch'))}/3`,action:'Лагерь',panel:'build'};
   if(this.inventory.bagLevel<2)return {title:'Место для нужного',text:'Охоться на зайцев. Собери шкуры для сумки II.',progress:`Шкуры ${Math.min(3,this.inventory.count('hide'))}/3 · Трава ${Math.min(4,this.inventory.count('grass'))}/4`,action:'Ремесло',panel:'craft'};
