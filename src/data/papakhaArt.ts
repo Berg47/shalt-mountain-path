@@ -5,8 +5,8 @@ function mulberry32(seed:number){
 }
 
 export const PAPAKHA_FIT={
- world:{width:34,height:27,foreheadY:.915,originY:.80},
- preview:{width:58,height:45,left:50,top:3},
+ world:{width:36,height:27,foreheadY:.80,originY:.878},
+ preview:{width:54,height:41,left:50,top:0},
 } as const;
 
 export function drawWhitePapakha(ctx:CanvasRenderingContext2D,width:number,height:number,mode:PapakhaMode='wear'){
