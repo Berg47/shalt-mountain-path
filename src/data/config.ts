@@ -12,7 +12,7 @@ export type Cost = Partial<Record<ResourceId,number>>;
 export const SETTINGS = {
   version:1, seed:1712, world:{width:3400,height:2600}, start:{x:1280,y:1530},
   inventory:{slots:8,bagSlots:[8,16,24,32,40,48],stack:20}, player:{speed:158,sprint:240,radius:13},
-  daySeconds:720, startTime:8/24, hungerLoss:0.068,
+  daySeconds:360, startTime:8/24, hungerLoss:0.068,
   xp:{first:9,repeat:2,repeatEvery:8,repeatFloor:0.2,night:30,area:18},
   levels:[0,80,200,360,580,860,1250,1750,2400,3300,4500,6100,8200,10800,14000,18000,22500,27500,33000,39000,47000,57000,70000,86000,106000,131000,161000,196000,236000,281000],
   ages:[{level:1,age:15},{level:3,age:16},{level:5,age:17}],
