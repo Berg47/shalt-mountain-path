@@ -41,7 +41,7 @@ export class UI {
   else if(action==='cook'){this.model.cook();this.renderPanel();}
   else if(action==='interact')this.model.interact();
   else if(action==='attack')this.model.attack();
-  else if(action==='sound'){this.actions.audio.toggle();this.root.querySelector('#sound-button')!.innerHTML=icon(this.actions.audio.enabled?'sound':'mute');this.update(true);if(this.panel)this.renderPanel();}
+  else if(action==='sound'){this.actions.audio.toggle();this.root.querySelector('#sound-button')!.innerHTML=icon(this.actions.audio.enabled?'sound':'mute')+'<span>Звук</span>';this.update(true);if(this.panel)this.renderPanel();}
   else if(action==='save'){this.model.toast(this.model.save()?'Путь сохранён':'Не удалось сохранить: браузер запретил запись.');}
   else if(action==='exit'){this.model.save();this.actions.exit();}
   else if(action==='cancel-build')this.actions.cancelBuild();
