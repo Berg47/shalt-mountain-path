@@ -16,15 +16,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Reconstruct full-resolution images
+      - name: Reconstruct high-quality images
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p public/art
-          cat .asset-upload/family/chunk-* | base64 -d > public/art/shalt-family-final.jpg
-          cat .asset-upload/mother/chunk-* | base64 -d > public/art/shalt-mother-farewell-final.jpg
-          echo "07e3ead817c68898efac3042acd0caf4b8ab655bc5f39f057e8c0edf933da449  public/art/shalt-family-final.jpg" | sha256sum -c -
-          echo "eedfc0f10fd5cbf34ccac9e2e33880f0972623964c3702b6b4bdc10041abd95f  public/art/shalt-mother-farewell-final.jpg" | sha256sum -c -
+          cat .asset-upload/webp-family/chunk-* | base64 -d > public/art/shalt-family-final.webp
+          cat .asset-upload/webp-mother/chunk-* | base64 -d > public/art/shalt-mother-farewell-final.webp
+          echo "1176f1b541d3e24ba118883bda304e4afb5dd1f1d72b4173e0666024b6971659  public/art/shalt-family-final.webp" | sha256sum -c -
+          echo "3e0616d5a963f2da85690294f8854aef0e14f7820fc4b08a84cc9ba6dc4e60ca  public/art/shalt-mother-farewell-final.webp" | sha256sum -c -
           rm -rf .asset-upload
           rm -f .github/workflows/install-intro-art.yml
       - name: Commit binary assets
@@ -32,5 +32,5 @@ jobs:
           git config user.name "Shalt automation"
           git config user.email "actions@users.noreply.github.com"
           git add -A
-          git commit -m "Install full-resolution intro artwork"
+          git commit -m "Install high-quality intro artwork"
           git push origin HEAD:main
