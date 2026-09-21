@@ -23,8 +23,8 @@ jobs:
           mkdir -p public/art
           cat .asset-upload/webp-family/chunk-* | base64 -d > public/art/shalt-family-final.webp
           cat .asset-upload/webp-mother/chunk-* | base64 -d > public/art/shalt-mother-farewell-final.webp
-          echo "1176f1b541d3e24ba118883bda304e4afb5dd1f1d72b4173e0666024b6971659  public/art/shalt-family-final.webp" | sha256sum -c -
-          echo "3e0616d5a963f2da85690294f8854aef0e14f7820fc4b08a84cc9ba6dc4e60ca  public/art/shalt-mother-farewell-final.webp" | sha256sum -c -
+          echo "1db6fa3dccf7324b5519d32d961c893cc69ef0734a6043aae257454833924c73  public/art/shalt-family-final.webp" | sha256sum -c -
+          echo "e80fb900e5f8c7ee424ae1a11b63f027578e9b13760f51fee6780f1f12293991  public/art/shalt-mother-farewell-final.webp" | sha256sum -c -
           rm -rf .asset-upload
           rm -f .github/workflows/install-intro-art.yml
       - name: Commit binary assets
