@@ -5,7 +5,7 @@ export class InventorySystem {
  tools:ToolId[]=['shalt'];
  equipped:ToolId='shalt';
  bag=false;bagLevel=1;shaltLevel=1;
- equipment:Record<EquipmentSlot,EquipmentId|null>={weapon:'shalt',headwear:null,clothing:null,mantle:null,shoes:null};
+ equipment:Record<EquipmentSlot,EquipmentId|null>={weapon:'shalt',headwear:null,clothing:null,mantle:null,shoes:null,belt:null};
  get capacity(){return SETTINGS.inventory.bagSlots[Math.max(0,Math.min(2,this.bagLevel-1))];}
  count(id:ResourceId){return this.slots.filter(s=>s.id===id).reduce((n,s)=>n+s.count,0);}
  canAfford(cost:Cost){return Object.entries(cost).every(([id,n])=>this.count(id as ResourceId)>=n!);}
@@ -25,7 +25,18 @@ export class InventorySystem {
   return true;
  }
  pay(cost:Cost){if(!this.canAfford(cost))return false;for(const [id,n]of Object.entries(cost))this.remove(id as ResourceId,n!);return true;}
- equipWearable(id:'wolfMantle'){if(id==='wolfMantle'&&!this.count('wolfMantle'))return false;this.equipment.mantle=id;return true;}
+ equipWearable(id:'wolfMantle'){return this.equipItem('mantle',id);}
+ equipItem(slot:EquipmentSlot,id:EquipmentId){
+  if(slot==='weapon'){
+   if(!this.tools.includes(id as ToolId))return false;
+   this.equipped=id as ToolId;this.equipment.weapon=id;return true;
+  }
+  if(slot==='mantle'){
+   if(id!=='wolfMantle'||!this.count('wolfMantle'))return false;
+   this.equipment.mantle=id;return true;
+  }
+  return false;
+ }
  unequip(slot:EquipmentSlot){if(slot==='weapon')return false;this.equipment[slot]=null;return true;}
  snapshot(){return {slots:this.slots.map(s=>({...s})),tools:[...this.tools],equipped:this.equipped,bag:this.bag,bagLevel:this.bagLevel,shaltLevel:this.shaltLevel,equipment:{...this.equipment}};}
 }
