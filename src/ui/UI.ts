@@ -17,10 +17,10 @@ export class UI {
    <section class="world-cluster glass" aria-label="Время и карта"><div class="world-status"><span id="time-symbol">${icon('sun')}</span><div><b id="clock">08:00</b><span id="day-label">День 1 · Утро</span><small class="weather-line" id="weather">Ясно</small></div></div>
    <button class="minimap" data-panel="map" aria-label="Открыть карту долины"><span class="north">С</span><div class="mini-map-field"><i class="mini-river"></i><span class="mini-home">⌂</span><i id="minimap-player"></i></div><small>ДОЛИНА</small></button></section>
    <div class="top-actions"><button class="icon-button glass" data-action="sound" aria-label="Переключить звук" id="sound-button">${icon('sound')}</button><button class="icon-button glass" data-panel="pause" aria-label="Меню игры">${icon('menu')}</button></div>
-   <section class="goal glass" aria-label="Следующий шаг"><button class="goal-summary" id="goal-toggle" data-action="toggle-goal" aria-expanded="false" aria-controls="goal-detail"><span class="eyebrow">СЛЕДУЮЩИЙ ШАГ</span><strong id="goal-short"></strong><span class="goal-chevron">${icon('arrow')}</span></button><div class="goal-detail" id="goal-detail" hidden><button class="goal-close" data-action="close-goal" aria-label="Свернуть задание">${icon('close')}</button><h2 id="goal-title"></h2><p id="goal-text"></p><div id="goal-progress"></div><button id="goal-action" data-panel="craft">Лагерь ${icon('arrow')}</button></div></section>
+   <section class="goal glass" id="goal-panel" aria-label="Следующий шаг" hidden><div class="goal-detail" id="goal-detail"><button class="goal-close" data-action="close-goal" aria-label="Свернуть задание">${icon('close')}</button><span class="eyebrow">СЛЕДУЮЩИЙ ШАГ</span><h2 id="goal-title"></h2><p id="goal-text"></p><div id="goal-progress"></div><button id="goal-action" data-panel="craft">Лагерь ${icon('arrow')}</button></div></section>
    <div id="interaction" class="interaction"></div>
    <div class="hotbar glass" aria-label="Быстрый доступ">${(['shalt','axe','pickaxe','berry','cooked'] as const).map((id,index)=>`<button data-hotbar="${id}" id="hot-${id}" aria-label="${id in TOOLS?TOOLS[id as ToolId].name:ITEMS[id as ResourceId].name}" title="${id in TOOLS?TOOLS[id as ToolId].name:ITEMS[id as ResourceId].name}"><kbd>${index+1}</kbd>${icon(id)}<span class="hot-count" id="hot-count-${id}"></span></button>`).join('')}</div>
-   <nav class="bottom-actions"><button data-panel="inventory" aria-label="Рюкзак">${icon('bag')}<span>Рюкзак</span><kbd>I</kbd></button><button data-panel="craft" aria-label="Ремесло">${icon('craft')}<span>Ремесло</span><kbd>C</kbd></button><button data-panel="build" aria-label="Лагерь">${icon('canopy')}<span>Лагерь</span><kbd>B</kbd></button></nav>
+   <nav class="bottom-actions"><button data-action="toggle-goal" id="goal-button" aria-label="Следующий шаг" aria-expanded="false" aria-controls="goal-panel">${icon('goal')}<span>Задание</span></button><button data-panel="inventory" aria-label="Рюкзак">${icon('bag')}<span>Рюкзак</span><kbd>I</kbd></button><button data-panel="craft" aria-label="Ремесло">${icon('craft')}<span>Ремесло</span><kbd>C</kbd></button><button data-panel="build" aria-label="Лагерь">${icon('canopy')}<span>Лагерь</span><kbd>B</kbd></button></nav>
    <div class="control-hint">WASD <span>идти</span> · Shift <span>бежать</span> · E <span>действие</span> · Пробел <span>шалт</span></div>
    <div id="toast" class="toast" role="status"></div><div id="discovery" class="discovery"></div>
    <div class="touch-controls"><div class="joystick" id="joystick" aria-label="Стик движения"><i></i></div><div class="touch-buttons"><button class="touch-run" id="touch-run" aria-label="Бежать">${icon('stamina')}</button><button class="touch-action" data-action="interact" aria-label="Собрать или использовать">${icon('leaf')}</button><button class="touch-attack" data-action="attack" aria-label="Атаковать шалтом">${icon('shalt')}</button></div></div>
@@ -54,11 +54,11 @@ export class UI {
   else if(action==='close-goal')this.setGoalOpen(false);
  }
  setGoalOpen(open:boolean){
-  const detail=this.root.querySelector<HTMLElement>('#goal-detail')!;
-  const toggle=this.root.querySelector<HTMLButtonElement>('#goal-toggle')!;
-  if(!open&&detail.contains(document.activeElement))toggle.focus();
-  this.root.querySelector('.goal')!.classList.toggle('is-open',open);
-  toggle.setAttribute('aria-expanded',String(open));detail.hidden=!open;
+  const panel=this.root.querySelector<HTMLElement>('#goal-panel')!;
+  const toggle=this.root.querySelector<HTMLButtonElement>('#goal-button')!;
+  if(!open&&panel.contains(document.activeElement))toggle.focus();
+  panel.classList.toggle('is-open',open);panel.hidden=!open;
+  toggle.setAttribute('aria-expanded',String(open));
  }
  keyboard(e:KeyboardEvent){
   if(this.panel&&e.key==='Tab'){const buttons=Array.from(this.root.querySelectorAll<HTMLElement>('#modal-root button:not(:disabled)'));const first=buttons[0],last=buttons[buttons.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}return;}
@@ -104,7 +104,7 @@ export class UI {
   for(const [id,value,label]of [['health',p.health,String(Math.ceil(p.health))],['stamina',p.stamina,String(Math.ceil(p.stamina))],['hunger',p.hunger,String(Math.ceil(p.hunger))],['temperature',(p.temperature-30)/8*100,p.temperature.toFixed(1)+'°']] as const){set(id+'-value',label);this.root.querySelector<HTMLElement>('#'+id+'-bar')!.style.width=`${Math.max(0,Math.min(100,value))}%`;this.root.querySelector('#'+id+'-meter')!.setAttribute('aria-valuenow',String(Math.round(value)));}
   set('clock',m.day.clock);set('day-label',`День ${m.day.day} · ${m.day.phase}`);set('weather',m.weather.label);set('region',m.region);set('rest-status',m.resting?'Отдых под кровом':m.buildings.nearFire(p)?'Тепло костра':p.temperature<34.5?'Ты замерзаешь':p.hunger<20?'Нужно поесть':'');
   const marker=this.root.querySelector<HTMLElement>('#minimap-player')!;marker.style.left=`${p.x/34}%`;marker.style.top=`${p.y/26}%`;
-  const goal=m.goal();set('goal-short',goal.title);set('goal-title',goal.title);set('goal-text',goal.text);set('goal-progress',goal.progress);const gb=this.root.querySelector<HTMLButtonElement>('#goal-action')!;gb.dataset.panel=goal.panel;gb.innerHTML=goal.action+icon('arrow');
+  const goal=m.goal();set('goal-title',goal.title);set('goal-text',goal.text);set('goal-progress',goal.progress);const gb=this.root.querySelector<HTMLButtonElement>('#goal-action')!;gb.dataset.panel=goal.panel;gb.innerHTML=goal.action+icon('arrow');
   const interaction=m.interaction();this.root.querySelector('#interaction')!.innerHTML=interaction&&!m.paused?`<kbd>E</kbd><span>${interaction.label}</span>`:'';
   const hash=`${m.dirty}/${m.inventory.equipped}/${m.inventory.slots.map(s=>s.id+s.count).join('/')}/${m.day.phase}`;
   if(hash!==this.lastHash||force){this.lastHash=hash;for(const id of ['shalt','axe','pickaxe','berry','cooked']){const btn=this.root.querySelector<HTMLButtonElement>('#hot-'+id)!;const isTool=id in TOOLS;const available=isTool?m.inventory.tools.includes(id as ToolId):m.inventory.count(id as ResourceId)>0;btn.classList.toggle('unavailable',!available);btn.classList.toggle('active',m.inventory.equipped===id);btn.disabled=!available;set('hot-count-'+id,isTool?'':String(m.inventory.count(id as ResourceId)));}this.root.querySelector('#time-symbol')!.innerHTML=icon(m.day.night?'moon':'sun');}
