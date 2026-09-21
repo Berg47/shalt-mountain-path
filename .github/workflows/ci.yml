@@ -3,6 +3,8 @@ name: CI
 on:
   push:
     branches: [main, dev]
+    paths-ignore:
+      - '.asset-upload/**'
   pull_request:
     branches: [main, dev]
 
