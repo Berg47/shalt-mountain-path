@@ -4,13 +4,13 @@ export class Animal {
  hp:number;state:'wander'|'flee'|'windup'|'charge'|'recover'|'dead'='wander';timer=0;angle=0;facing=1;walk=0;cooldown=0;lootMeat:number;lootHide:number;
  home:Point;charge:Point={x:0,y:0};respawn=0;
  constructor(public id:number,public kind:AnimalKind,public x:number,public y:number){const c=ANIMALS[kind];this.hp=c.hp;this.home={x,y};this.angle=id*2.4;this.lootMeat=c.meat;this.lootHide=c.hide;}
- hit(damage:number,player:Point){if(this.state==='dead')return false;this.hp-=damage;if(this.hp<=0){this.state='dead';return true;}this.state=this.kind==='hare'?'flee':'windup';this.timer=this.kind==='hare'?2.4:0.8;this.angle=Math.atan2(this.y-player.y,this.x-player.x);return false;}
+ hit(damage:number,player:Point){if(this.state==='dead')return false;this.hp-=damage;if(this.hp<=0){this.state='dead';return true;}const passive=this.kind!=='boar';this.state=passive?'flee':'windup';this.timer=passive?2.4:0.8;this.angle=Math.atan2(this.y-player.y,this.x-player.x);return false;}
  update(dt:number,player:Point,blocked:(x:number,y:number)=>boolean,fire:(p:Point)=>boolean,damage:(n:number)=>void){
   if(this.state==='dead')return;
   const c=ANIMALS[this.kind],d=distance(this,player);this.timer-=dt;this.cooldown=Math.max(0,this.cooldown-dt);
-  if(this.kind==='hare'&&d<130&&this.state!=='flee'){this.state='flee';this.timer=1.5;this.angle=Math.atan2(this.y-player.y,this.x-player.x);}
+  if((this.kind==='hare'||this.kind==='deer')&&d<(this.kind==='deer'?185:130)&&this.state!=='flee'){this.state='flee';this.timer=this.kind==='deer'?2.2:1.5;this.angle=Math.atan2(this.y-player.y,this.x-player.x);}
   if(this.kind==='boar'&&d<180&&this.state==='wander'&&!fire(player)){this.state='windup';this.timer=.85;}
-  if(fire(this)&&this.kind==='boar'&&this.state!=='flee'){this.state='flee';this.timer=2;this.angle=Math.atan2(this.y-player.y,this.x-player.x);}
+  if(fire(this)&&this.state!=='flee'){this.state='flee';this.timer=2;this.angle=Math.atan2(this.y-player.y,this.x-player.x);}
   let speed=c.speed;
   if(this.state==='windup'){
    speed=0;this.angle=Math.atan2(player.y-this.y,player.x-this.x);
