@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import {heroArt} from '../data/heroArt';
+import {drawWhitePapakha,PAPAKHA_FIT} from '../data/papakhaArt';
 import {SETTINGS,NODE_DATA,ANIMALS,ENEMIES,CAVE,ELDER_QUEST,type BuildingId} from '../data/config';
 import {seeded,riverX,distance,type World} from './World';
 import type {GameModel,GameEvent} from '../systems/GameModel';
@@ -302,22 +303,9 @@ function makeCaveExitTexture(scene:Phaser.Scene){
 
 
 function makePapakhaTexture(scene:Phaser.Scene){
- if(scene.textures.exists('white-papakha'))return;
- const W=360,H=240,t=scene.textures.createCanvas('white-papakha',W,H)!;const c=t.getContext(),rand=seeded(4815);
- c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
- const shadow=c.createRadialGradient(180,194,15,180,194,125);shadow.addColorStop(0,'rgba(16,18,17,.28)');shadow.addColorStop(1,'rgba(16,18,17,0)');
- c.fillStyle=shadow;c.beginPath();c.ellipse(180,194,126,24,0,0,Math.PI*2);c.fill();
- let g=c.createLinearGradient(70,36,290,198);g.addColorStop(0,'#fffdf0');g.addColorStop(.35,'#e8e4d5');g.addColorStop(.72,'#cfcabb');g.addColorStop(1,'#aba89c');
- c.fillStyle=g;c.beginPath();c.moveTo(91,70);c.quadraticCurveTo(180,24,269,70);c.lineTo(286,181);c.quadraticCurveTo(180,214,74,181);c.closePath();c.fill();
- c.strokeStyle='rgba(76,75,68,.28)';c.lineWidth=6;c.beginPath();c.moveTo(75,178);c.quadraticCurveTo(180,209,285,178);c.stroke();
- c.save();c.beginPath();c.moveTo(91,70);c.quadraticCurveTo(180,24,269,70);c.lineTo(286,181);c.quadraticCurveTo(180,214,74,181);c.closePath();c.clip();
- c.lineCap='round';
- for(let i=0;i<250;i++){
-  const x=78+rand()*205,y=55+rand()*132,len=6+rand()*20;
-  c.strokeStyle=rand()>.62?'rgba(255,255,248,.58)':rand()>.25?'rgba(132,129,117,.22)':'rgba(85,83,76,.12)';
-  c.lineWidth=1.2+rand()*3;c.beginPath();c.moveTo(x,y);c.lineTo(x+(rand()-.5)*10,y+len);c.stroke();
- }
- c.restore();t.refresh();
+ if(scene.textures.exists('white-papakha'))scene.textures.remove('white-papakha');
+ const W=420,H=320,t=scene.textures.createCanvas('white-papakha',W,H)!;
+ drawWhitePapakha(t.getContext(),W,H,'wear');t.refresh();
 }
 
 function makeDeerTexture(scene:Phaser.Scene){
@@ -428,7 +416,7 @@ export class WorldRenderer {
   this.playerShadow=scene.add.ellipse(model.player.x,model.player.y,33,13,0x081c17,.36);
   this.player=scene.add.image(model.player.x,model.player.y,heroArt(model.inventory.equipment.mantle).key).setOrigin(.5,.98).setDepth(model.player.y);
   this.player.setScale(heights.hero/this.player.height);
-  this.playerHeadwear=scene.add.image(model.player.x,model.player.y-66,'white-papakha').setOrigin(.5,.90).setDisplaySize(30,20).setDepth(model.player.y+.45).setVisible(false);
+  this.playerHeadwear=scene.add.image(model.player.x,model.player.y-66,'white-papakha').setOrigin(.5,PAPAKHA_FIT.world.originY).setDisplaySize(PAPAKHA_FIT.world.width,PAPAKHA_FIT.world.height).setDepth(model.player.y+.45).setVisible(false);
   this.caveWolfShadow=scene.add.ellipse(CAVE.wolfSpawn.x,CAVE.wolfSpawn.y+6,172,30,0x020303,.62).setDepth(CAVE.wolfSpawn.y-1).setVisible(false);
   this.caveWolfSprite=scene.add.image(CAVE.wolfSpawn.x,CAVE.wolfSpawn.y,'black-wolf').setOrigin(.5,.84).setDisplaySize(218,133).setDepth(CAVE.wolfSpawn.y).setVisible(false);
   // Full-world blackout prevents the outside mountain art from bleeding into the interior on tall phones.
@@ -462,7 +450,12 @@ export class WorldRenderer {
   const normal=heights.hero/this.player.height;this.player.setScale(normal*(1+(p.actionTimer>0?.035:0)),normal*(p.actionTimer>0?.87:1));
   this.playerShadow.setPosition(p.x,p.y+1).setDepth(p.y-1);
   const heroY=p.y-bob+(p.actionTimer>0?8:0),papakha=m.inventory.equipment.headwear==='whitePapakha',heroAngle=moving?Math.sin(p.walk)*2:0;
-  this.playerHeadwear.setVisible(papakha).setPosition(p.x,heroY-this.player.displayHeight*.84).setDepth(p.y+.45).setAngle(heroAngle).setAlpha(this.player.alpha).setDisplaySize(30*(p.actionTimer>0?1.035:1),20*(p.actionTimer>0?.87:1));
+  // Attach the hat to the hero's forehead in the hero's own rotated/scaled coordinate space.
+  // This keeps one registration point through idle, walk, sprint and attack instead of letting the hat float independently.
+  const headLocalY=-this.player.displayHeight*PAPAKHA_FIT.world.foreheadY,headRad=Phaser.Math.DegToRad(heroAngle);
+  const headX=p.x-headLocalY*Math.sin(headRad),headY=heroY+headLocalY*Math.cos(headRad);
+  const attackX=p.actionTimer>0?1.035:1,attackY=p.actionTimer>0?.87:1;
+  this.playerHeadwear.setVisible(papakha).setPosition(headX,headY).setDepth(p.y+.45).setAngle(heroAngle).setAlpha(this.player.alpha).setDisplaySize(PAPAKHA_FIT.world.width*attackX,PAPAKHA_FIT.world.height*attackY);
   const cave=m.location==='cave';for(const obj of this.caveObjects)(obj as any).setVisible(cave);for(const obj of this.worldDecor)(obj as any).setVisible(!cave);
   this.playerHeadwear.setVisible(!cave?papakha:papakha);
   const elderMark=!m.elderQuestCompleted&&(!m.elderQuestStarted||m.elderQuestKills>=5);
