@@ -21,7 +21,7 @@ export const ITEMS:Record<ResourceId,{name:string,short:string,icon:string,descr
  wood:{name:'Древесина',short:'древесины',icon:'wood',description:'Добывается топором. Основа хорошего лагеря.'},
  stone:{name:'Камень',short:'камня',icon:'pebble',description:'Можно подобрать или добыть киркой.'},
  grass:{name:'Трава',short:'травы',icon:'grass',description:'Для крыши, перевязей и кожаной сумки.'},
- berry:{name:'Ягоды',short:'ягод',icon:'berry',description:'Можно съесть сразу. +12 к сытости.'},
+ berry:{name:'Ягоды',short:'ягод',icon:'berry',description:'Можно съесть сразу. +12 к сытости и +5 HP.'},
  meat:{name:'Сырое мясо',short:'мяса',icon:'meat',description:'Приготовь на костре перед едой.'},
  hide:{name:'Шкуры',short:'шкур',icon:'hide',description:'Три шкуры и трава — твоя первая сумка.'},
  cooked:{name:'Жареное мясо',short:'мяса',icon:'cooked',description:'Сытная еда. +36 к сытости, +8 к здоровью.'},
