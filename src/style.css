@@ -452,3 +452,47 @@
  .equipment-choice>span{width:36px;height:36px}.equipment-choice>span .icon{width:23px;height:23px}
  .equipment-choice strong{font-size:13px}
 }
+
+
+/* Wolf cloak final pass: no hood/headpiece, clean tunic and darker wolf-hide fur. */
+.hero-clean-chest{
+ left:38px!important;top:80px!important;width:69px!important;height:34px!important;
+ background:none!important;box-shadow:none!important;clip-path:none!important;
+}
+.hero-clean-chest:before,.hero-clean-chest:after{
+ content:'';position:absolute;top:3px;width:28px;height:25px;
+ background:
+  linear-gradient(180deg,rgba(75,93,102,.98),rgba(43,63,74,.99) 54%,rgba(34,52,62,.99));
+ filter:drop-shadow(0 1px 1px rgba(0,0,0,.12));
+}
+.hero-clean-chest:before{
+ left:0;clip-path:polygon(5% 18%,72% 0,100% 22%,90% 92%,20% 100%);
+}
+.hero-clean-chest:after{
+ right:0;clip-path:polygon(95% 18%,28% 0,0 22%,10% 92%,80% 100%);
+}
+.preview-wolf-head,.preview-wolf-head:before{display:none!important}
+.preview-wolf-cloak{
+ left:14px!important;top:50px!important;width:117px!important;height:266px!important;
+ background:
+  repeating-linear-gradient(110deg,rgba(185,192,183,.10) 0 2px,transparent 2px 8px),
+  radial-gradient(ellipse at 50% 13%,rgba(77,88,83,.34),transparent 34%),
+  linear-gradient(103deg,transparent 0 7%,#343d3a 8% 22%,#242c2a 37%,#131918 55%,#222a28 80%,#313936 91%,transparent 92%)!important;
+ clip-path:polygon(17% 2%,83% 2%,97% 17%,90% 52%,100% 91%,80% 82%,66% 100%,52% 85%,38% 100%,23% 82%,0 92%,10% 51%,3% 18%)!important;
+ filter:drop-shadow(0 7px 7px rgba(0,0,0,.42))!important;
+}
+.preview-wolf-cloak:before{
+ content:'';position:absolute;left:4px;right:4px;top:5px;height:60px;
+ background:
+  repeating-linear-gradient(118deg,#4c5651 0 5px,#303936 5px 11px,#222927 11px 16px,#414b47 16px 21px);
+ clip-path:polygon(0 34%,9% 14%,18% 25%,29% 4%,40% 21%,50% 9%,60% 21%,71% 4%,82% 25%,91% 14%,100% 34%,91% 82%,78% 70%,66% 96%,50% 75%,34% 96%,22% 70%,9% 82%);
+ opacity:.96;
+}
+.preview-wolf-cloak:after{
+ content:'';position:absolute;inset:65px 13px 18px;
+ background:
+  repeating-linear-gradient(100deg,rgba(173,181,173,.055) 0 2px,transparent 2px 13px),
+  linear-gradient(90deg,rgba(255,255,255,.045),transparent 25% 75%,rgba(255,255,255,.035));
+ clip-path:polygon(0 0,100% 0,88% 100%,64% 91%,50% 100%,36% 91%,12% 100%);
+ opacity:.85;
+}
