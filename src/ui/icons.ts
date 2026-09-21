@@ -36,6 +36,7 @@ const paths:Record<string,string>={
  snow:'M12 2v20M3 7l18 10M3 17 21 7m-12-4 3 3 3-3M9 21l3-3 3 3',
  expand:'M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5',
  help:'M9 8a3 3 0 0 1 6 0c0 2-3 2-3 5m0 4v.1M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',
+ goal:'M6 3h12v18H6V3Zm3 5h6M9 12h6M9 16h4',
 };
 export const icon=(name:string,cls='')=>`<svg class="icon ${cls}" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[name]||paths.leaf}"/></svg>`;
 export const itemIcon=(id:string)=>icon(id==='pebble'?'stone':id);
