@@ -116,7 +116,7 @@ export class UI {
      <div class="character-figure" aria-hidden="true">
       ${mantleEquipped?'<span class="preview-wolf-cloak"></span>':''}
       <div class="actual-game-hero"></div>
-      <span class="hero-clean-chest"></span>
+      <span class="hero-gazyr-cover hero-gazyr-cover-left"></span><span class="hero-gazyr-cover hero-gazyr-cover-right"></span>
      </div>
      <div class="character-ground"></div>
      <div class="character-caption"><strong>Герой · ${m.age} лет</strong><span>Уровень ${m.xp.level}</span></div>
