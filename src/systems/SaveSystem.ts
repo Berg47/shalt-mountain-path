@@ -4,6 +4,8 @@ import type {GameModel} from './GameModel';
 export const SAVE_KEY='shalt.mountain-path.v1';
 export const SAVE_BACKUP_KEY='shalt.mountain-path.v1.backup';
 const EQUIPMENT_SLOTS:EquipmentSlot[]=['weapon','headwear','clothing','mantle','shoes']; // belt is optional for older saves
+const XP_CURVE_VERSION=2;
+const LEGACY_LEVELS=[0,110,280,520,860,1300,1950,2850,4200,6500,10500,18000,30000,48000,65000,84000,105000,128000,153000,180000,210000,243000,279000,318000,360000,405000,453000,504000,558000,615000] as const;
 
 export class SaveSystem {
  static progressScore(d:any){return (Number(d?.level)||0)*1e12+(Number(d?.day?.day)||0)*1e9+(Number(d?.experience?.total)||0);}
@@ -24,6 +26,7 @@ export class SaveSystem {
    adult:m.adult,trialNotified:m.trialNotified,bossDefeated:m.bossDefeated,
    caveFirstDefeated:m.caveFirstDefeated,caveLastDefeatDay:m.caveLastDefeatDay,caveNextAvailableDay:m.caveNextAvailableDay,
    elderQuestStarted:m.elderQuestStarted,elderQuestKills:m.elderQuestKills,elderQuestCompleted:m.elderQuestCompleted,
+   xpCurveVersion:XP_CURVE_VERSION,
   },
   caveWolf:{x:m.caveWolf.x,y:m.caveWolf.y,hp:m.caveWolf.hp,state:m.caveWolf.state,loot:{...m.caveWolf.loot},respawn:m.caveWolf.respawn,kills:m.caveWolf.kills,active:m.caveWolf.active},
   buildings:m.buildings.objects.map(b=>({...b})),day:{time:m.day.time,day:m.day.day},
@@ -85,6 +88,7 @@ export class SaveSystem {
    if(d.progress.elderQuestStarted!==undefined&&typeof d.progress.elderQuestStarted!=='boolean')return null;
    if(d.progress.elderQuestCompleted!==undefined&&typeof d.progress.elderQuestCompleted!=='boolean')return null;
    if(d.progress.elderQuestKills!==undefined&&!number(d.progress.elderQuestKills,0,5))return null;
+   if(d.progress.xpCurveVersion!==undefined&&d.progress.xpCurveVersion!==XP_CURVE_VERSION)return null;
   }
   if(!Array.isArray(d.discovered)||!d.discovered.every((s:any)=>typeof s==='string'))return null;
   return d as ReturnType<typeof SaveSystem.pack>;
@@ -94,7 +98,16 @@ export class SaveSystem {
   Object.assign(m.player,data.player);m.inventory.slots=data.inventory.slots.map((s:any)=>({...s}));m.inventory.tools=[...data.inventory.tools];m.inventory.equipped=data.inventory.equipped;
   m.inventory.bagLevel=Number.isInteger(data.inventory.bagLevel)?data.inventory.bagLevel:(data.inventory.bag?2:1);m.inventory.bag=m.inventory.bagLevel>1;m.inventory.shaltLevel=Number.isInteger(data.inventory.shaltLevel)?data.inventory.shaltLevel:1;
   if(data.inventory.equipment)m.inventory.equipment={...m.inventory.equipment,...data.inventory.equipment};else m.inventory.equipment.weapon='shalt';
-  m.xp.total=data.experience.total;m.xp.actions={...data.experience.actions};m.buildings.objects=data.buildings.map((b:any)=>({...b}));
+  let restoredXp=data.experience.total;
+  if(data.progress?.xpCurveVersion!==XP_CURVE_VERSION&&Number.isInteger(data.level)){
+   const level=Math.max(1,Math.min(LEGACY_LEVELS.length,data.level));
+   const oldFloor=LEGACY_LEVELS[level-1],oldNext=LEGACY_LEVELS[level]??oldFloor+25000;
+   const ratio=Math.max(0,Math.min(.999,(restoredXp-oldFloor)/Math.max(1,oldNext-oldFloor)));
+   const newFloor=SETTINGS.levels[level-1]??SETTINGS.levels[SETTINGS.levels.length-1];
+   const newNext=SETTINGS.levels[level]??newFloor+25000;
+   restoredXp=Math.round(newFloor+(newNext-newFloor)*ratio);
+  }
+  m.xp.total=restoredXp;m.xp.actions={...data.experience.actions};m.buildings.objects=data.buildings.map((b:any)=>({...b}));
   Object.assign(m.day,data.day);Object.assign(m.weather,data.weather);
   for(const saved of data.nodes){const node=m.world.nodes[saved.id];if(node)Object.assign(node,saved);}
   for(const saved of data.animals){const animal=m.animals.find(a=>a.id===saved.id);if(animal){Object.assign(animal,saved);if(animal.state!=='dead'){animal.state='wander';animal.timer=1;}}}
