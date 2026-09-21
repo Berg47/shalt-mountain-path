@@ -422,8 +422,8 @@ function makeElderTexture(scene:Phaser.Scene){
  c.strokeStyle='rgba(222,181,122,.20)';c.lineWidth=2.2;c.beginPath();c.moveTo(324,198);c.lineTo(339,543);c.stroke();
 
  // Small contact shadow inside the sprite.
- const sh=c.createRadialGradient(cx,557,6,cx,557,92);sh.addColorStop(0,'rgba(8,17,13,.34)');sh.addColorStop(1,'rgba(8,17,13,0)');
- c.fillStyle=sh;c.beginPath();c.ellipse(cx,557,90,18,0,0,Math.PI*2);c.fill();
+ const shadowGradient=c.createRadialGradient(cx,557,6,cx,557,92);shadowGradient.addColorStop(0,'rgba(8,17,13,.34)');shadowGradient.addColorStop(1,'rgba(8,17,13,0)');
+ c.fillStyle=shadowGradient;c.beginPath();c.ellipse(cx,557,90,18,0,0,Math.PI*2);c.fill();
  t.refresh();
 }
 
