@@ -1,4 +1,4 @@
-import {SETTINGS,REGIONS,NODE_DATA,ITEMS,RECIPES,BUILDINGS,ANIMALS,ENEMIES,CAVE,type RecipeId,type BuildingId,type ResourceId,type ToolId,type EnemyKind,type EquipmentSlot} from '../data/config';
+import {SETTINGS,REGIONS,NODE_DATA,ITEMS,RECIPES,BUILDINGS,ANIMALS,ENEMIES,CAVE,WOLF_MANTLE_BONUS,type RecipeId,type BuildingId,type ResourceId,type ToolId,type EnemyKind,type EquipmentSlot} from '../data/config';
 import {World,distance,seeded,type ResourceNode,type Point} from '../world/World';
 import {Player} from '../entities/Player';
 import {Animal} from '../entities/Animal';
@@ -84,11 +84,21 @@ export class GameModel {
  }
  emit(event:GameEvent){this.events.push(event);this.dirty++;}
  toast(text:string){this.emit({type:'toast',text});}
+ get wolfMantleEquipped(){return this.inventory.equipment.mantle==='wolfMantle';}
  applyLevelCaps(grantIncrease:boolean,previousLevel=this.xp.level){
-  const oldHealth=100+(Math.max(1,previousLevel)-1)*2,oldStamina=100+(Math.max(1,previousLevel)-1);
-  const newHealth=100+(this.xp.level-1)*2,newStamina=100+(this.xp.level-1);
+  const bonusHealth=this.wolfMantleEquipped?WOLF_MANTLE_BONUS.health:0,bonusStamina=this.wolfMantleEquipped?WOLF_MANTLE_BONUS.stamina:0;
+  const oldHealth=100+(Math.max(1,previousLevel)-1)*2+bonusHealth,oldStamina=100+(Math.max(1,previousLevel)-1)+bonusStamina;
+  const newHealth=100+(this.xp.level-1)*2+bonusHealth,newStamina=100+(this.xp.level-1)+bonusStamina;
   this.player.maxHealth=newHealth;this.player.maxStamina=newStamina;
   if(grantIncrease){this.player.health=Math.min(newHealth,this.player.health+Math.max(0,newHealth-oldHealth));this.player.stamina=Math.min(newStamina,this.player.stamina+Math.max(0,newStamina-oldStamina));}
+  else{this.player.health=Math.min(newHealth,this.player.health);this.player.stamina=Math.min(newStamina,this.player.stamina);}
+ }
+ syncEquipmentStats(grantBonus:boolean){
+  const oldHealth=this.player.maxHealth,oldStamina=this.player.maxStamina;
+  const newHealth=100+(this.xp.level-1)*2+(this.wolfMantleEquipped?WOLF_MANTLE_BONUS.health:0);
+  const newStamina=100+(this.xp.level-1)+(this.wolfMantleEquipped?WOLF_MANTLE_BONUS.stamina:0);
+  this.player.maxHealth=newHealth;this.player.maxStamina=newStamina;
+  if(grantBonus){this.player.health=Math.min(newHealth,this.player.health+Math.max(0,newHealth-oldHealth));this.player.stamina=Math.min(newStamina,this.player.stamina+Math.max(0,newStamina-oldStamina));}
   else{this.player.health=Math.min(newHealth,this.player.health);this.player.stamina=Math.min(newStamina,this.player.stamina);}
  }
  update(dt:number,input:{x:number;y:number;sprint:boolean}){
@@ -182,8 +192,8 @@ export class GameModel {
   this.toast(messages[id]??`${RECIPES[id].name} готов`);this.emit({type:'cook'});this.save();return true;
  }
  equip(id:ToolId){if(!this.inventory.tools.includes(id))return false;this.inventory.equipped=id;this.inventory.equipment.weapon=id;this.dirty++;return true;}
- equipWearable(id:'wolfMantle'){const ok=this.inventory.equipWearable(id);if(ok){this.toast('Накидка Чёрного Волка надета');this.dirty++;this.save();}return ok;}
- unequip(slot:EquipmentSlot){const ok=this.inventory.unequip(slot);if(ok){this.dirty++;this.save();}return ok;}
+ equipWearable(id:'wolfMantle'){const wasOn=this.wolfMantleEquipped;const ok=this.inventory.equipWearable(id);if(ok){if(!wasOn)this.syncEquipmentStats(true);this.toast('Накидка Чёрного Волка надета · +10 выносливости · +10 урона · +5 HP');this.dirty++;this.save();}return ok;}
+ unequip(slot:EquipmentSlot){const wasMantle=slot==='mantle'&&this.wolfMantleEquipped;const ok=this.inventory.unequip(slot);if(ok){if(wasMantle)this.syncEquipmentStats(false);this.dirty++;this.save();}return ok;}
  eat(id:ResourceId){if(this.dead||!['berry','cooked'].includes(id)||!this.inventory.remove(id,1))return false;this.player.hunger=Math.min(100,this.player.hunger+(id==='berry'?12:36));if(id==='berry')this.player.health=Math.min(this.player.maxHealth,this.player.health+5);else this.player.health=Math.min(this.player.maxHealth,this.player.health+8);this.toast(id==='berry'?'Ягоды · +12 сытости · +5 HP':'Жареное мясо · +36 сытости · +8 HP');this.dirty++;return true;}
  cook(){if(this.dead||!this.buildings.nearFire(this.player)){this.toast('Подойди к костру');return false;}if(!this.inventory.count('meat')){this.toast('Нет сырого мяса');return false;}
   const before=this.inventory.slots.map(s=>({...s}));this.inventory.remove('meat',1);if(!this.inventory.add('cooked',1)){this.inventory.slots=before;this.toast('Освободи место для приготовленного мяса');return false;}
@@ -201,7 +211,7 @@ export class GameModel {
  attack(){
   if(this.paused||this.dead||this.player.attackTimer>0||this.player.actionTimer>0)return;const p=this.player;if(p.stamina<9){this.toast('Нужно перевести дух');return;}
   this.inventory.equipped='shalt';this.inventory.equipment.weapon='shalt';p.attackTimer=.6;p.stamina-=9;this.emit({type:'attack',x:p.x,y:p.y});
-  const damage=[0,32,38,44][this.inventory.shaltLevel]??32;
+  const baseDamage=[0,32,38,44][this.inventory.shaltLevel]??32;const damage=baseDamage+(this.wolfMantleEquipped?WOLF_MANTLE_BONUS.damage:0);
   if(this.location==='cave'){
    const w=this.caveWolf;if(!w.active||w.state==='dead'||distance(w,p)>=118)return;p.facing=w.x>p.x?1:-1;
    const result=w.hit(damage,p);this.emit({type:'hit',x:w.x,y:w.y,text:String(result.damage)});
