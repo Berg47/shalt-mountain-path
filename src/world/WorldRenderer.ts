@@ -353,18 +353,20 @@ function makeCaveExitTexture(scene:Phaser.Scene){
 
 function makeHeroChestPatchTexture(scene:Phaser.Scene){
  if(scene.textures.exists('hero-clean-chest'))scene.textures.remove('hero-clean-chest');
- const t=scene.textures.createCanvas('hero-clean-chest',220,100)!;const c=t.getContext(),rand=seeded(9911);
- c.clearRect(0,0,220,100);c.imageSmoothingEnabled=true;
- const drawPanel=(x:number,flip=false)=>{
-  const g=c.createLinearGradient(x,8,x,92);g.addColorStop(0,'#455660');g.addColorStop(.48,'#314651');g.addColorStop(1,'#253943');
-  c.fillStyle=g;c.beginPath();
-  if(!flip){c.moveTo(x+5,20);c.lineTo(x+58,8);c.lineTo(x+82,22);c.lineTo(x+72,83);c.lineTo(x+15,91);}
-  else{c.moveTo(x+77,20);c.lineTo(x+24,8);c.lineTo(x,22);c.lineTo(x+10,83);c.lineTo(x+67,91);}
-  c.closePath();c.fill();
-  c.strokeStyle='rgba(167,181,183,.08)';c.lineWidth=2;c.lineCap='round';
-  for(let i=0;i<8;i++){const px=x+12+rand()*58,py=20+rand()*54;c.beginPath();c.moveTo(px,py);c.lineTo(px+(rand()-.5)*8,py+8+rand()*10);c.stroke();}
+ const [sx,sy,sw,sh]=FRAMES.hero;
+ const t=scene.textures.createCanvas('hero-clean-chest',sw,sh)!;const c=t.getContext();
+ c.clearRect(0,0,sw,sh);c.imageSmoothingEnabled=true;
+ const atlas=scene.textures.get('atlas').getSourceImage() as CanvasImageSource;
+
+ // Cover only the two gazyr areas with clean cloth sampled from the hero's own tunic.
+ const patch=(tx:number,ty:number,tw:number,th:number,srcX:number,srcY:number,rot:number)=>{
+  c.save();c.translate(tx+tw/2,ty+th/2);c.rotate(rot);c.beginPath();
+  c.roundRect(-tw/2,-th/2,tw,th,4);c.clip();
+  c.drawImage(atlas,sx+srcX,sy+srcY,tw,th,-tw/2,-th/2,tw,th);
+  c.restore();
  };
- drawPanel(12,false);drawPanel(126,true);
+ patch(31,106,47,23,31,154,-.10);
+ patch(84,98,38,23,85,151,.055);
  t.refresh();
 }
 
@@ -435,7 +437,7 @@ export class WorldRenderer {
   this.playerShadow=scene.add.ellipse(model.player.x,model.player.y,33,13,0x081c17,.36);
   this.playerCloak=scene.add.image(model.player.x,model.player.y,'wolf-cloak').setOrigin(.5,.9).setDisplaySize(66,91).setDepth(model.player.y-.3).setVisible(false);
   this.player=this.sprite('hero',model.player.x,model.player.y);
-  this.playerChestPatch=scene.add.image(model.player.x,model.player.y-43,'hero-clean-chest').setOrigin(.5,.5).setDisplaySize(29,13).setDepth(model.player.y+.2);
+  this.playerChestPatch=scene.add.image(model.player.x,model.player.y,'hero-clean-chest').setOrigin(.5,.89).setDepth(model.player.y+.2);
   this.playerCloakCollar=scene.add.image(model.player.x,model.player.y-53,'wolf-collar').setOrigin(.5,.5).setDisplaySize(55,20).setDepth(model.player.y+.34).setVisible(false);
   this.caveWolfShadow=scene.add.ellipse(CAVE.wolfSpawn.x,CAVE.wolfSpawn.y+6,172,30,0x020303,.62).setDepth(CAVE.wolfSpawn.y-1).setVisible(false);
   this.caveWolfSprite=scene.add.image(CAVE.wolfSpawn.x,CAVE.wolfSpawn.y,'black-wolf').setOrigin(.5,.84).setDisplaySize(218,133).setDepth(CAVE.wolfSpawn.y).setVisible(false);
@@ -467,7 +469,7 @@ export class WorldRenderer {
   this.player.setPosition(p.x,p.y-bob+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y).setAngle(moving?Math.sin(p.walk)*2:0).setAlpha(p.invulnerable>0&&Math.sin(this.wind*32)>0?.45:1);
   const normal=heights.hero/this.player.height;this.player.setScale(normal*(1+(p.actionTimer>0?.035:0)),normal*(p.actionTimer>0?.87:1));
   this.playerShadow.setPosition(p.x,p.y+1).setDepth(p.y-1);
-  this.playerChestPatch.setPosition(p.x,p.y-bob-43+(p.actionTimer>0?7:0)).setDepth(p.y+.2).setFlipX(p.facing<0).setAngle(moving?Math.sin(p.walk)*1.4:0).setAlpha(this.player.alpha);
+  this.playerChestPatch.setPosition(p.x,p.y-bob+(p.actionTimer>0?8:0)).setDepth(p.y+.2).setFlipX(p.facing<0).setAngle(moving?Math.sin(p.walk)*2:0).setAlpha(this.player.alpha).setScale(this.player.scaleX,this.player.scaleY);
   const mantle=m.inventory.equipment.mantle==='wolfMantle';
   this.playerCloak.setVisible(mantle).setPosition(p.x,p.y-bob+4+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y-.35).setAngle(moving?Math.sin(p.walk)*.95:0).setAlpha(this.player.alpha);
   this.playerCloakCollar.setVisible(mantle).setPosition(p.x,p.y-bob-53+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y+.34).setAngle(moving?Math.sin(p.walk)*.8:0).setAlpha(this.player.alpha);
