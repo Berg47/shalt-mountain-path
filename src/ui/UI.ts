@@ -1,4 +1,5 @@
 import {heroArt} from '../data/heroArt';
+import {whitePapakhaImg} from '../data/papakhaArt';
 import {icon,itemIcon} from './icons';
 import {ITEMS,TOOLS,RECIPES,BUILDINGS,REGIONS,SETTINGS,ELDER_QUEST,type RecipeId,type ResourceId,type ToolId,type BuildingId,type Cost,type EquipmentSlot} from '../data/config';
 import type {GameModel} from '../systems/GameModel';
@@ -111,14 +112,14 @@ export class UI {
    const picker=this.equipmentPicker?this.equipmentPickerHtml(this.equipmentPicker):'';
    body=`<div class="character-stage ${mantleEquipped?'wearing-wolf':''}">
     <div class="equipment-column left">
-     ${slot('headwear','Головной убор','headwear',papakhaEquipped?'Белая папаха':papakhaOwned?'Есть в рюкзаке':'Пусто')}
+     ${slot('headwear','Головной убор',papakhaOwned?'whitePapakha':'headwear',papakhaEquipped?'Белая папаха':papakhaOwned?'Есть в рюкзаке':'Пусто')}
      ${slot('clothing','Одежда','clothing','Базовая одежда')}
      ${slot('shoes','Обувь','shoes','Пусто')}
     </div>
     <section class="character-center" aria-label="Игровой персонаж">
      <div class="character-aura"></div>
      <div class="character-figure" aria-hidden="true">
-      <img class="actual-game-hero" src="${heroArt(m.inventory.equipment.mantle).url}" alt="" width="480" height="992" draggable="false">${papakhaEquipped?'<span class="preview-white-papakha"></span>':''}
+      <img class="actual-game-hero" src="${heroArt(m.inventory.equipment.mantle).url}" alt="" width="480" height="992" draggable="false">${papakhaEquipped?whitePapakhaImg('preview-white-papakha','wear',''):''}
      </div>
      <div class="character-ground"></div>
      <div class="character-caption"><strong>Герой · ${m.age} лет</strong><span>Уровень ${m.xp.level}</span></div>
