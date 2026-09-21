@@ -1,5 +1,7 @@
-export type ResourceId = 'branch'|'wood'|'stone'|'grass'|'berry'|'meat'|'hide'|'cooked'|'metal';
+export type ResourceId = 'branch'|'wood'|'stone'|'grass'|'berry'|'meat'|'hide'|'cooked'|'metal'|'wolfFang'|'wolfHide'|'wolfMantle';
 export type ToolId = 'shalt'|'axe'|'pickaxe';
+export type EquipmentSlot = 'weapon'|'headwear'|'clothing'|'mantle'|'shoes';
+export type EquipmentId = ToolId|'wolfMantle';
 export type RecipeId = 'axe'|'pickaxe'|'bag'|'bag3'|'shalt2'|'shalt3';
 export type BuildingId = 'fire'|'canopy'|'hut'|'workbench';
 export type NodeKind = 'branch'|'pebble'|'berry'|'grass'|'tree'|'pine'|'rock';
@@ -12,8 +14,13 @@ export const SETTINGS = {
   inventory:{slots:8,bagSlots:[8,16,24],stack:20}, player:{speed:158,sprint:240,radius:13},
   daySeconds:720, startTime:8/24, hungerLoss:0.068,
   xp:{first:9,repeat:2,repeatEvery:8,repeatFloor:0.2,night:30,area:18},
-  levels:[0,110,280,520,860,1300,1950,2850,4200,6500,10500,18000,30000,48000,65000,84000,105000,128000,153000,180000],
+  levels:[0,110,280,520,860,1300,1950,2850,4200,6500,10500,18000,30000,48000,65000,84000,105000,128000,153000,180000,210000,243000,279000,318000,360000,405000,453000,504000,558000,615000],
   ages:[{level:1,age:15},{level:3,age:16},{level:5,age:17}],
+} as const;
+
+export const CAVE = {
+ name:'Пещера Чёрного Волка',entrance:{x:1710,y:330},exit:{x:1710,y:850},playerSpawn:{x:1710,y:770},wolfSpawn:{x:1710,y:500},
+ bounds:{cx:1710,cy:590,rx:430,ry:350},respawnDays:3,
 } as const;
 
 export const ITEMS:Record<ResourceId,{name:string,short:string,icon:string,description:string}> = {
@@ -26,6 +33,9 @@ export const ITEMS:Record<ResourceId,{name:string,short:string,icon:string,descr
  hide:{name:'Шкуры',short:'шкур',icon:'hide',description:'Три шкуры и трава — твоя первая сумка.'},
  cooked:{name:'Жареное мясо',short:'мяса',icon:'cooked',description:'Сытная еда. +36 к сытости, +8 к здоровью.'},
  metal:{name:'Металл',short:'металла',icon:'metal',description:'Редкая добыча с разбойников. Нужен для верстака и улучшения шалта.'},
+ wolfFang:{name:'Клык Чёрного Волка',short:'клыка',icon:'wolfFang',description:'Редкий трофей из пещеры. Пока хранится в сумке.'},
+ wolfHide:{name:'Шкура Чёрного Волка',short:'шкуры',icon:'wolfHide',description:'Тяжёлая чёрная шкура босса. Пригодится позже.'},
+ wolfMantle:{name:'Накидка Чёрного Волка',short:'накидки',icon:'wolfMantle',description:'Уникальная цельная накидка с волчьей головой-капюшоном. Можно надеть в разделе «Персонаж».'},
 };
 export const TOOLS:Record<ToolId,{name:string,description:string}> = {
  shalt:{name:'Шалт',description:'Первый кинжал, вручённый дедушкой. Для охоты и защиты.'},
@@ -70,9 +80,10 @@ export const NODE_DATA:Record<NodeKind,{name:string,item:ResourceId,count:number
 };
 
 
-export type EnemyKind='dagger'|'shield'|'chaborz';
+export type EnemyKind='dagger'|'shield'|'chaborz'|'wolf';
 export const ENEMIES:Record<EnemyKind,{name:string,hp:number,speed:number,damage:number,aggro:number,range:number,xp:number}> = {
  dagger:{name:'Разбойник',hp:72,speed:112,damage:10,aggro:260,range:49,xp:75},
  shield:{name:'Опытный разбойник',hp:128,speed:92,damage:18,aggro:285,range:57,xp:140},
  chaborz:{name:'Чаборз',hp:360,speed:82,damage:30,aggro:420,range:86,xp:1500},
+ wolf:{name:'Чёрный Волк',hp:520,speed:152,damage:24,aggro:520,range:58,xp:0},
 };
