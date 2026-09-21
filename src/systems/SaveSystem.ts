@@ -4,6 +4,8 @@ import type {GameModel} from './GameModel';
 export const SAVE_KEY='shalt.mountain-path.v1';
 export const SAVE_BACKUP_KEY='shalt.mountain-path.v1.backup';
 const EQUIPMENT_SLOTS:EquipmentSlot[]=['weapon','headwear','clothing','mantle','shoes']; // belt is optional for older saves
+const XP_CURVE_VERSION=2;
+const LEGACY_LEVELS=[0,110,280,520,860,1300,1950,2850,4200,6500,10500,18000,30000,48000,65000,84000,105000,128000,153000,180000,210000,243000,279000,318000,360000,405000,453000,504000,558000,615000] as const;
 
 export class SaveSystem {
  static progressScore(d:any){return (Number(d?.level)||0)*1e12+(Number(d?.day?.day)||0)*1e9+(Number(d?.experience?.total)||0);}
@@ -23,6 +25,8 @@ export class SaveSystem {
   progress:{
    adult:m.adult,trialNotified:m.trialNotified,bossDefeated:m.bossDefeated,
    caveFirstDefeated:m.caveFirstDefeated,caveLastDefeatDay:m.caveLastDefeatDay,caveNextAvailableDay:m.caveNextAvailableDay,
+   elderQuestStarted:m.elderQuestStarted,elderQuestKills:m.elderQuestKills,elderQuestCompleted:m.elderQuestCompleted,
+   xpCurveVersion:XP_CURVE_VERSION,
   },
   caveWolf:{x:m.caveWolf.x,y:m.caveWolf.y,hp:m.caveWolf.hp,state:m.caveWolf.state,loot:{...m.caveWolf.loot},respawn:m.caveWolf.respawn,kills:m.caveWolf.kills,active:m.caveWolf.active},
   buildings:m.buildings.objects.map(b=>({...b})),day:{time:m.day.time,day:m.day.day},
@@ -52,7 +56,8 @@ export class SaveSystem {
    const eq=d.inventory.equipment;if(!eq||typeof eq!=='object'||Array.isArray(eq))return null;
    for(const slot of EQUIPMENT_SLOTS)if(!(slot in eq))return null;
    if(eq.weapon!==null&&!validTools.includes(eq.weapon))return null;
-   if(eq.headwear!==null||eq.clothing!==null||eq.shoes!==null)return null;
+   if(eq.headwear!==null&&eq.headwear!=='whitePapakha')return null;
+   if(eq.clothing!==null||eq.shoes!==null)return null;
    if(eq.belt!==undefined&&eq.belt!==null)return null;
    if(eq.mantle!==null&&eq.mantle!=='wolfMantle')return null;
   }
@@ -61,7 +66,7 @@ export class SaveSystem {
   if(!['clear','rain','snow'].includes(d.weather.kind)||!['clear','rain','snow'].includes(d.weather.target)||!number(d.weather.elapsed,0,200)||!number(d.weather.index,0,1e8)||!number(d.weather.blend,0,1))return null;
   if(!Array.isArray(d.buildings)||d.buildings.length>200||!d.buildings.every((b:any)=>['fire','canopy','hut','workbench'].includes(b.kind)&&number(b.x,100,3300)&&number(b.y,150,2490)&&number(b.id,1,201)&&number(b.born,0,1e9)))return null;
   if(!Array.isArray(d.nodes)||d.nodes.length>1000||!d.nodes.every((n:any)=>Number.isInteger(n.id)&&number(n.id,0,1000)&&number(n.hits,0,3)&&typeof n.depleted==='boolean'&&number(n.regrow,0,1000)))return null;
-  if(!Array.isArray(d.animals)||d.animals.length>20||!d.animals.every((a:any)=>number(a.id,0,30)&&number(a.x,70,3330)&&number(a.y,120,2520)&&number(a.hp,-100,ANIMALS.boar.hp)&&['wander','flee','windup','charge','recover','dead'].includes(a.state)&&number(a.lootMeat,0,3)&&number(a.lootHide,0,2)&&number(a.respawn,0,1000)))return null;
+  if(!Array.isArray(d.animals)||d.animals.length>30||!d.animals.every((a:any)=>number(a.id,0,40)&&number(a.x,70,3330)&&number(a.y,120,2520)&&number(a.hp,-100,Math.max(ANIMALS.boar.hp,ANIMALS.deer.hp))&&['wander','flee','windup','charge','recover','dead'].includes(a.state)&&number(a.lootMeat,0,4)&&number(a.lootHide,0,3)&&number(a.respawn,0,1000)))return null;
   if(d.enemies!==undefined){
    if(!Array.isArray(d.enemies)||d.enemies.length>20)return null;
    for(const e of d.enemies){
@@ -80,6 +85,10 @@ export class SaveSystem {
    if(!d.progress||typeof d.progress!=='object'||typeof d.progress.adult!=='boolean'||typeof d.progress.trialNotified!=='boolean'||typeof d.progress.bossDefeated!=='boolean')return null;
    for(const key of ['caveLastDefeatDay','caveNextAvailableDay'])if(d.progress[key]!==undefined&&!number(d.progress[key],0,1e7))return null;
    if(d.progress.caveFirstDefeated!==undefined&&typeof d.progress.caveFirstDefeated!=='boolean')return null;
+   if(d.progress.elderQuestStarted!==undefined&&typeof d.progress.elderQuestStarted!=='boolean')return null;
+   if(d.progress.elderQuestCompleted!==undefined&&typeof d.progress.elderQuestCompleted!=='boolean')return null;
+   if(d.progress.elderQuestKills!==undefined&&!number(d.progress.elderQuestKills,0,5))return null;
+   if(d.progress.xpCurveVersion!==undefined&&d.progress.xpCurveVersion!==XP_CURVE_VERSION)return null;
   }
   if(!Array.isArray(d.discovered)||!d.discovered.every((s:any)=>typeof s==='string'))return null;
   return d as ReturnType<typeof SaveSystem.pack>;
@@ -89,13 +98,23 @@ export class SaveSystem {
   Object.assign(m.player,data.player);m.inventory.slots=data.inventory.slots.map((s:any)=>({...s}));m.inventory.tools=[...data.inventory.tools];m.inventory.equipped=data.inventory.equipped;
   m.inventory.bagLevel=Number.isInteger(data.inventory.bagLevel)?data.inventory.bagLevel:(data.inventory.bag?2:1);m.inventory.bag=m.inventory.bagLevel>1;m.inventory.shaltLevel=Number.isInteger(data.inventory.shaltLevel)?data.inventory.shaltLevel:1;
   if(data.inventory.equipment)m.inventory.equipment={...m.inventory.equipment,...data.inventory.equipment};else m.inventory.equipment.weapon='shalt';
-  m.xp.total=data.experience.total;m.xp.actions={...data.experience.actions};m.buildings.objects=data.buildings.map((b:any)=>({...b}));
+  let restoredXp=data.experience.total;
+  if(data.progress?.xpCurveVersion!==XP_CURVE_VERSION&&Number.isInteger(data.level)){
+   const level=Math.max(1,Math.min(LEGACY_LEVELS.length,data.level));
+   const oldFloor=LEGACY_LEVELS[level-1],oldNext=LEGACY_LEVELS[level]??oldFloor+25000;
+   const ratio=Math.max(0,Math.min(.999,(restoredXp-oldFloor)/Math.max(1,oldNext-oldFloor)));
+   const newFloor=SETTINGS.levels[level-1]??SETTINGS.levels[SETTINGS.levels.length-1];
+   const newNext=SETTINGS.levels[level]??newFloor+25000;
+   restoredXp=Math.round(newFloor+(newNext-newFloor)*ratio);
+  }
+  m.xp.total=restoredXp;m.xp.actions={...data.experience.actions};m.buildings.objects=data.buildings.map((b:any)=>({...b}));
   Object.assign(m.day,data.day);Object.assign(m.weather,data.weather);
   for(const saved of data.nodes){const node=m.world.nodes[saved.id];if(node)Object.assign(node,saved);}
   for(const saved of data.animals){const animal=m.animals.find(a=>a.id===saved.id);if(animal){Object.assign(animal,saved);if(animal.state!=='dead'){animal.state='wander';animal.timer=1;}}}
   if(Array.isArray(data.enemies))for(const saved of data.enemies){const enemy=m.enemies.find(e=>e.id===saved.id&&e.kind===saved.kind);if(enemy){Object.assign(enemy,saved);enemy.loot={...saved.loot};if(enemy.state!=='dead'){enemy.state='idle';enemy.timer=0;}}}
   m.adult=!!data.progress?.adult;m.trialNotified=!!data.progress?.trialNotified;m.bossDefeated=!!data.progress?.bossDefeated;
   m.caveFirstDefeated=!!data.progress?.caveFirstDefeated;m.caveLastDefeatDay=Number(data.progress?.caveLastDefeatDay)||0;m.caveNextAvailableDay=Number(data.progress?.caveNextAvailableDay)||0;
+  m.elderQuestStarted=!!data.progress?.elderQuestStarted;m.elderQuestKills=Math.max(0,Math.min(5,Number(data.progress?.elderQuestKills)||0));m.elderQuestCompleted=!!data.progress?.elderQuestCompleted;
   m.location=data.location==='cave'?'cave':'world';
   if(data.caveWolf){Object.assign(m.caveWolf,data.caveWolf);m.caveWolf.loot={...data.caveWolf.loot};if(m.caveWolf.state!=='dead'){m.caveWolf.state='idle';m.caveWolf.timer=0;}}
   m.discovered=new Set(data.discovered);m.elapsed=data.elapsed;m.nights=data.nights;

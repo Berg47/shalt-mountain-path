@@ -1,11 +1,11 @@
-export type ResourceId = 'branch'|'wood'|'stone'|'grass'|'berry'|'meat'|'hide'|'cooked'|'metal'|'wolfFang'|'wolfHide'|'wolfMantle';
+export type ResourceId = 'branch'|'wood'|'stone'|'grass'|'berry'|'meat'|'hide'|'cooked'|'metal'|'wolfFang'|'wolfHide'|'wolfMantle'|'whitePapakha';
 export type ToolId = 'shalt'|'axe'|'pickaxe';
 export type EquipmentSlot = 'weapon'|'headwear'|'clothing'|'mantle'|'shoes'|'belt';
-export type EquipmentId = ToolId|'wolfMantle';
+export type EquipmentId = ToolId|'wolfMantle'|'whitePapakha';
 export type RecipeId = 'axe'|'pickaxe'|'bag'|'bag3'|'shalt2'|'shalt3';
 export type BuildingId = 'fire'|'canopy'|'hut'|'workbench';
 export type NodeKind = 'branch'|'pebble'|'berry'|'grass'|'tree'|'pine'|'rock';
-export type AnimalKind = 'hare'|'boar';
+export type AnimalKind = 'hare'|'deer'|'boar';
 export type WeatherKind = 'clear'|'rain'|'snow';
 export type Cost = Partial<Record<ResourceId,number>>;
 
@@ -14,11 +14,23 @@ export const SETTINGS = {
   inventory:{slots:8,bagSlots:[8,16,24],stack:20}, player:{speed:158,sprint:240,radius:13},
   daySeconds:720, startTime:8/24, hungerLoss:0.068,
   xp:{first:9,repeat:2,repeatEvery:8,repeatFloor:0.2,night:30,area:18},
-  levels:[0,110,280,520,860,1300,1950,2850,4200,6500,10500,18000,30000,48000,65000,84000,105000,128000,153000,180000,210000,243000,279000,318000,360000,405000,453000,504000,558000,615000],
+  levels:[0,80,200,360,580,860,1250,1750,2400,3300,4500,6100,8200,10800,14000,18000,22500,27500,33000,39000,47000,57000,70000,86000,106000,131000,161000,196000,236000,281000],
   ages:[{level:1,age:15},{level:3,age:16},{level:5,age:17}],
 } as const;
 
 export const WOLF_MANTLE_BONUS = {health:5,stamina:10,damage:10} as const;
+
+export const ELDER_QUEST = {
+ tower:{x:1680,y:1320},
+ elder:{x:1588,y:1392},
+ gang:[
+  {kind:'dagger' as const,x:2470,y:760},
+  {kind:'dagger' as const,x:2560,y:700},
+  {kind:'shield' as const,x:2645,y:785},
+  {kind:'dagger' as const,x:2525,y:860},
+  {kind:'shield' as const,x:2675,y:900},
+ ],
+} as const;
 
 export const CAVE = {
  name:'Пещера Чёрного Волка',entrance:{x:1710,y:330},exit:{x:1710,y:848},playerSpawn:{x:1710,y:748},wolfSpawn:{x:1710,y:500},
@@ -38,6 +50,7 @@ export const ITEMS:Record<ResourceId,{name:string,short:string,icon:string,descr
  wolfFang:{name:'Клык Чёрного Волка',short:'клыка',icon:'wolfFang',description:'Редкий трофей из пещеры. Пока хранится в сумке.'},
  wolfHide:{name:'Шкура Чёрного Волка',short:'шкуры',icon:'wolfHide',description:'Тяжёлая чёрная шкура босса. Пригодится позже.'},
  wolfMantle:{name:'Накидка Чёрного Волка',short:'накидки',icon:'wolfMantle',description:'Чёрная меховая накидка из шкуры Чёрного Волка. Без капюшона и головного убора. Бонусы: +10 выносливости, +10 урона, +5 HP.'},
+ whitePapakha:{name:'Белая папаха',short:'папахи',icon:'whitePapakha',description:'Белая кавказская папаха — награда старца за уничтожение шайки из пяти разбойников.'},
 };
 export const TOOLS:Record<ToolId,{name:string,description:string}> = {
  shalt:{name:'Шалт',description:'Первый кинжал, вручённый дедушкой. Для охоты и защиты.'},
@@ -60,6 +73,7 @@ export const BUILDINGS:Record<BuildingId,{name:string,cost:Cost,xp:number,radius
 };
 export const ANIMALS:Record<AnimalKind,{name:string,hp:number,speed:number,flee:number,damage:number,meat:number,hide:number,xp:number}> = {
  hare:{name:'Заяц',hp:24,speed:117,flee:195,damage:0,meat:1,hide:1,xp:16},
+ deer:{name:'Олень',hp:75,speed:78,flee:178,damage:0,meat:4,hide:3,xp:42},
  boar:{name:'Дикий кабан',hp:105,speed:57,flee:186,damage:18,meat:3,hide:2,xp:34},
 };
 export const REGIONS=[

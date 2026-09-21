@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import {heroArt} from '../data/heroArt';
-import {SETTINGS,NODE_DATA,ENEMIES,CAVE,type BuildingId} from '../data/config';
+import {SETTINGS,NODE_DATA,ANIMALS,ENEMIES,CAVE,ELDER_QUEST,type BuildingId} from '../data/config';
 import {seeded,riverX,distance,type World} from './World';
 import type {GameModel,GameEvent} from '../systems/GameModel';
 
@@ -300,9 +300,65 @@ function makeCaveExitTexture(scene:Phaser.Scene){
  t.refresh();
 }
 
+
+function makePapakhaTexture(scene:Phaser.Scene){
+ if(scene.textures.exists('white-papakha'))return;
+ const W=360,H=240,t=scene.textures.createCanvas('white-papakha',W,H)!;const c=t.getContext(),rand=seeded(4815);
+ c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
+ const shadow=c.createRadialGradient(180,194,15,180,194,125);shadow.addColorStop(0,'rgba(16,18,17,.28)');shadow.addColorStop(1,'rgba(16,18,17,0)');
+ c.fillStyle=shadow;c.beginPath();c.ellipse(180,194,126,24,0,0,Math.PI*2);c.fill();
+ let g=c.createLinearGradient(70,36,290,198);g.addColorStop(0,'#fffdf0');g.addColorStop(.35,'#e8e4d5');g.addColorStop(.72,'#cfcabb');g.addColorStop(1,'#aba89c');
+ c.fillStyle=g;c.beginPath();c.moveTo(91,70);c.quadraticCurveTo(180,24,269,70);c.lineTo(286,181);c.quadraticCurveTo(180,214,74,181);c.closePath();c.fill();
+ c.strokeStyle='rgba(76,75,68,.28)';c.lineWidth=6;c.beginPath();c.moveTo(75,178);c.quadraticCurveTo(180,209,285,178);c.stroke();
+ c.save();c.beginPath();c.moveTo(91,70);c.quadraticCurveTo(180,24,269,70);c.lineTo(286,181);c.quadraticCurveTo(180,214,74,181);c.closePath();c.clip();
+ c.lineCap='round';
+ for(let i=0;i<250;i++){
+  const x=78+rand()*205,y=55+rand()*132,len=6+rand()*20;
+  c.strokeStyle=rand()>.62?'rgba(255,255,248,.58)':rand()>.25?'rgba(132,129,117,.22)':'rgba(85,83,76,.12)';
+  c.lineWidth=1.2+rand()*3;c.beginPath();c.moveTo(x,y);c.lineTo(x+(rand()-.5)*10,y+len);c.stroke();
+ }
+ c.restore();t.refresh();
+}
+
+function makeDeerTexture(scene:Phaser.Scene){
+ if(scene.textures.exists('deer'))return;
+ const W=640,H=500,t=scene.textures.createCanvas('deer',W,H)!;const c=t.getContext();
+ c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
+ let g=c.createLinearGradient(120,130,510,420);g.addColorStop(0,'#9d7950');g.addColorStop(.45,'#705139');g.addColorStop(1,'#3f3229');
+ c.fillStyle=g;c.beginPath();c.ellipse(300,292,172,92,-.05,0,Math.PI*2);c.fill();
+ c.fillStyle='#725239';c.beginPath();c.ellipse(452,218,62,104,-.30,0,Math.PI*2);c.fill();
+ c.fillStyle='#7e5c3e';c.beginPath();c.ellipse(507,145,68,48,-.15,0,Math.PI*2);c.fill();
+ c.fillStyle='#aa8458';c.beginPath();c.moveTo(476,121);c.lineTo(448,66);c.lineTo(493,104);c.closePath();c.fill();c.beginPath();c.moveTo(526,112);c.lineTo(561,62);c.lineTo(545,121);c.closePath();c.fill();
+ c.strokeStyle='#49392d';c.lineWidth=17;c.lineCap='round';
+ for(const [x,y,dx] of [[205,342,-9],[286,350,9],[388,340,-6],[450,318,12]] as const){c.beginPath();c.moveTo(x,y);c.lineTo(x+dx,y+112);c.stroke();c.strokeStyle='#292521';c.lineWidth=11;c.beginPath();c.moveTo(x+dx,y+105);c.lineTo(x+dx+(dx>0?9:-9),y+130);c.stroke();c.strokeStyle='#49392d';c.lineWidth=17;}
+ c.strokeStyle='#584333';c.lineWidth=12;c.beginPath();c.moveTo(189,252);c.quadraticCurveTo(116,230,92,195);c.stroke();
+ c.fillStyle='#efe3c7';c.beginPath();c.ellipse(502,169,27,18,-.2,0,Math.PI*2);c.fill();
+ c.fillStyle='#171817';c.beginPath();c.arc(533,139,5,0,Math.PI*2);c.fill();c.beginPath();c.arc(557,158,5,0,Math.PI*2);c.fill();
+ c.strokeStyle='#5a4835';c.lineWidth=8;c.lineCap='round';
+ c.beginPath();c.moveTo(490,102);c.lineTo(471,44);c.lineTo(449,22);c.moveTo(471,53);c.lineTo(496,25);c.moveTo(524,102);c.lineTo(541,43);c.lineTo(563,20);c.moveTo(541,54);c.lineTo(519,25);c.stroke();
+ c.strokeStyle='rgba(234,211,170,.20)';c.lineWidth=7;c.beginPath();c.arc(286,280,125,.2,2.7);c.stroke();
+ t.refresh();
+}
+
+function makeElderTexture(scene:Phaser.Scene){
+ if(scene.textures.exists('elder'))return;
+ const W=420,H=620,t=scene.textures.createCanvas('elder',W,H)!;const c=t.getContext(),cx=W/2;
+ c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
+ const atlas=scene.textures.get('atlas').getSourceImage() as CanvasImageSource,[sx,sy,sw,sh]=FRAMES.hero;
+ c.globalAlpha=.92;c.drawImage(atlas,sx,sy,sw,sh,110,84,200,472);c.globalAlpha=1;
+ let g=c.createLinearGradient(105,190,315,560);g.addColorStop(0,'rgba(82,72,59,.94)');g.addColorStop(.55,'rgba(57,51,43,.96)');g.addColorStop(1,'rgba(35,34,31,.98)');
+ c.fillStyle=g;c.beginPath();c.moveTo(130,201);c.quadraticCurveTo(cx,170,290,201);c.lineTo(317,522);c.quadraticCurveTo(cx,564,103,522);c.closePath();c.fill();
+ c.strokeStyle='rgba(198,181,145,.14)';c.lineWidth=4;for(const dx of [-45,-15,18,48]){c.beginPath();c.moveTo(cx+dx,220);c.lineTo(cx+dx*.7,520);c.stroke();}
+ c.fillStyle='#ded5bd';c.beginPath();c.moveTo(167,145);c.quadraticCurveTo(cx,129,253,145);c.lineTo(242,249);c.quadraticCurveTo(cx,294,178,249);c.closePath();c.fill();
+ c.strokeStyle='rgba(119,111,97,.35)';c.lineWidth=3;for(let i=0;i<8;i++){c.beginPath();c.moveTo(184+i*7,162);c.lineTo(192+i*5,247);c.stroke();}
+ c.fillStyle='#d5d0bd';c.beginPath();c.ellipse(cx,107,63,28,0,0,Math.PI*2);c.fill();c.fillRect(151,105,118,61);c.fillStyle='#f2eee0';c.beginPath();c.ellipse(cx,103,59,21,0,0,Math.PI*2);c.fill();
+ c.fillStyle='rgba(37,31,26,.8)';c.beginPath();c.arc(188,152,4,0,Math.PI*2);c.fill();c.beginPath();c.arc(231,152,4,0,Math.PI*2);c.fill();
+ t.refresh();
+}
+
 export function setupFrames(scene:Phaser.Scene){
  const t=scene.textures.get('atlas');for(const [name,b]of Object.entries(FRAMES))if(!t.has(name))t.add(name,0,...b);
- makeWorkbenchTexture(scene);makeEnemyTexture(scene,'dagger');makeEnemyTexture(scene,'shield');makeEnemyTexture(scene,'chaborz');makeWolfTexture(scene);makeBonesTexture(scene);makeTorchTexture(scene);makeCaveInteriorTexture(scene);makeCaveExitTexture(scene);
+ makeWorkbenchTexture(scene);makeEnemyTexture(scene,'dagger');makeEnemyTexture(scene,'shield');makeEnemyTexture(scene,'chaborz');makeWolfTexture(scene);makePapakhaTexture(scene);makeDeerTexture(scene);makeElderTexture(scene);makeBonesTexture(scene);makeTorchTexture(scene);makeCaveInteriorTexture(scene);makeCaveExitTexture(scene);
 }
 
 function makeTerrain(scene:Phaser.Scene,world:World){
@@ -341,7 +397,7 @@ function makeTerrain(scene:Phaser.Scene,world:World){
 
 export class WorldRenderer {
  nodeSprites:Phaser.GameObjects.Image[]=[];animalSprites:Phaser.GameObjects.Image[]=[];animalShadows:Phaser.GameObjects.Ellipse[]=[];enemySprites:Phaser.GameObjects.Image[]=[];enemyShadows:Phaser.GameObjects.Ellipse[]=[];buildingSprites=new Map<number,Phaser.GameObjects.Image>();
- player:Phaser.GameObjects.Image;playerShadow:Phaser.GameObjects.Ellipse;ring:Phaser.GameObjects.Graphics;effects:Phaser.GameObjects.Graphics;atmosphere:Phaser.GameObjects.Graphics;ghost:Phaser.GameObjects.Image;
+ player:Phaser.GameObjects.Image;playerHeadwear:Phaser.GameObjects.Image;playerShadow:Phaser.GameObjects.Ellipse;elderSprite:Phaser.GameObjects.Image;elderShadow:Phaser.GameObjects.Ellipse;elderQuestMarker:Phaser.GameObjects.Text;ring:Phaser.GameObjects.Graphics;effects:Phaser.GameObjects.Graphics;atmosphere:Phaser.GameObjects.Graphics;ghost:Phaser.GameObjects.Image;
  caveWolfSprite:Phaser.GameObjects.Image;caveWolfShadow:Phaser.GameObjects.Ellipse;caveObjects:Phaser.GameObjects.GameObject[]=[];caveLights:Phaser.GameObjects.Image[]=[];worldDecor:Phaser.GameObjects.GameObject[]=[];
  glow:Phaser.GameObjects.Image[]=[];lightTexture:Phaser.Textures.CanvasTexture;wind=0;
  constructor(public scene:Phaser.Scene,public model:GameModel){
@@ -351,6 +407,11 @@ export class WorldRenderer {
   this.nodeSprites=model.world.nodes.map(n=>{const img=this.sprite(n.kind,n.x,n.y);if(n.kind==='tree'||n.kind==='pine')img.setScale(img.scaleX*(.82+seeded(n.id+99)()*.38));return img;});
   // Village edge and rugged northern boundary. Track these so they disappear inside the cave.
   this.worldDecor.push(this.sprite('tower',600,1730),this.sprite('cabin',810,1810),this.sprite('cabin',440,1870));
+  const elderTower=this.sprite('tower',ELDER_QUEST.tower.x,ELDER_QUEST.tower.y).setDisplaySize(168,252).setDepth(ELDER_QUEST.tower.y);
+  this.elderShadow=scene.add.ellipse(ELDER_QUEST.elder.x,ELDER_QUEST.elder.y,38,12,0x071a13,.34).setDepth(ELDER_QUEST.elder.y-1);
+  this.elderSprite=scene.add.image(ELDER_QUEST.elder.x,ELDER_QUEST.elder.y,'elder').setOrigin(.5,.92).setDisplaySize(62,92).setDepth(ELDER_QUEST.elder.y);
+  this.elderQuestMarker=scene.add.text(ELDER_QUEST.elder.x,ELDER_QUEST.elder.y-104,'!',{fontFamily:'Georgia, serif',fontSize:'28px',fontStyle:'bold',color:'#f2df9b',stroke:'#183126',strokeThickness:5}).setOrigin(.5).setDepth(ELDER_QUEST.elder.y+2);
+  this.worldDecor.push(elderTower,this.elderShadow,this.elderSprite,this.elderQuestMarker);
   const rand=seeded(191);for(let x=80;x<3300;x+=125){if(x>1540&&x<1880)continue;const rock=this.sprite('rock',x,160+rand()*110);rock.setDisplaySize(180+rand()*90,125+rand()*90);this.worldDecor.push(rock);}
   // The visible cave mouth is anchored exactly to the map region "Вход в пещеру".
   const ex=CAVE.entrance.x,ey=CAVE.entrance.y;
@@ -361,12 +422,13 @@ export class WorldRenderer {
   const capRock=this.sprite('rock',ex,ey-73).setDisplaySize(210,96).setDepth(ey+20);
   const pathGlow=scene.add.ellipse(ex,ey+45,116,32,0x9c8b5d,.16).setDepth(ey+21);
   this.worldDecor.push(caveShadow,caveMouth,leftRock,rightRock,capRock,pathGlow);
-  this.animalSprites=model.animals.map(a=>this.sprite(a.kind,a.x,a.y));this.animalShadows=model.animals.map(a=>scene.add.ellipse(a.x,a.y,a.kind==='hare'?23:49,10,0x0a2119,.25).setDepth(a.y-1));
+  this.animalSprites=model.animals.map(a=>a.kind==='deer'?scene.add.image(a.x,a.y,'deer').setOrigin(.5,.88).setDisplaySize(94,73).setDepth(a.y):this.sprite(a.kind,a.x,a.y));this.animalShadows=model.animals.map(a=>scene.add.ellipse(a.x,a.y,a.kind==='hare'?23:a.kind==='deer'?58:49,a.kind==='deer'?13:10,0x0a2119,.25).setDepth(a.y-1));
   this.enemySprites=model.enemies.map(e=>scene.add.image(e.x,e.y,'enemy-'+e.kind).setOrigin(.5,.9).setDisplaySize(e.kind==='chaborz'?104:e.kind==='shield'?74:68,e.kind==='chaborz'?148:e.kind==='shield'?108:102).setDepth(e.y));
   this.enemyShadows=model.enemies.map(e=>scene.add.ellipse(e.x,e.y,e.kind==='chaborz'?60:42,e.kind==='chaborz'?18:13,0x081c17,.34).setDepth(e.y-1));
   this.playerShadow=scene.add.ellipse(model.player.x,model.player.y,33,13,0x081c17,.36);
   this.player=scene.add.image(model.player.x,model.player.y,heroArt(model.inventory.equipment.mantle).key).setOrigin(.5,.98).setDepth(model.player.y);
   this.player.setScale(heights.hero/this.player.height);
+  this.playerHeadwear=scene.add.image(model.player.x,model.player.y-66,'white-papakha').setOrigin(.5,.90).setDisplaySize(30,20).setDepth(model.player.y+.45).setVisible(false);
   this.caveWolfShadow=scene.add.ellipse(CAVE.wolfSpawn.x,CAVE.wolfSpawn.y+6,172,30,0x020303,.62).setDepth(CAVE.wolfSpawn.y-1).setVisible(false);
   this.caveWolfSprite=scene.add.image(CAVE.wolfSpawn.x,CAVE.wolfSpawn.y,'black-wolf').setOrigin(.5,.84).setDisplaySize(218,133).setDepth(CAVE.wolfSpawn.y).setVisible(false);
   // Full-world blackout prevents the outside mountain art from bleeding into the interior on tall phones.
@@ -399,7 +461,12 @@ export class WorldRenderer {
   this.player.setPosition(p.x,p.y-bob+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y).setAngle(moving?Math.sin(p.walk)*2:0).setAlpha(p.invulnerable>0&&Math.sin(this.wind*32)>0?.45:1);
   const normal=heights.hero/this.player.height;this.player.setScale(normal*(1+(p.actionTimer>0?.035:0)),normal*(p.actionTimer>0?.87:1));
   this.playerShadow.setPosition(p.x,p.y+1).setDepth(p.y-1);
+  const heroY=p.y-bob+(p.actionTimer>0?8:0),papakha=m.inventory.equipment.headwear==='whitePapakha',heroAngle=moving?Math.sin(p.walk)*2:0;
+  this.playerHeadwear.setVisible(papakha).setPosition(p.x,heroY-this.player.displayHeight*.84).setDepth(p.y+.45).setAngle(heroAngle).setAlpha(this.player.alpha).setDisplaySize(30*(p.actionTimer>0?1.035:1),20*(p.actionTimer>0?.87:1));
   const cave=m.location==='cave';for(const obj of this.caveObjects)(obj as any).setVisible(cave);for(const obj of this.worldDecor)(obj as any).setVisible(!cave);
+  this.playerHeadwear.setVisible(!cave?papakha:papakha);
+  const elderMark=!m.elderQuestCompleted&&(!m.elderQuestStarted||m.elderQuestKills>=5);
+  this.elderQuestMarker.setVisible(!cave&&elderMark).setText(!m.elderQuestStarted?'!':'?');
   const view=camera.worldView;
   for(const n of m.world.nodes){const img=this.nodeSprites[n.id];const visible=!cave&&!n.depleted&&n.x>view.x-270&&n.x<view.right+270&&n.y>view.y-100&&n.y<view.bottom+310;img.setVisible(visible);if(!visible)continue;if(n.kind==='tree'||n.kind==='pine'){const hide=p.y<n.y&&p.y>n.y-img.displayHeight&&Math.abs(p.x-n.x)<img.displayWidth*.4;img.setAlpha(hide?.48:1);img.setRotation(Math.sin(this.wind*.6+n.id)*.007);}}
   for(const a of m.animals){const img=this.animalSprites[a.id],shadow=this.animalShadows[a.id];img.setVisible(!cave&&(a.state!=='dead'||!!(a.lootMeat||a.lootHide))).setPosition(a.x,a.y-(a.state==='flee'?Math.abs(Math.sin(a.walk))*5:0)).setDepth(a.y).setFlipX(a.facing<0).setAngle(a.state==='dead'?80:0).setAlpha(a.state==='dead'?.65:1);shadow.setPosition(a.x,a.y).setDepth(a.y-1).setVisible(img.visible);}
@@ -411,7 +478,7 @@ export class WorldRenderer {
   this.ring.clear();const interaction=m.interaction();if(interaction&&!m.paused&&!building){const n=interaction.target;const exit=interaction.kind==='caveExit';this.ring.lineStyle(exit?2.2:1.5,exit?0xd7c691:0xe1d2a2,exit?.92:.85);this.ring.strokeEllipse(n.x,n.y+4,exit?104:interaction.kind==='node'&&NODE_DATA[interaction.target.kind].tool?67:43,exit?30:19);}
   if(building){const valid=m.buildings.valid(building,placement.x,placement.y,p);this.ghost.setVisible(true);if(building==='workbench')this.ghost.setTexture('workbench');else this.ghost.setTexture('atlas',building);this.ghost.setPosition(placement.x,placement.y).setTint(valid?0xbddaad:0xe48476).setScale(heights[building]/this.ghost.height);this.ring.lineStyle(2,valid?0xbddaad:0xe48476,.9);this.ring.strokeEllipse(placement.x,placement.y,BUILDING_RADIUS[building]*2,BUILDING_RADIUS[building]);}else this.ghost.setVisible(false);
   this.effects.clear();
-  if(!cave)for(const a of m.animals){if(a.state==='windup'){this.effects.lineStyle(2,0xdc825f,.9).strokeEllipse(a.x,a.y,75,31);this.effects.fillStyle(0xf1b780,1).fillTriangle(a.x,a.y-84,a.x-5,a.y-95,a.x+5,a.y-95);}if(a.hp< (a.kind==='boar'?105:24)&&a.state!=='dead'){this.effects.fillStyle(0x13281d,.8).fillRoundedRect(a.x-22,a.y-80,44,4,2);this.effects.fillStyle(0xc6835c,1).fillRoundedRect(a.x-22,a.y-80,44*a.hp/(a.kind==='boar'?105:24),4,2);}}
+  if(!cave)for(const a of m.animals){if(a.state==='windup'){this.effects.lineStyle(2,0xdc825f,.9).strokeEllipse(a.x,a.y,75,31);this.effects.fillStyle(0xf1b780,1).fillTriangle(a.x,a.y-84,a.x-5,a.y-95,a.x+5,a.y-95);}if(a.hp<ANIMALS[a.kind].hp&&a.state!=='dead'){const y=a.y-(a.kind==='deer'?92:80);this.effects.fillStyle(0x13281d,.8).fillRoundedRect(a.x-22,y,44,4,2);this.effects.fillStyle(0xc6835c,1).fillRoundedRect(a.x-22,y,44*a.hp/ANIMALS[a.kind].hp,4,2);}}
   if(!cave)for(const e of m.enemies){if(!e.active||e.state==='dead')continue;const max=ENEMIES[e.kind].hp,w=e.kind==='chaborz'?70:48,y=e.y-(e.kind==='chaborz'?145:105);if(e.state==='windup'){this.effects.lineStyle(e.kind==='chaborz'?4:2,e.kind==='chaborz'?0xd5a25e:0xd87b62,.92).strokeEllipse(e.x,e.y,e.kind==='chaborz'?132:82,e.kind==='chaborz'?48:30);}if(e.hp<max){this.effects.fillStyle(0x13281d,.85).fillRoundedRect(e.x-w/2,y,w,5,2);this.effects.fillStyle(e.kind==='chaborz'?0xb77a4e:0xc6835c,1).fillRoundedRect(e.x-w/2,y,w*e.hp/max,5,2);}}
   if(cave&&wolf.active&&wolf.state!=='dead'){if(wolf.state==='windup'){const dir=wolf.facing>0?0:Math.PI;this.effects.lineStyle(3,0xd24a4a,.62);this.effects.beginPath();this.effects.arc(wolf.x,wolf.y-8,92,dir-.62,dir+.62);this.effects.strokePath();this.effects.fillStyle(0xef6a63,.78).fillCircle(wolf.x+wolf.facing*62,wolf.y-58,3.5);}if(wolf.hp<wolf.maxHp){this.effects.fillStyle(0x080b0b,.88).fillRoundedRect(wolf.x-58,wolf.y-128,116,6,3);this.effects.fillStyle(0xa92228,1).fillRoundedRect(wolf.x-58,wolf.y-128,116*wolf.hp/wolf.maxHp,6,3);}}
   if(p.attackTimer>.36){const progress=(.6-p.attackTimer)/.24;this.effects.lineStyle(3,0xf6e7bd,.8*(1-progress));this.effects.beginPath();this.effects.arc(p.x+p.facing*8,p.y-30,53,p.facing>0?-.9+progress:Math.PI-.9+progress,p.facing>0?.5+progress:Math.PI+.5+progress);this.effects.strokePath();}
