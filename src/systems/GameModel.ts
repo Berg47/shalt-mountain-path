@@ -131,7 +131,7 @@ export class GameModel {
   this.toast(messages[id]??`${RECIPES[id].name} готов`);this.emit({type:'cook'});this.save();return true;
  }
  equip(id:ToolId){if(!this.inventory.tools.includes(id))return false;this.inventory.equipped=id;this.dirty++;return true;}
- eat(id:ResourceId){if(this.dead||!['berry','cooked'].includes(id)||!this.inventory.remove(id,1))return false;this.player.hunger=Math.min(100,this.player.hunger+(id==='berry'?12:36));if(id==='cooked')this.player.health=Math.min(this.player.maxHealth,this.player.health+8);this.toast(id==='berry'?'Ягоды · +12 сытости':'Жареное мясо · +36 сытости');this.dirty++;return true;}
+ eat(id:ResourceId){if(this.dead||!['berry','cooked'].includes(id)||!this.inventory.remove(id,1))return false;this.player.hunger=Math.min(100,this.player.hunger+(id==='berry'?12:36));if(id==='berry')this.player.health=Math.min(this.player.maxHealth,this.player.health+5);else this.player.health=Math.min(this.player.maxHealth,this.player.health+8);this.toast(id==='berry'?'Ягоды · +12 сытости · +5 HP':'Жареное мясо · +36 сытости · +8 HP');this.dirty++;return true;}
  cook(){if(this.dead||!this.buildings.nearFire(this.player)){this.toast('Подойди к костру');return false;}if(!this.inventory.count('meat')){this.toast('Нет сырого мяса');return false;}
   const before=this.inventory.slots.map(s=>({...s}));this.inventory.remove('meat',1);if(!this.inventory.add('cooked',1)){this.inventory.slots=before;this.toast('Освободи место для приготовленного мяса');return false;}
   this.player.actionTimer=1.4;this.xp.award('cook',3,7);this.emit({type:'cook'});this.toast('Мясо приготовлено');this.dirty++;return true;
