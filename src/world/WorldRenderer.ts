@@ -450,8 +450,8 @@ export class WorldRenderer {
   const normal=heights.hero/this.player.height;this.player.setScale(normal*(1+(p.actionTimer>0?.035:0)),normal*(p.actionTimer>0?.87:1));
   this.playerShadow.setPosition(p.x,p.y+1).setDepth(p.y-1);
   const heroY=p.y-bob+(p.actionTimer>0?8:0),papakha=m.inventory.equipment.headwear==='whitePapakha',heroAngle=moving?Math.sin(p.walk)*2:0;
-  // Attach the hat to the hero's forehead in the hero's own rotated/scaled coordinate space.
-  // This keeps one registration point through idle, walk, sprint and attack instead of letting the hat float independently.
+  // Hard-lock the papakha's lower fur edge to the hero hairline in local character space.
+  // The artwork itself now opens the face; this attachment point must not be raised to reveal it.
   const headLocalY=-this.player.displayHeight*PAPAKHA_FIT.world.foreheadY,headRad=Phaser.Math.DegToRad(heroAngle);
   const headX=p.x-headLocalY*Math.sin(headRad),headY=heroY+headLocalY*Math.cos(headRad);
   const attackX=p.actionTimer>0?1.035:1,attackY=p.actionTimer>0?.87:1;
