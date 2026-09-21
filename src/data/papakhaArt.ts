@@ -7,8 +7,8 @@ function mulberry32(seed:number){
 export const PAPAKHA_FIT={
  // The anchor is the forehead/hairline, not a free-floating point above the hero.
  // Keep the world version only slightly wider than the head.
- world:{width:29,height:23,foreheadY:.94,originY:.91},
- preview:{width:46,height:39,left:50,top:1},
+ world:{width:29,height:22,foreheadY:.885,originY:.856},
+ preview:{width:46,height:38,left:50,top:1},
 } as const;
 
 export function drawWhitePapakha(ctx:CanvasRenderingContext2D,width:number,height:number,mode:PapakhaMode='wear'){
@@ -21,15 +21,16 @@ export function drawWhitePapakha(ctx:CanvasRenderingContext2D,width:number,heigh
  const path=()=>{
   ctx.beginPath();
   // Tall sheepskin papakha: almost vertical sides, softly uneven crown, compact lower edge.
-  ctx.moveTo(88,271);
-  ctx.bezierCurveTo(82,230,82,161,90,105);
-  ctx.bezierCurveTo(96,71,121,49,154,41);
-  ctx.bezierCurveTo(183,33,205,35,218,32);
-  ctx.bezierCurveTo(242,32,270,35,292,43);
-  ctx.bezierCurveTo(323,54,337,77,341,108);
-  ctx.bezierCurveTo(348,166,347,226,337,270);
-  ctx.bezierCurveTo(296,280,255,283,211,282);
-  ctx.bezierCurveTo(166,283,124,279,88,271);
+  ctx.moveTo(92,268);
+  ctx.bezierCurveTo(85,226,85,160,92,105);
+  ctx.bezierCurveTo(99,72,123,50,155,42);
+  ctx.bezierCurveTo(184,34,205,36,218,33);
+  ctx.bezierCurveTo(242,33,269,36,291,44);
+  ctx.bezierCurveTo(321,55,335,78,339,108);
+  ctx.bezierCurveTo(346,164,344,224,330,268);
+  // The lower edge is deliberately shallow: it rests on the hairline instead of drooping over the eyes.
+  ctx.bezierCurveTo(289,274,252,273,211,270);
+  ctx.bezierCurveTo(170,273,133,274,92,268);
   ctx.closePath();
  };
 
@@ -89,18 +90,18 @@ export function drawWhitePapakha(ctx:CanvasRenderingContext2D,width:number,heigh
  }
 
  // Slightly darker, almost-horizontal lower fur edge that sits on the hairline.
- const band=ctx.createLinearGradient(0,247,0,284);
+ const band=ctx.createLinearGradient(0,244,0,274);
  band.addColorStop(0,'rgba(213,206,191,.04)');
  band.addColorStop(.62,'rgba(118,111,100,.16)');
  band.addColorStop(1,'rgba(64,60,55,.24)');
  ctx.fillStyle=band;
  ctx.beginPath();
- ctx.moveTo(89,260);
- ctx.bezierCurveTo(132,270,171,273,211,272);
- ctx.bezierCurveTo(252,273,294,269,336,259);
- ctx.lineTo(337,272);
- ctx.bezierCurveTo(294,282,252,285,211,284);
- ctx.bezierCurveTo(166,285,125,281,88,272);
+ ctx.moveTo(92,255);
+ ctx.bezierCurveTo(134,263,172,265,211,263);
+ ctx.bezierCurveTo(251,265,290,263,330,255);
+ ctx.lineTo(330,268);
+ ctx.bezierCurveTo(289,274,251,273,211,270);
+ ctx.bezierCurveTo(170,273,133,274,92,268);
  ctx.closePath();ctx.fill();
 
  ctx.restore();
@@ -117,7 +118,7 @@ export function drawWhitePapakha(ctx:CanvasRenderingContext2D,width:number,heigh
 
  // Clear lower contour helps the hat read at 20-30px without covering the face.
  ctx.strokeStyle='rgba(77,72,65,.30)';ctx.lineWidth=3.8;
- ctx.beginPath();ctx.moveTo(91,267);ctx.bezierCurveTo(135,276,172,279,211,278);ctx.bezierCurveTo(250,279,292,275,334,266);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(94,266);ctx.bezierCurveTo(136,272,173,272,211,269);ctx.bezierCurveTo(249,272,288,272,328,266);ctx.stroke();
  ctx.restore();
 }
 
