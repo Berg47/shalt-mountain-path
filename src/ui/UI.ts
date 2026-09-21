@@ -6,7 +6,7 @@ import type {AudioSystem} from '../systems/AudioSystem';
 export type Panel='inventory'|'character'|'craft'|'build'|'map'|'pause'|'help'|null;
 export interface UIActions {build:(kind:BuildingId)=>void;cancelBuild:()=>void;confirmBuild:()=>void;exit:()=>void;stick:{x:number;y:number;sprint:boolean};audio:AudioSystem}
 export class UI {
- root=document.getElementById('ui')!;panel:Panel=null;selected:ResourceId|null=null;lastHash='';lastFocus:HTMLElement|null=null;abort=new AbortController();toastTimer:ReturnType<typeof setTimeout>|null=null;
+ root=document.getElementById('ui')!;panel:Panel=null;selected:ResourceId|null=null;equipmentPicker:EquipmentSlot|null=null;lastHash='';lastFocus:HTMLElement|null=null;abort=new AbortController();toastTimer:ReturnType<typeof setTimeout>|null=null;
  constructor(public model:GameModel,public actions:UIActions){
   this.root.innerHTML=`<div class="hud" id="hud">
    <section class="vitals glass" aria-label="Показатели героя"><div class="identity"><div class="level-seal" id="level" title="Уровень">1</div><div><strong id="age">15 лет</strong><span id="xp-text" title="Опыт">Начало пути</span></div><button class="icon-button" data-panel="help" aria-label="Управление">${icon('help')}</button></div><div class="xp-track"><span id="xp-fill"></span></div>
@@ -33,12 +33,16 @@ export class UI {
   this.actions.audio.unlock();if(target.dataset.panel){this.open(target.dataset.panel as Panel);return;}
   if(target.dataset.hotbar){const id=target.dataset.hotbar;if(id in TOOLS)this.model.equip(id as ToolId);else this.model.eat(id as ResourceId);this.update(true);return;}
   if(target.dataset.item){this.selected=target.dataset.item as ResourceId;this.renderPanel();return;}
+  if(target.dataset.equipmentSlot){this.equipmentPicker=target.dataset.equipmentSlot as EquipmentSlot;this.renderPanel();return;}
+  if(target.dataset.chooseEquipment){const slot=target.dataset.targetSlot as EquipmentSlot,id=target.dataset.chooseEquipment;if(slot==='weapon')this.model.equip(id as ToolId);else if(slot==='mantle'&&id==='wolfMantle')this.model.equipWearable('wolfMantle');this.equipmentPicker=null;this.renderPanel();this.update(true);return;}
   if(target.dataset.equip==='wolfMantle'){this.model.equipWearable('wolfMantle');this.renderPanel();this.update(true);return;}
   if(target.dataset.unequip){this.model.unequip(target.dataset.unequip as EquipmentSlot);this.renderPanel();this.update(true);return;}
   if(target.dataset.craft){this.model.craft(target.dataset.craft as RecipeId);this.renderPanel();this.update(true);return;}
   if(target.dataset.build){this.open(null);this.actions.build(target.dataset.build as BuildingId);return;}
   const action=target.dataset.action;
   if(action==='close')this.open(null);
+  else if(action==='close-equipment'){this.equipmentPicker=null;this.renderPanel();}
+  else if(action==='unequip-equipment'&&target.dataset.targetSlot){this.model.unequip(target.dataset.targetSlot as EquipmentSlot);this.equipmentPicker=null;this.renderPanel();this.update(true);}
   else if(action==='eat'&&this.selected){this.model.eat(this.selected);this.renderPanel();}
   else if(action==='discard'&&this.selected){if(this.selected==='wolfMantle'&&this.model.inventory.equipment.mantle==='wolfMantle'&&this.model.inventory.count('wolfMantle')===1)this.model.unequip('mantle');this.model.inventory.remove(this.selected,1);this.model.dirty++;this.renderPanel();this.model.toast('Один предмет оставлен');}
   else if(action==='cook'){this.model.cook();this.renderPanel();}
@@ -73,12 +77,22 @@ export class UI {
  open(panel:Panel){
   if(this.model.dead&&panel!==null){this.death();return;}
   if(panel){this.actions.cancelBuild();this.setGoalOpen(false);}
-  this.panel=panel;this.model.paused=!!panel;this.actions.stick.x=0;this.actions.stick.y=0;
+  this.panel=panel;if(panel!=='character')this.equipmentPicker=null;this.model.paused=!!panel;this.actions.stick.x=0;this.actions.stick.y=0;
   if(panel){this.lastFocus=document.activeElement as HTMLElement;this.renderPanel();requestAnimationFrame(()=>this.root.querySelector<HTMLElement>('#modal-root button')?.focus());}
   else{this.root.querySelector('#modal-root')!.innerHTML='';this.lastFocus?.focus();this.lastFocus=null;}
   this.root.querySelector('#hud')!.classList.toggle('panel-open',!!panel);
  }
  costs(cost:Cost){return `<div class="costs">${Object.entries(cost).map(([id,n])=>`<span class="${this.model.inventory.count(id as ResourceId)>=n!?'enough':'missing'}">${itemIcon(id)} ${this.model.inventory.count(id as ResourceId)}/${n} <small>${ITEMS[id as ResourceId].short}</small></span>`).join('')}</div>`;}
+ equipmentPickerHtml(slot:EquipmentSlot){
+  const m=this.model,eq=m.inventory.equipment;
+  const titles:Record<EquipmentSlot,string>={weapon:'Оружие',headwear:'Головной убор',clothing:'Одежда',mantle:'Накидка',shoes:'Обувь',belt:'Пояс'};
+  let options='';
+  if(slot==='weapon'){options=m.inventory.tools.map(t=>`<button class="equipment-choice ${eq.weapon===t?'equipped':''}" data-choose-equipment="${t}" data-target-slot="weapon"><span>${icon(t)}</span><div><strong>${t==='shalt'?`Шалт ${m.inventory.shaltLevel}`:TOOLS[t].name}</strong><small>${eq.weapon===t?'Надето':'Выбрать'}</small></div>${eq.weapon===t?icon('check'):''}</button>`).join('');}
+  else if(slot==='mantle'&&m.inventory.count('wolfMantle')){const on=eq.mantle==='wolfMantle';options=`<button class="equipment-choice ${on?'equipped':''}" data-choose-equipment="wolfMantle" data-target-slot="mantle"><span>${icon('wolfMantle')}</span><div><strong>${ITEMS.wolfMantle.name}</strong><small>${on?'Надето':'Надеть'}</small></div>${on?icon('check'):''}</button>`;}
+  if(!options){const iconName=slot==='headwear'?'headwear':slot==='clothing'?'clothing':slot==='shoes'?'shoes':slot==='belt'?'belt':slot==='mantle'?'wolfMantle':'weapon';options=`<div class="equipment-empty">${icon(iconName)}<strong>Пока пусто</strong><p>В рюкзаке нет предметов для этого слота.</p></div>`;}
+  const canRemove=slot!=='weapon'&&eq[slot]!==null;
+  return `<div class="equipment-picker-backdrop"><section class="equipment-picker" role="dialog" aria-label="Выбор: ${titles[slot]}"><header><div><small>ЭКИПИРОВКА</small><h3>${titles[slot]}</h3></div><button class="icon-button" data-action="close-equipment" aria-label="Закрыть">${icon('close')}</button></header><div class="equipment-choice-list">${options}</div>${canRemove?`<button class="text-button equipment-remove" data-action="unequip-equipment" data-target-slot="${slot}">Снять предмет</button>`:''}</section></div>`;
+ }
  renderPanel(){
   if(!this.panel)return;const m=this.model;let body='';const names={inventory:'Всё, что с собой',character:'Персонаж',craft:'Ремесло',build:'Твой лагерь',map:'Долина',pause:'Твой путь',help:'Управление'};
   if(this.panel==='inventory'){
@@ -89,28 +103,31 @@ export class UI {
   }else if(this.panel==='character'){
    const weapon=m.inventory.equipment.weapon?(m.inventory.equipment.weapon==='shalt'?`Шалт ${m.inventory.shaltLevel}`:TOOLS[m.inventory.equipment.weapon as ToolId]?.name??'Оружие'):'Пусто';
    const mantleEquipped=m.inventory.equipment.mantle==='wolfMantle',mantleOwned=m.inventory.count('wolfMantle')>0;
-   const slot=(label:string,iconName:string,value:string,attrs='',disabled=false)=>`<button class="equipment-square ${value==='Пусто'?'empty':''}" ${attrs} ${disabled?'disabled':''}><span class="equipment-square-icon">${icon(iconName)}</span><strong>${label}</strong><small>${value}</small></button>`;
+   const slot=(slotId:EquipmentSlot,label:string,iconName:string,value:string)=>`<button class="equipment-square ${value==='Пусто'?'empty':''}" data-equipment-slot="${slotId}" aria-label="${label}: ${value}"><span class="equipment-square-icon">${icon(iconName)}</span><strong>${label}</strong><small>${value}</small></button>`;
+   const picker=this.equipmentPicker?this.equipmentPickerHtml(this.equipmentPicker):'';
    body=`<div class="character-stage ${mantleEquipped?'wearing-wolf':''}">
     <div class="equipment-column left">
-     ${slot('Головной убор','headwear','Пусто','',true)}
-     ${slot('Одежда','clothing','Пусто','',true)}
-     ${slot('Обувь','shoes','Пусто','',true)}
+     ${slot('headwear','Головной убор','headwear','Пусто')}
+     ${slot('clothing','Одежда','clothing','Базовая одежда')}
+     ${slot('shoes','Обувь','shoes','Пусто')}
     </div>
     <section class="character-center" aria-label="Игровой персонаж">
      <div class="character-aura"></div>
      <div class="character-figure" aria-hidden="true">
       ${mantleEquipped?'<span class="preview-wolf-cloak"></span>':''}
       <div class="actual-game-hero"></div>
+      <span class="hero-clean-chest"></span>
       ${mantleEquipped?'<span class="preview-wolf-head"></span>':''}
      </div>
      <div class="character-ground"></div>
      <div class="character-caption"><strong>Герой · ${m.age} лет</strong><span>Уровень ${m.xp.level}</span></div>
     </section>
     <div class="equipment-column right">
-     ${slot('Оружие','weapon',weapon,'',true)}
-     ${slot('Накидка','wolfMantle',mantleEquipped?'Надето':mantleOwned?'В рюкзаке':'Пусто',mantleEquipped?'data-unequip="mantle"':mantleOwned?'data-equip="wolfMantle"':'',!mantleOwned&&!mantleEquipped)}
-     ${slot('Пояс','belt','Пусто','',true)}
+     ${slot('weapon','Оружие','weapon',weapon)}
+     ${slot('mantle','Накидка','wolfMantle',mantleEquipped?'Надето':mantleOwned?'Есть в рюкзаке':'Пусто')}
+     ${slot('belt','Пояс','belt','Пусто')}
     </div>
+    ${picker}
    </div>`;
   }else if(this.panel==='craft'){
    body='<p class="panel-intro">Простые вещи и улучшения снаряжения.</p><div class="recipe-list">'+Object.entries(RECIPES).map(([id,r])=>{const owned=m.crafting.owned(id as RecipeId),unlocked=!r.requires||m.inventory.tools.includes(r.requires),benchReady=!r.bench||m.buildings.nearWorkbench(m.player),recipeIcon=id.startsWith('bag')?'bag':id.startsWith('shalt')?'shalt':id;return `<article class="recipe"><div class="recipe-symbol">${icon(recipeIcon)}</div><div class="recipe-content"><h3>${r.name}</h3><p>${r.description}</p>${r.bench&&!owned?'<span class="made">'+icon('workbench')+' Требуется верстак рядом</span>':''}${!owned?this.costs(r.cost):'<span class="made">'+icon('check')+' Изготовлено</span>'}</div><button class="button small" data-craft="${id}" ${owned||!unlocked||!benchReady||!m.inventory.canAfford(r.cost)?'disabled':''}>${owned?'Готово':!unlocked?'После топора':!benchReady?'У верстака':'Создать'}</button></article>`;}).join('')+'</div>';
