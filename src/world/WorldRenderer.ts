@@ -375,9 +375,22 @@ function makeCaveExitTexture(scene:Phaser.Scene){
  t.refresh();
 }
 
+function makeHeroChestPatchTexture(scene:Phaser.Scene){
+ if(scene.textures.exists('hero-clean-chest'))scene.textures.remove('hero-clean-chest');
+ const t=scene.textures.createCanvas('hero-clean-chest',180,100)!;const c=t.getContext(),rand=seeded(9911);
+ c.clearRect(0,0,180,100);c.imageSmoothingEnabled=true;
+ const g=c.createLinearGradient(0,0,0,100);g.addColorStop(0,'#42535d');g.addColorStop(.48,'#2b3e49');g.addColorStop(1,'#22343e');
+ c.fillStyle=g;c.beginPath();c.moveTo(15,15);c.lineTo(62,4);c.lineTo(90,13);c.lineTo(118,4);c.lineTo(165,15);c.lineTo(151,95);c.lineTo(29,95);c.closePath();c.fill();
+ c.strokeStyle='rgba(11,23,29,.52)';c.lineWidth=4;c.beginPath();c.moveTo(90,12);c.lineTo(90,95);c.stroke();
+ c.strokeStyle='rgba(157,171,174,.09)';c.lineWidth=2;c.lineCap='round';
+ for(let i=0;i<18;i++){const x=25+rand()*130,y=18+rand()*68;c.beginPath();c.moveTo(x,y);c.lineTo(x+(rand()-.5)*10,y+7+rand()*9);c.stroke();}
+ c.fillStyle='rgba(181,187,176,.18)';for(const y of [37,55,73]){c.beginPath();c.arc(94,y,1.7,0,Math.PI*2);c.fill();}
+ t.refresh();
+}
+
 export function setupFrames(scene:Phaser.Scene){
  const t=scene.textures.get('atlas');for(const [name,b]of Object.entries(FRAMES))if(!t.has(name))t.add(name,0,...b);
- makeWorkbenchTexture(scene);makeEnemyTexture(scene,'dagger');makeEnemyTexture(scene,'shield');makeEnemyTexture(scene,'chaborz');makeWolfTexture(scene);makeMantleTexture(scene);makeBonesTexture(scene);makeTorchTexture(scene);makeCaveInteriorTexture(scene);makeCaveExitTexture(scene);
+ makeWorkbenchTexture(scene);makeEnemyTexture(scene,'dagger');makeEnemyTexture(scene,'shield');makeEnemyTexture(scene,'chaborz');makeWolfTexture(scene);makeMantleTexture(scene);makeHeroChestPatchTexture(scene);makeBonesTexture(scene);makeTorchTexture(scene);makeCaveInteriorTexture(scene);makeCaveExitTexture(scene);
 }
 
 function makeTerrain(scene:Phaser.Scene,world:World){
@@ -416,7 +429,7 @@ function makeTerrain(scene:Phaser.Scene,world:World){
 
 export class WorldRenderer {
  nodeSprites:Phaser.GameObjects.Image[]=[];animalSprites:Phaser.GameObjects.Image[]=[];animalShadows:Phaser.GameObjects.Ellipse[]=[];enemySprites:Phaser.GameObjects.Image[]=[];enemyShadows:Phaser.GameObjects.Ellipse[]=[];buildingSprites=new Map<number,Phaser.GameObjects.Image>();
- player:Phaser.GameObjects.Image;playerCloak:Phaser.GameObjects.Image;playerWolfHead:Phaser.GameObjects.Image;playerShadow:Phaser.GameObjects.Ellipse;ring:Phaser.GameObjects.Graphics;effects:Phaser.GameObjects.Graphics;atmosphere:Phaser.GameObjects.Graphics;ghost:Phaser.GameObjects.Image;
+ player:Phaser.GameObjects.Image;playerCloak:Phaser.GameObjects.Image;playerChestPatch:Phaser.GameObjects.Image;playerWolfHead:Phaser.GameObjects.Image;playerShadow:Phaser.GameObjects.Ellipse;ring:Phaser.GameObjects.Graphics;effects:Phaser.GameObjects.Graphics;atmosphere:Phaser.GameObjects.Graphics;ghost:Phaser.GameObjects.Image;
  caveWolfSprite:Phaser.GameObjects.Image;caveWolfShadow:Phaser.GameObjects.Ellipse;caveObjects:Phaser.GameObjects.GameObject[]=[];caveLights:Phaser.GameObjects.Image[]=[];worldDecor:Phaser.GameObjects.GameObject[]=[];
  glow:Phaser.GameObjects.Image[]=[];lightTexture:Phaser.Textures.CanvasTexture;wind=0;
  constructor(public scene:Phaser.Scene,public model:GameModel){
@@ -442,7 +455,8 @@ export class WorldRenderer {
   this.playerShadow=scene.add.ellipse(model.player.x,model.player.y,33,13,0x081c17,.36);
   this.playerCloak=scene.add.image(model.player.x,model.player.y,'wolf-cloak').setOrigin(.5,.9).setDisplaySize(60,82).setDepth(model.player.y-.3).setVisible(false);
   this.player=this.sprite('hero',model.player.x,model.player.y);
-  this.playerWolfHead=scene.add.image(model.player.x,model.player.y-64,'wolf-headpiece').setOrigin(.5,.58).setDisplaySize(39,25).setDepth(model.player.y+.4).setVisible(false);
+  this.playerChestPatch=scene.add.image(model.player.x,model.player.y-43,'hero-clean-chest').setOrigin(.5,.5).setDisplaySize(23,13).setDepth(model.player.y+.2);
+  this.playerWolfHead=scene.add.image(model.player.x,model.player.y-79,'wolf-headpiece').setOrigin(.5,.58).setDisplaySize(34,20).setDepth(model.player.y+.4).setVisible(false);
   this.caveWolfShadow=scene.add.ellipse(CAVE.wolfSpawn.x,CAVE.wolfSpawn.y+6,172,30,0x020303,.62).setDepth(CAVE.wolfSpawn.y-1).setVisible(false);
   this.caveWolfSprite=scene.add.image(CAVE.wolfSpawn.x,CAVE.wolfSpawn.y,'black-wolf').setOrigin(.5,.84).setDisplaySize(218,133).setDepth(CAVE.wolfSpawn.y).setVisible(false);
   // Full-world blackout prevents the outside mountain art from bleeding into the interior on tall phones.
@@ -473,9 +487,10 @@ export class WorldRenderer {
   this.player.setPosition(p.x,p.y-bob+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y).setAngle(moving?Math.sin(p.walk)*2:0).setAlpha(p.invulnerable>0&&Math.sin(this.wind*32)>0?.45:1);
   const normal=heights.hero/this.player.height;this.player.setScale(normal*(1+(p.actionTimer>0?.035:0)),normal*(p.actionTimer>0?.87:1));
   this.playerShadow.setPosition(p.x,p.y+1).setDepth(p.y-1);
+  this.playerChestPatch.setPosition(p.x,p.y-bob-43+(p.actionTimer>0?7:0)).setDepth(p.y+.2).setFlipX(p.facing<0).setAngle(moving?Math.sin(p.walk)*1.5:0).setAlpha(this.player.alpha);
   const mantle=m.inventory.equipment.mantle==='wolfMantle';
   this.playerCloak.setVisible(mantle).setPosition(p.x,p.y-bob+3+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y-.35).setAngle(moving?Math.sin(p.walk)*1.05:0).setAlpha(this.player.alpha);
-  this.playerWolfHead.setVisible(mantle).setPosition(p.x,p.y-bob-66+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y+.45).setAngle(moving?Math.sin(p.walk)*.85:0).setAlpha(this.player.alpha);
+  this.playerWolfHead.setVisible(mantle).setPosition(p.x,p.y-bob-79+(p.actionTimer>0?8:0)).setFlipX(p.facing<0).setDepth(p.y+.45).setAngle(moving?Math.sin(p.walk)*.7:0).setAlpha(this.player.alpha);
   const cave=m.location==='cave';for(const obj of this.caveObjects)(obj as any).setVisible(cave);for(const obj of this.worldDecor)(obj as any).setVisible(!cave);
   const view=camera.worldView;
   for(const n of m.world.nodes){const img=this.nodeSprites[n.id];const visible=!cave&&!n.depleted&&n.x>view.x-270&&n.x<view.right+270&&n.y>view.y-100&&n.y<view.bottom+310;img.setVisible(visible);if(!visible)continue;if(n.kind==='tree'||n.kind==='pine'){const hide=p.y<n.y&&p.y>n.y-img.displayHeight&&Math.abs(p.x-n.x)<img.displayWidth*.4;img.setAlpha(hide?.48:1);img.setRotation(Math.sin(this.wind*.6+n.id)*.007);}}
