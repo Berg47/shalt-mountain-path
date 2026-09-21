@@ -1,4 +1,4 @@
-import {RECIPES,type RecipeId} from '../data/config';
+import {RECIPES,type RecipeId,type ToolId} from '../data/config';
 import type {InventorySystem} from './InventorySystem';
 import type {ExperienceSystem} from './ExperienceSystem';
 
@@ -9,7 +9,7 @@ export class CraftingSystem {
   const bagLevel=BAG_RECIPE_LEVEL[id];if(bagLevel)return this.inventory.bagLevel>=bagLevel;
   if(id==='shalt2')return this.inventory.shaltLevel>=2;
   if(id==='shalt3')return this.inventory.shaltLevel>=3;
-  return this.inventory.tools.includes(id);
+  return this.inventory.tools.includes(id as ToolId);
  }
  craft(id:RecipeId){
   const r=RECIPES[id];if(this.owned(id))return 'Уже изготовлено';
@@ -21,7 +21,7 @@ export class CraftingSystem {
   if(targetBagLevel){this.inventory.bag=true;this.inventory.bagLevel=targetBagLevel;}
   else if(id==='shalt2')this.inventory.shaltLevel=2;
   else if(id==='shalt3')this.inventory.shaltLevel=3;
-  else{this.inventory.tools.push(id);this.inventory.equipped=id;}
+  else{const tool=id as ToolId;this.inventory.tools.push(tool);this.inventory.equipped=tool;}
   this.xp.award('craft:'+id,r.xp);return null;
  }
 }
