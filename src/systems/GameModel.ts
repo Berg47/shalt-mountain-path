@@ -125,7 +125,7 @@ export class GameModel {
    const previous=this.lastLevel;this.lastLevel=this.xp.level;this.applyLevelCaps(true,previous);
    this.emit({type:'level',text:`Уровень ${this.xp.level} · здоровье ${p.maxHealth} · выносливость ${p.maxStamina}`});
   }
-  if(this.xp.level>=20&&!this.adult&&!this.trialNotified){
+  if(this.location==='world'&&this.xp.level>=20&&!this.adult&&!this.trialNotified){
    this.trialNotified=true;const boss=this.enemies.find(e=>e.kind==='chaborz');if(boss)boss.active=true;
    this.emit({type:'trial',text:'Бой за жизнь'});this.save();
   }
