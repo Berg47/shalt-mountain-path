@@ -98,7 +98,11 @@ export class UI {
     </div>
     <section class="character-center" aria-label="Игровой персонаж">
      <div class="character-aura"></div>
-     <div class="actual-game-hero" aria-hidden="true"></div>
+     <div class="character-figure" aria-hidden="true">
+      ${mantleEquipped?'<span class="preview-wolf-cloak"></span>':''}
+      <div class="actual-game-hero"></div>
+      ${mantleEquipped?'<span class="preview-wolf-head"></span>':''}
+     </div>
      <div class="character-ground"></div>
      <div class="character-caption"><strong>Герой · ${m.age} лет</strong><span>Уровень ${m.xp.level}</span></div>
     </section>
