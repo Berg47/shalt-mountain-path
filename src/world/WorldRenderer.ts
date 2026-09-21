@@ -84,98 +84,103 @@ function makeWorkbenchTexture(scene:Phaser.Scene){
 }
 
 function makeEnemyTexture(scene:Phaser.Scene,kind:'dagger'|'shield'|'chaborz'){
- const key='enemy-'+kind;if(scene.textures.exists(key))return;
- const boss=kind==='chaborz',strong=kind==='shield';
+ const key='enemy-'+kind;if(scene.textures.exists(key))scene.textures.remove(key);
+ const boss=kind==='chaborz',strong=kind==='shield',rand=seeded(boss?7711:strong?6617:5519);
  const W=boss?420:360,H=boss?620:540,t=scene.textures.createCanvas(key,W,H)!;const c=t.getContext(),cx=W/2;
  c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
 
- // Reuse the illustrated hero as the anatomical/painterly base. This keeps enemies in the exact
- // same visual language as the player's character instead of looking like flat UI shapes.
+ // Start from the same painted hero artwork so anatomy, light and rendering language match the player.
  const atlasSource=scene.textures.get('atlas').getSourceImage() as CanvasImageSource;
  const [sx,sy,sw,sh]=FRAMES.hero;
- const bodyH=boss?520:strong?455:440,bodyW=bodyH*sw/sh*(strong?1.08:boss?1.12:.96),bodyX=cx-bodyW/2,bodyY=boss?40:48;
+ const bodyH=boss?520:strong?462:442,bodyW=bodyH*sw/sh*(boss?1.11:strong?1.06:.96),bodyX=cx-bodyW/2,bodyY=boss?40:48;
  c.save();
- if(kind==='dagger'){c.translate(cx,0);c.scale(.94,1);c.translate(-cx,0);}
+ if(kind==='dagger'){c.translate(cx,0);c.scale(.95,1);c.translate(-cx,0);}
  c.drawImage(atlasSource,sx,sy,sw,sh,bodyX,bodyY,bodyW,bodyH);
- c.restore();
+ // Muted charcoal glaze preserves the painted folds beneath it.
+ c.globalCompositeOperation='source-atop';
+ c.fillStyle=boss?'rgba(26,27,28,.63)':strong?'rgba(31,34,35,.59)':'rgba(38,40,40,.55)';
+ c.fillRect(bodyX-8,bodyY,bodyW+16,bodyH);
+ c.restore();c.globalCompositeOperation='source-over';
 
- // Darken the original clothing while preserving illustrated texture and folds.
- c.save();c.beginPath();c.rect(cx-bodyW*.49,bodyY+bodyH*.20,bodyW*.98,bodyH*.72);c.clip();
- c.globalCompositeOperation='source-atop';c.fillStyle=boss?'rgba(31,31,32,.66)':strong?'rgba(35,38,40,.62)':'rgba(41,43,44,.58)';
- c.fillRect(bodyX-5,bodyY,bodyW+10,bodyH);c.restore();c.globalCompositeOperation='source-over';
-
- const shoulderY=bodyY+bodyH*.24,waistY=bodyY+bodyH*.48,hemY=bodyY+bodyH*.76;
- // Cherkesska silhouette: no gazyrs, deliberately worn/torn hem.
- let cloth=c.createLinearGradient(cx-bodyW*.35,shoulderY,cx+bodyW*.35,hemY);
- cloth.addColorStop(0,boss?'#292a2c':'#34373a');cloth.addColorStop(.48,strong?'#292d30':'#2d3032');cloth.addColorStop(1,'#1d2021');
+ const shoulderY=bodyY+bodyH*.245,waistY=bodyY+bodyH*.49,hemY=bodyY+bodyH*.77;
+ // Worn mountain coat / cherkesska silhouette, deliberately without gazyrs.
+ let cloth=c.createLinearGradient(cx-bodyW*.38,shoulderY,cx+bodyW*.36,hemY);
+ cloth.addColorStop(0,boss?'#333435':strong?'#3a3d3e':'#414344');
+ cloth.addColorStop(.48,boss?'#232526':strong?'#292c2d':'#303233');
+ cloth.addColorStop(1,'#17191a');
  c.fillStyle=cloth;c.beginPath();
- c.moveTo(cx-bodyW*.34,shoulderY);c.quadraticCurveTo(cx,shoulderY-18,cx+bodyW*.34,shoulderY);
- c.lineTo(cx+bodyW*.30,waistY);c.lineTo(cx+bodyW*.39,hemY-18);
- c.lineTo(cx+bodyW*.26,hemY+17);c.lineTo(cx+bodyW*.13,hemY+1);c.lineTo(cx,hemY+24);
- c.lineTo(cx-bodyW*.12,hemY+3);c.lineTo(cx-bodyW*.27,hemY+19);c.lineTo(cx-bodyW*.39,hemY-14);
+ c.moveTo(cx-bodyW*.35,shoulderY);c.quadraticCurveTo(cx,shoulderY-17,cx+bodyW*.35,shoulderY);
+ c.lineTo(cx+bodyW*.30,waistY);c.lineTo(cx+bodyW*.39,hemY-16);
+ c.lineTo(cx+bodyW*.29,hemY+17);c.lineTo(cx+bodyW*.17,hemY+2);c.lineTo(cx+bodyW*.04,hemY+20);
+ c.lineTo(cx-bodyW*.09,hemY+4);c.lineTo(cx-bodyW*.23,hemY+18);c.lineTo(cx-bodyW*.39,hemY-13);
  c.lineTo(cx-bodyW*.30,waistY);c.closePath();c.fill();
 
- // Subtle folds/highlights to avoid a flat vector look.
- c.strokeStyle='rgba(179,184,181,.14)';c.lineWidth=boss?5:4;c.lineCap='round';
- for(const dx of [-.20,-.08,.08,.20]){c.beginPath();c.moveTo(cx+bodyW*dx,shoulderY+24);c.quadraticCurveTo(cx+bodyW*dx*.7,waistY,cx+bodyW*dx*1.1,hemY-9);c.stroke();}
- c.strokeStyle='rgba(5,8,8,.28)';c.lineWidth=5;c.beginPath();c.moveTo(cx,shoulderY+16);c.lineTo(cx,hemY-8);c.stroke();
+ // Painterly cloth texture and worn highlights.
+ c.save();c.beginPath();c.rect(cx-bodyW*.43,shoulderY-5,bodyW*.86,hemY-shoulderY+48);c.clip();
+ c.lineCap='round';
+ for(let i=0;i<(boss?120:88);i++){
+  const x=cx-bodyW*.35+rand()*bodyW*.7,y=shoulderY+rand()*(hemY-shoulderY),len=10+rand()*34;
+  c.strokeStyle=rand()>.65?'rgba(193,190,174,.10)':'rgba(8,10,10,.15)';
+  c.lineWidth=1+rand()*2.4;c.beginPath();c.moveTo(x,y);c.lineTo(x+(rand()-.5)*8,y+len);c.stroke();
+ }
+ c.restore();
 
- // Plain belt, intentionally without gazyrs.
- const beltY=waistY+3;let belt=c.createLinearGradient(cx-bodyW*.3,beltY,cx+bodyW*.3,beltY);
- belt.addColorStop(0,'#171819');belt.addColorStop(.5,'#39332c');belt.addColorStop(1,'#151718');
- c.fillStyle=belt;c.beginPath();c.roundRect(cx-bodyW*.31,beltY-7,bodyW*.62,15,6);c.fill();
- c.fillStyle='#777367';c.beginPath();c.roundRect(cx-10,beltY-8,20,17,4);c.fill();
+ // Simple leather belt, no decorative cartridge holders.
+ const beltY=waistY+3;
+ let belt=c.createLinearGradient(cx-bodyW*.31,beltY,cx+bodyW*.31,beltY);
+ belt.addColorStop(0,'#171716');belt.addColorStop(.5,'#4a3b2e');belt.addColorStop(1,'#151616');
+ c.fillStyle=belt;c.beginPath();c.roundRect(cx-bodyW*.31,beltY-7,bodyW*.62,15,5);c.fill();
+ c.fillStyle='#787264';c.beginPath();c.roundRect(cx-9,beltY-8,18,17,4);c.fill();
 
- // Triangular scarf covering nose, mouth and chin. Eyes are the only exposed face detail.
- const faceY=bodyY+bodyH*.105,faceW=boss?62:strong?55:50;
- cloth=c.createLinearGradient(cx-faceW,faceY,cx+faceW,faceY+92);
- cloth.addColorStop(0,'#222426');cloth.addColorStop(.5,'#343638');cloth.addColorStop(1,'#17191a');
- c.fillStyle=cloth;c.beginPath();c.moveTo(cx-faceW,faceY+20);c.quadraticCurveTo(cx,faceY+9,cx+faceW,faceY+20);c.lineTo(cx,faceY+92);c.closePath();c.fill();
- // Cloth fold and knots.
- c.strokeStyle='rgba(181,184,180,.16)';c.lineWidth=3;c.beginPath();c.moveTo(cx-faceW+9,faceY+28);c.lineTo(cx,faceY+78);c.lineTo(cx+faceW-9,faceY+28);c.stroke();
- c.fillStyle='#1b1d1e';c.beginPath();c.moveTo(cx-faceW+3,faceY+23);c.lineTo(cx-faceW-25,faceY+41);c.lineTo(cx-faceW+2,faceY+48);c.closePath();c.fill();
+ // Sleeves merge into the same garment instead of reading as pasted-on shapes.
+ c.strokeStyle=strong?'#2b2e2f':'#333536';c.lineWidth=boss?29:24;c.lineCap='round';
+ c.beginPath();c.moveTo(cx-bodyW*.29,shoulderY+18);c.lineTo(cx-bodyW*.39,waistY+24);c.moveTo(cx+bodyW*.29,shoulderY+18);c.lineTo(cx+bodyW*.39,waistY+24);c.stroke();
+ c.strokeStyle='rgba(196,193,178,.10)';c.lineWidth=4;
+ c.beginPath();c.moveTo(cx-bodyW*.29,shoulderY+22);c.lineTo(cx-bodyW*.37,waistY+18);c.moveTo(cx+bodyW*.29,shoulderY+22);c.lineTo(cx+bodyW*.37,waistY+18);c.stroke();
 
- // Dark cloth around brow/hairline frames the exposed eyes.
- c.fillStyle='rgba(28,30,31,.9)';c.beginPath();c.ellipse(cx,faceY-7,faceW*.88,boss?26:22,0,Math.PI,Math.PI*2);c.fill();
- c.strokeStyle='rgba(10,11,12,.72)';c.lineWidth=4;
- c.beginPath();c.moveTo(cx-27,faceY+10);c.lineTo(cx-7,faceY+7);c.moveTo(cx+7,faceY+7);c.lineTo(cx+27,faceY+10);c.stroke();
+ // Face: a narrow natural skin/eye band, with a triangular dark scarf over nose, mouth and chin.
+ const faceY=bodyY+bodyH*.105,faceW=boss?59:strong?53:49;
+ const skin=c.createLinearGradient(cx-faceW,faceY-14,cx+faceW,faceY+26);
+ skin.addColorStop(0,'#b99474');skin.addColorStop(.55,'#9d765b');skin.addColorStop(1,'#70523f');
+ c.fillStyle=skin;c.beginPath();c.ellipse(cx,faceY+10,faceW*.76,boss?28:24,0,0,Math.PI*2);c.fill();
+ c.fillStyle='rgba(27,25,24,.82)';c.beginPath();c.ellipse(cx,faceY-11,faceW*.88,boss?27:23,0,Math.PI,Math.PI*2);c.fill();
+ c.strokeStyle='rgba(25,21,19,.86)';c.lineWidth=4;
+ c.beginPath();c.moveTo(cx-25,faceY+5);c.lineTo(cx-7,faceY+2);c.moveTo(cx+7,faceY+2);c.lineTo(cx+25,faceY+5);c.stroke();
+ c.fillStyle='#171819';c.beginPath();c.ellipse(cx-14,faceY+8,3.4,2.2,0,0,Math.PI*2);c.fill();c.beginPath();c.ellipse(cx+14,faceY+8,3.4,2.2,0,0,Math.PI*2);c.fill();
 
- // Arms/sleeve overlays make the clothing read as one garment.
- c.strokeStyle=strong?'#292d30':'#303335';c.lineWidth=boss?30:24;c.lineCap='round';
- c.beginPath();c.moveTo(cx-bodyW*.30,shoulderY+20);c.lineTo(cx-bodyW*.39,waistY+24);c.moveTo(cx+bodyW*.30,shoulderY+20);c.lineTo(cx+bodyW*.39,waistY+24);c.stroke();
+ cloth=c.createLinearGradient(cx-faceW,faceY+12,cx+faceW,faceY+91);
+ cloth.addColorStop(0,'#343536');cloth.addColorStop(.48,'#262829');cloth.addColorStop(1,'#151718');
+ c.fillStyle=cloth;c.beginPath();c.moveTo(cx-faceW,faceY+18);c.quadraticCurveTo(cx,faceY+10,cx+faceW,faceY+18);c.lineTo(cx,faceY+91);c.closePath();c.fill();
+ c.strokeStyle='rgba(194,193,183,.13)';c.lineWidth=3;c.beginPath();c.moveTo(cx-faceW+8,faceY+28);c.lineTo(cx,faceY+76);c.lineTo(cx+faceW-8,faceY+28);c.stroke();
+ c.fillStyle='#1a1b1c';c.beginPath();c.moveTo(cx-faceW+1,faceY+22);c.lineTo(cx-faceW-24,faceY+40);c.lineTo(cx-faceW+2,faceY+46);c.closePath();c.fill();
 
  if(kind==='dagger'){
-  // Compact Caucasian-style dagger / shalt.
-  c.save();c.translate(cx+bodyW*.42,waistY+24);c.rotate(-.58);
-  let metal=c.createLinearGradient(0,-12,0,84);metal.addColorStop(0,'#f0ead8');metal.addColorStop(.42,'#aeb4ad');metal.addColorStop(1,'#5b6461');
-  c.fillStyle=metal;c.beginPath();c.moveTo(-7,-4);c.lineTo(7,-4);c.lineTo(2,73);c.lineTo(0,88);c.lineTo(-2,73);c.closePath();c.fill();
-  c.fillStyle='#5a3e29';c.beginPath();c.roundRect(-10,-30,20,31,7);c.fill();c.fillStyle='#90866f';c.fillRect(-16,-5,32,5);c.restore();
+  // Compact Caucasian dagger.
+  c.save();c.translate(cx+bodyW*.42,waistY+26);c.rotate(-.58);
+  const metal=c.createLinearGradient(0,-10,0,88);metal.addColorStop(0,'#eee8d6');metal.addColorStop(.48,'#a9afaa');metal.addColorStop(1,'#505956');
+  c.fillStyle=metal;c.beginPath();c.moveTo(-7,-4);c.lineTo(7,-4);c.lineTo(2,74);c.lineTo(0,90);c.lineTo(-2,74);c.closePath();c.fill();
+  c.fillStyle='#5c3d29';c.beginPath();c.roundRect(-10,-31,20,32,7);c.fill();c.fillStyle='#8e826e';c.fillRect(-16,-5,32,5);c.restore();
  }else if(kind==='shield'){
-  // Larger fighter: weathered round shield and longer sword.
-  const shX=cx-bodyW*.48,shY=waistY+16,shW=92,shH=122;
-  let sg=c.createRadialGradient(shX-16,shY-25,8,shX,shY,70);sg.addColorStop(0,'#6b655a');sg.addColorStop(.52,'#454945');sg.addColorStop(1,'#252a28');
-  c.fillStyle=sg;c.beginPath();c.ellipse(shX,shY,shW/2,shH/2,-.08,0,Math.PI*2);c.fill();
-  c.strokeStyle='#8f8c7b';c.lineWidth=7;c.stroke();c.strokeStyle='rgba(210,207,184,.18)';c.lineWidth=3;
-  c.beginPath();c.moveTo(shX-26,shY-42);c.lineTo(shX+21,shY+37);c.moveTo(shX+31,shY-26);c.lineTo(shX-22,shY+31);c.stroke();
-  c.fillStyle='#79796f';c.beginPath();c.arc(shX,shY,13,0,Math.PI*2);c.fill();
-  c.save();c.translate(cx+bodyW*.38,waistY+42);c.rotate(.38);
-  let metal=c.createLinearGradient(0,-110,0,62);metal.addColorStop(0,'#e6e3d5');metal.addColorStop(.55,'#969d98');metal.addColorStop(1,'#4a5350');
+  const shX=cx-bodyW*.49,shY=waistY+18;
+  const sg=c.createRadialGradient(shX-13,shY-24,8,shX,shY,72);sg.addColorStop(0,'#777066');sg.addColorStop(.52,'#464a46');sg.addColorStop(1,'#242826');
+  c.fillStyle=sg;c.beginPath();c.ellipse(shX,shY,48,63,-.08,0,Math.PI*2);c.fill();
+  c.strokeStyle='#918b78';c.lineWidth=7;c.stroke();c.fillStyle='#76766d';c.beginPath();c.arc(shX,shY,13,0,Math.PI*2);c.fill();
+  c.strokeStyle='rgba(218,210,184,.14)';c.lineWidth=3;c.beginPath();c.moveTo(shX-28,shY-42);c.lineTo(shX+23,shY+39);c.moveTo(shX+30,shY-30);c.lineTo(shX-23,shY+31);c.stroke();
+  c.save();c.translate(cx+bodyW*.38,waistY+43);c.rotate(.38);
+  const metal=c.createLinearGradient(0,-110,0,60);metal.addColorStop(0,'#e4dfce');metal.addColorStop(.56,'#959b96');metal.addColorStop(1,'#49514e');
   c.fillStyle=metal;c.beginPath();c.moveTo(-7,-108);c.lineTo(7,-108);c.lineTo(5,35);c.lineTo(-5,35);c.closePath();c.fill();
-  c.fillStyle='#553a29';c.beginPath();c.roundRect(-10,32,20,48,6);c.fill();c.fillStyle='#8a826f';c.fillRect(-18,28,36,7);c.restore();
+  c.fillStyle='#563a29';c.beginPath();c.roundRect(-10,32,20,48,6);c.fill();c.fillStyle='#8a816e';c.fillRect(-18,28,36,7);c.restore();
  }else{
-  // Chaborz: oversized two-handed axe; heavier proportions come from the scaled illustrated body.
   c.save();c.translate(cx+18,waistY+64);c.rotate(-.48);
-  const haft=c.createLinearGradient(-8,-190,9,140);haft.addColorStop(0,'#78543a');haft.addColorStop(.55,'#4d3426');haft.addColorStop(1,'#2c211b');
+  const haft=c.createLinearGradient(-8,-190,9,140);haft.addColorStop(0,'#775239');haft.addColorStop(.55,'#4c3326');haft.addColorStop(1,'#2b201a');
   c.fillStyle=haft;c.beginPath();c.roundRect(-8,-185,16,335,7);c.fill();
-  let metal=c.createLinearGradient(-80,-230,48,-160);metal.addColorStop(0,'#c4c3b6');metal.addColorStop(.5,'#7d8580');metal.addColorStop(1,'#3f4845');
+  const metal=c.createLinearGradient(-80,-230,48,-160);metal.addColorStop(0,'#c3c0b2');metal.addColorStop(.52,'#7b827d');metal.addColorStop(1,'#3d4542');
   c.fillStyle=metal;c.beginPath();c.moveTo(-11,-196);c.lineTo(-90,-226);c.quadraticCurveTo(-76,-162,-18,-145);c.lineTo(5,-183);c.lineTo(63,-209);c.quadraticCurveTo(50,-164,12,-145);c.lineTo(8,-195);c.closePath();c.fill();
-  c.strokeStyle='rgba(235,231,207,.3)';c.lineWidth=4;c.stroke();c.restore();
+  c.strokeStyle='rgba(235,230,205,.26)';c.lineWidth=4;c.stroke();c.restore();
  }
 
- // Ground shadow within the transparent sprite strengthens the illustrated cutout.
- const shad=c.createRadialGradient(cx,H-48,5,cx,H-48,boss?105:82);shad.addColorStop(0,'rgba(7,18,14,.34)');shad.addColorStop(1,'rgba(7,18,14,0)');
+ const shad=c.createRadialGradient(cx,H-48,5,cx,H-48,boss?104:80);shad.addColorStop(0,'rgba(7,18,14,.34)');shad.addColorStop(1,'rgba(7,18,14,0)');
  c.fillStyle=shad;c.beginPath();c.ellipse(cx,H-48,boss?100:78,boss?21:17,0,0,Math.PI*2);c.fill();
-
  t.refresh();
 }
 
@@ -183,57 +188,64 @@ function makeWolfTexture(scene:Phaser.Scene){
  if(scene.textures.exists('black-wolf'))scene.textures.remove('black-wolf');
  const W=920,H=560,t=scene.textures.createCanvas('black-wolf',W,H)!;const c=t.getContext(),rand=seeded(9142);
  c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
- // Ground shadow.
- let g=c.createRadialGradient(465,470,20,465,470,310);g.addColorStop(0,'rgba(0,0,0,.58)');g.addColorStop(.55,'rgba(0,0,0,.28)');g.addColorStop(1,'rgba(0,0,0,0)');
- c.fillStyle=g;c.beginPath();c.ellipse(465,470,310,50,0,0,Math.PI*2);c.fill();
- // Tail.
- c.strokeStyle='#111617';c.lineWidth=58;c.lineCap='round';c.beginPath();c.moveTo(244,312);c.bezierCurveTo(123,321,78,248,135,187);c.stroke();
- c.strokeStyle='rgba(72,80,80,.20)';c.lineWidth=13;c.beginPath();c.moveTo(226,300);c.bezierCurveTo(126,302,102,252,143,202);c.stroke();
- // Main body and shoulder mass.
- g=c.createLinearGradient(230,150,670,430);g.addColorStop(0,'#303738');g.addColorStop(.24,'#1d2425');g.addColorStop(.62,'#0e1314');g.addColorStop(1,'#050809');
- c.fillStyle=g;c.beginPath();c.ellipse(435,300,250,133,-.03,0,Math.PI*2);c.fill();
- c.beginPath();c.ellipse(619,267,125,123,-.20,0,Math.PI*2);c.fill();
- // Chest/neck.
- c.beginPath();c.moveTo(555,205);c.quadraticCurveTo(620,146,695,173);c.quadraticCurveTo(748,221,718,322);c.lineTo(604,355);c.quadraticCurveTo(567,282,555,205);c.closePath();c.fill();
- // Head, cheek and muzzle.
- c.beginPath();c.moveTo(648,178);c.quadraticCurveTo(702,123,778,155);c.quadraticCurveTo(836,182,849,244);c.quadraticCurveTo(817,282,747,283);c.quadraticCurveTo(691,278,650,239);c.closePath();c.fill();
- c.fillStyle='#090d0e';c.beginPath();c.moveTo(773,209);c.quadraticCurveTo(860,201,900,246);c.quadraticCurveTo(861,280,775,267);c.closePath();c.fill();
- // Ears.
- c.fillStyle='#111718';c.beginPath();c.moveTo(676,169);c.lineTo(688,63);c.lineTo(747,155);c.closePath();c.fill();
- c.beginPath();c.moveTo(744,156);c.lineTo(802,78);c.lineTo(802,187);c.closePath();c.fill();
- c.fillStyle='#2d3333';c.beginPath();c.moveTo(693,143);c.lineTo(700,87);c.lineTo(731,145);c.closePath();c.fill();
- c.beginPath();c.moveTo(759,145);c.lineTo(790,101);c.lineTo(789,166);c.closePath();c.fill();
- // Legs with joints and paws.
+
+ // Soft painted contact shadow, consistent with the atlas animals.
+ let g=c.createRadialGradient(455,463,18,455,463,290);g.addColorStop(0,'rgba(5,11,10,.50)');g.addColorStop(.58,'rgba(5,11,10,.22)');g.addColorStop(1,'rgba(5,11,10,0)');
+ c.fillStyle=g;c.beginPath();c.ellipse(455,463,286,44,0,0,Math.PI*2);c.fill();
+
+ // Natural low tail rather than an exaggerated monster silhouette.
+ c.strokeStyle='#171d1d';c.lineWidth=54;c.lineCap='round';c.beginPath();c.moveTo(260,316);c.bezierCurveTo(165,333,105,305,74,252);c.bezierCurveTo(60,228,64,205,81,188);c.stroke();
+ c.strokeStyle='rgba(96,102,97,.16)';c.lineWidth=12;c.beginPath();c.moveTo(254,304);c.bezierCurveTo(164,318,113,290,87,245);c.stroke();
+
+ // Long lean body, deep chest, strong shoulders.
+ g=c.createLinearGradient(225,144,690,430);g.addColorStop(0,'#39403f');g.addColorStop(.25,'#262d2c');g.addColorStop(.60,'#151b1b');g.addColorStop(1,'#090d0d');
+ c.fillStyle=g;c.beginPath();c.ellipse(423,298,236,119,-.035,0,Math.PI*2);c.fill();
+ c.beginPath();c.ellipse(613,275,118,115,-.18,0,Math.PI*2);c.fill();
+ c.beginPath();c.moveTo(551,221);c.quadraticCurveTo(620,153,690,176);c.quadraticCurveTo(734,207,728,294);c.quadraticCurveTo(700,337,617,352);c.quadraticCurveTo(573,289,551,221);c.closePath();c.fill();
+
+ // Head in a restrained three-quarter profile.
+ c.beginPath();c.moveTo(647,184);c.quadraticCurveTo(702,139,772,159);c.quadraticCurveTo(822,176,846,222);c.quadraticCurveTo(824,267,754,282);c.quadraticCurveTo(694,278,654,242);c.closePath();c.fill();
+ c.fillStyle='#101515';c.beginPath();c.moveTo(765,215);c.quadraticCurveTo(839,209,886,241);c.quadraticCurveTo(853,271,776,266);c.quadraticCurveTo(760,245,765,215);c.closePath();c.fill();
+
+ // Ears, less oversized and more natural.
+ c.fillStyle='#191f1f';c.beginPath();c.moveTo(677,176);c.lineTo(690,92);c.lineTo(735,163);c.closePath();c.fill();
+ c.beginPath();c.moveTo(739,162);c.lineTo(785,99);c.lineTo(797,183);c.closePath();c.fill();
+ c.fillStyle='#4a4d49';c.globalAlpha=.28;c.beginPath();c.moveTo(692,157);c.lineTo(699,111);c.lineTo(724,158);c.closePath();c.fill();c.beginPath();c.moveTo(754,155);c.lineTo(780,116);c.lineTo(787,171);c.closePath();c.fill();c.globalAlpha=1;
+
+ // Legs and paws with joint taper, painted rather than blocky.
  const leg=(x:number,y:number,lean:number,front=false)=>{
-  c.strokeStyle=front?'#111718':'#0b1011';c.lineWidth=48;c.lineCap='round';
-  c.beginPath();c.moveTo(x,y);c.lineTo(x+lean,y+105);c.lineTo(x+lean*1.25,y+181);c.stroke();
-  c.fillStyle='#080c0d';c.beginPath();c.ellipse(x+lean*1.25+8,y+184,42,17,-.05,0,Math.PI*2);c.fill();
+  const grad=c.createLinearGradient(x,y,x+lean,y+172);grad.addColorStop(0,front?'#1d2423':'#171d1d');grad.addColorStop(1,'#080c0c');
+  c.strokeStyle=grad;c.lineWidth=43;c.lineCap='round';c.beginPath();c.moveTo(x,y);c.lineTo(x+lean*.55,y+82);c.lineTo(x+lean,y+166);c.stroke();
+  c.fillStyle='#080c0c';c.beginPath();c.ellipse(x+lean+8,y+169,37,14,-.05,0,Math.PI*2);c.fill();
  };
- leg(320,357,-17);leg(420,363,18);leg(600,350,-8,true);leg(683,335,29,true);
- // Fur texture clipped onto filled silhouette by source-atop.
+ leg(314,355,-16);leg(414,361,13);leg(598,349,-7,true);leg(678,338,24,true);
+
+ // Fur texture clipped to the filled animal, using the same soft, high-resolution-downscaled approach.
  c.save();c.globalCompositeOperation='source-atop';c.lineCap='round';
- for(let i=0;i<560;i++){
-  const x=190+rand()*620,y=120+rand()*310,len=8+rand()*29,ang=-.55+rand()*.95;
-  c.strokeStyle=rand()>.72?'rgba(140,149,146,.18)':rand()>.34?'rgba(81,91,89,.14)':'rgba(205,207,191,.07)';
-  c.lineWidth=.8+rand()*2.2;c.beginPath();c.moveTo(x,y);c.lineTo(x+Math.cos(ang)*len,y+Math.sin(ang)*len);c.stroke();
+ for(let i=0;i<760;i++){
+  const x=185+rand()*650,y=116+rand()*320,len=7+rand()*27,ang=-.62+rand()*1.05;
+  c.strokeStyle=rand()>.78?'rgba(174,177,164,.18)':rand()>.37?'rgba(92,101,97,.17)':'rgba(224,220,198,.065)';
+  c.lineWidth=.8+rand()*2;c.beginPath();c.moveTo(x,y);c.lineTo(x+Math.cos(ang)*len,y+Math.sin(ang)*len);c.stroke();
  }
  c.restore();c.globalCompositeOperation='source-over';
- // Shoulder highlights and darker belly.
- c.strokeStyle='rgba(158,165,157,.18)';c.lineWidth=11;c.beginPath();c.moveTo(326,208);c.quadraticCurveTo(487,144,620,222);c.stroke();
- c.strokeStyle='rgba(0,0,0,.30)';c.lineWidth=22;c.beginPath();c.moveTo(277,350);c.quadraticCurveTo(462,407,665,354);c.stroke();
- // Face planes.
- c.fillStyle='rgba(93,101,98,.20)';c.beginPath();c.moveTo(706,168);c.lineTo(785,174);c.lineTo(752,224);c.lineTo(687,216);c.closePath();c.fill();
- c.fillStyle='#040707';c.beginPath();c.ellipse(886,245,16,12,0,0,Math.PI*2);c.fill();
- // Two glowing red eyes, restrained but visible.
- for(const [x,y,r] of [[742,192,8],[780,197,6]] as const){
-  c.save();c.shadowColor='#ff252d';c.shadowBlur=24;c.fillStyle='#d51f27';c.beginPath();c.ellipse(x,y,r,r*.62,-.06,0,Math.PI*2);c.fill();c.fillStyle='#ffd6c9';c.beginPath();c.ellipse(x+2,y-1,2.1,1.3,0,0,Math.PI*2);c.fill();c.restore();
+
+ // Silver-gray shoulder/back planes give the black coat readable volume at mobile scale.
+ c.strokeStyle='rgba(171,176,164,.18)';c.lineWidth=10;c.lineCap='round';c.beginPath();c.moveTo(300,212);c.quadraticCurveTo(475,153,620,220);c.stroke();
+ c.strokeStyle='rgba(4,6,6,.34)';c.lineWidth=20;c.beginPath();c.moveTo(270,354);c.quadraticCurveTo(452,399,663,351);c.stroke();
+ c.fillStyle='rgba(116,120,112,.16)';c.beginPath();c.moveTo(691,172);c.lineTo(775,175);c.lineTo(752,223);c.lineTo(683,219);c.closePath();c.fill();
+
+ // Natural amber eyes instead of glowing red monster eyes.
+ for(const [x,y,r] of [[739,197,6.7],[774,200,5.1]] as const){
+  c.fillStyle='#b99b58';c.beginPath();c.ellipse(x,y,r,r*.58,-.05,0,Math.PI*2);c.fill();
+  c.fillStyle='#1d1b14';c.beginPath();c.ellipse(x+1,y,1.8,2.8,0,0,Math.PI*2);c.fill();
+  c.fillStyle='rgba(255,239,183,.78)';c.beginPath();c.arc(x-1,y-1,1.2,0,Math.PI*2);c.fill();
  }
- // Mouth and teeth.
- c.strokeStyle='#020404';c.lineWidth=8;c.beginPath();c.moveTo(779,257);c.quadraticCurveTo(833,276,881,255);c.stroke();
- c.fillStyle='#d8d0b6';for(const [x,h] of [[803,24],[829,30],[856,21]] as const){c.beginPath();c.moveTo(x,260);c.lineTo(x+7,260);c.lineTo(x+4,260+h);c.closePath();c.fill();}
- c.strokeStyle='rgba(207,211,196,.14)';c.lineWidth=3;c.beginPath();c.moveTo(805,222);c.lineTo(888,214);c.moveTo(806,231);c.lineTo(892,238);c.stroke();
- // Scars.
- c.strokeStyle='rgba(115,78,72,.45)';c.lineWidth=3;c.beginPath();c.moveTo(704,207);c.lineTo(720,236);c.moveTo(713,203);c.lineTo(729,232);c.stroke();
+ c.fillStyle='#050808';c.beginPath();c.ellipse(878,241,14,10,0,0,Math.PI*2);c.fill();
+
+ // Restrained mouth detail; the wolf remains dangerous without looking like a creature from another genre.
+ c.strokeStyle='#050808';c.lineWidth=7;c.beginPath();c.moveTo(779,257);c.quadraticCurveTo(829,267,872,252);c.stroke();
+ c.fillStyle='#c7c0aa';for(const [x,h] of [[812,12],[842,14]] as const){c.beginPath();c.moveTo(x,259);c.lineTo(x+5,259);c.lineTo(x+3,259+h);c.closePath();c.fill();}
+ c.strokeStyle='rgba(193,197,181,.12)';c.lineWidth=2.5;c.beginPath();c.moveTo(808,225);c.lineTo(885,217);c.moveTo(811,234);c.lineTo(888,238);c.stroke();
  t.refresh();
 }
 
@@ -309,38 +321,109 @@ function makePapakhaTexture(scene:Phaser.Scene){
 }
 
 function makeDeerTexture(scene:Phaser.Scene){
- if(scene.textures.exists('deer'))return;
- const W=640,H=500,t=scene.textures.createCanvas('deer',W,H)!;const c=t.getContext();
+ if(scene.textures.exists('deer'))scene.textures.remove('deer');
+ const W=640,H=500,t=scene.textures.createCanvas('deer',W,H)!;const c=t.getContext(),rand=seeded(27183);
  c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
- let g=c.createLinearGradient(120,130,510,420);g.addColorStop(0,'#9d7950');g.addColorStop(.45,'#705139');g.addColorStop(1,'#3f3229');
- c.fillStyle=g;c.beginPath();c.ellipse(300,292,172,92,-.05,0,Math.PI*2);c.fill();
- c.fillStyle='#725239';c.beginPath();c.ellipse(452,218,62,104,-.30,0,Math.PI*2);c.fill();
- c.fillStyle='#7e5c3e';c.beginPath();c.ellipse(507,145,68,48,-.15,0,Math.PI*2);c.fill();
- c.fillStyle='#aa8458';c.beginPath();c.moveTo(476,121);c.lineTo(448,66);c.lineTo(493,104);c.closePath();c.fill();c.beginPath();c.moveTo(526,112);c.lineTo(561,62);c.lineTo(545,121);c.closePath();c.fill();
- c.strokeStyle='#49392d';c.lineWidth=17;c.lineCap='round';
- for(const [x,y,dx] of [[205,342,-9],[286,350,9],[388,340,-6],[450,318,12]] as const){c.beginPath();c.moveTo(x,y);c.lineTo(x+dx,y+112);c.stroke();c.strokeStyle='#292521';c.lineWidth=11;c.beginPath();c.moveTo(x+dx,y+105);c.lineTo(x+dx+(dx>0?9:-9),y+130);c.stroke();c.strokeStyle='#49392d';c.lineWidth=17;}
- c.strokeStyle='#584333';c.lineWidth=12;c.beginPath();c.moveTo(189,252);c.quadraticCurveTo(116,230,92,195);c.stroke();
- c.fillStyle='#efe3c7';c.beginPath();c.ellipse(502,169,27,18,-.2,0,Math.PI*2);c.fill();
- c.fillStyle='#171817';c.beginPath();c.arc(533,139,5,0,Math.PI*2);c.fill();c.beginPath();c.arc(557,158,5,0,Math.PI*2);c.fill();
- c.strokeStyle='#5a4835';c.lineWidth=8;c.lineCap='round';
- c.beginPath();c.moveTo(490,102);c.lineTo(471,44);c.lineTo(449,22);c.moveTo(471,53);c.lineTo(496,25);c.moveTo(524,102);c.lineTo(541,43);c.lineTo(563,20);c.moveTo(541,54);c.lineTo(519,25);c.stroke();
- c.strokeStyle='rgba(234,211,170,.20)';c.lineWidth=7;c.beginPath();c.arc(286,280,125,.2,2.7);c.stroke();
+
+ // Contact shadow like the hare/boar atlas art.
+ let g=c.createRadialGradient(310,414,18,310,414,190);g.addColorStop(0,'rgba(16,31,22,.33)');g.addColorStop(.65,'rgba(16,31,22,.13)');g.addColorStop(1,'rgba(16,31,22,0)');
+ c.fillStyle=g;c.beginPath();c.ellipse(310,414,188,30,0,0,Math.PI*2);c.fill();
+
+ // Body in a three-quarter top-down read, not a side-profile cutout.
+ g=c.createLinearGradient(130,138,500,390);g.addColorStop(0,'#ad875c');g.addColorStop(.35,'#896445');g.addColorStop(.72,'#624833');g.addColorStop(1,'#3f3229');
+ c.fillStyle=g;c.beginPath();c.ellipse(295,292,166,87,-.075,0,Math.PI*2);c.fill();
+
+ // Shoulder and neck overlap the body to give depth.
+ let neck=c.createLinearGradient(370,150,510,330);neck.addColorStop(0,'#99704a');neck.addColorStop(.52,'#76543a');neck.addColorStop(1,'#4e3c30');
+ c.fillStyle=neck;c.beginPath();c.ellipse(433,229,57,107,-.30,0,Math.PI*2);c.fill();
+ c.fillStyle='#805c3f';c.beginPath();c.ellipse(504,149,67,45,-.16,0,Math.PI*2);c.fill();
+
+ // Muzzle and ears are broad enough to survive downscaling.
+ c.fillStyle='#d7c39d';c.beginPath();c.ellipse(547,166,35,23,.03,0,Math.PI*2);c.fill();
+ c.fillStyle='#b88d60';c.beginPath();c.moveTo(474,126);c.lineTo(445,75);c.lineTo(492,111);c.closePath();c.fill();
+ c.beginPath();c.moveTo(522,116);c.lineTo(557,70);c.lineTo(542,127);c.closePath();c.fill();
+ c.fillStyle='rgba(74,54,42,.34)';c.beginPath();c.moveTo(476,118);c.lineTo(456,88);c.lineTo(487,112);c.closePath();c.fill();c.beginPath();c.moveTo(527,113);c.lineTo(551,84);c.lineTo(540,121);c.closePath();c.fill();
+
+ // Legs: tapered dark lower legs make the silhouette closer to the painted boar/hare.
+ const leg=(x:number,y:number,dx:number,front=false)=>{
+  const lg=c.createLinearGradient(x,y,x+dx,y+118);lg.addColorStop(0,front?'#72513a':'#684a36');lg.addColorStop(.70,'#4a392d');lg.addColorStop(1,'#282522');
+  c.strokeStyle=lg;c.lineWidth=16;c.lineCap='round';c.beginPath();c.moveTo(x,y);c.lineTo(x+dx*.55,y+72);c.lineTo(x+dx,y+112);c.stroke();
+  c.strokeStyle='#24221f';c.lineWidth=9;c.beginPath();c.moveTo(x+dx,y+108);c.lineTo(x+dx+(dx>=0?7:-7),y+128);c.stroke();
+ };
+ leg(204,341,-8);leg(286,350,8);leg(390,337,-5,true);leg(448,316,10,true);
+
+ // Short tail.
+ c.strokeStyle='#6a4d38';c.lineWidth=11;c.lineCap='round';c.beginPath();c.moveTo(150,271);c.quadraticCurveTo(102,245,82,219);c.stroke();
+ c.strokeStyle='#e5d9bc';c.lineWidth=5;c.beginPath();c.moveTo(91,223);c.lineTo(75,208);c.stroke();
+
+ // Antlers: slim and muted, integrated rather than oversized icon-like branches.
+ c.strokeStyle='#66513d';c.lineWidth=7;c.lineCap='round';
+ c.beginPath();c.moveTo(490,112);c.lineTo(472,62);c.lineTo(449,38);c.moveTo(472,71);c.lineTo(494,47);c.moveTo(518,108);c.lineTo(534,60);c.lineTo(555,38);c.moveTo(534,70);c.lineTo(515,47);c.stroke();
+
+ // Painterly fur dabs, clipped to body/neck/head silhouette via source-atop.
+ c.save();c.globalCompositeOperation='source-atop';c.lineCap='round';
+ for(let i=0;i<430;i++){
+  const x=128+rand()*430,y=105+rand()*278,len=5+rand()*18,ang=-.35+rand()*.75;
+  c.strokeStyle=rand()>.72?'rgba(231,210,170,.17)':rand()>.30?'rgba(88,62,45,.15)':'rgba(255,238,196,.08)';
+  c.lineWidth=.7+rand()*1.7;c.beginPath();c.moveTo(x,y);c.lineTo(x+Math.cos(ang)*len,y+Math.sin(ang)*len);c.stroke();
+ }
+ c.restore();c.globalCompositeOperation='source-over';
+
+ // Warm highlight on the back and pale throat/belly, matching the soft atlas lighting.
+ c.strokeStyle='rgba(235,211,172,.22)';c.lineWidth=9;c.beginPath();c.arc(283,275,124,.15,2.64);c.stroke();
+ c.fillStyle='rgba(231,218,190,.58)';c.beginPath();c.ellipse(473,205,22,42,-.28,0,Math.PI*2);c.fill();
+ c.fillStyle='#171817';c.beginPath();c.arc(529,139,5,0,Math.PI*2);c.fill();
+ c.fillStyle='#2f2822';c.beginPath();c.ellipse(569,166,5.5,4,0,0,Math.PI*2);c.fill();
+ c.fillStyle='rgba(255,244,211,.65)';c.beginPath();c.arc(527,137,1.4,0,Math.PI*2);c.fill();
  t.refresh();
 }
 
 function makeElderTexture(scene:Phaser.Scene){
- if(scene.textures.exists('elder'))return;
- const W=420,H=620,t=scene.textures.createCanvas('elder',W,H)!;const c=t.getContext(),cx=W/2;
+ if(scene.textures.exists('elder'))scene.textures.remove('elder');
+ const W=420,H=620,t=scene.textures.createCanvas('elder',W,H)!;const c=t.getContext(),cx=W/2,rand=seeded(48211);
  c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
+
+ // Same illustrated human base as the player and bandits, then age/clothing are painted over it.
  const atlas=scene.textures.get('atlas').getSourceImage() as CanvasImageSource,[sx,sy,sw,sh]=FRAMES.hero;
- c.globalAlpha=.92;c.drawImage(atlas,sx,sy,sw,sh,110,84,200,472);c.globalAlpha=1;
- let g=c.createLinearGradient(105,190,315,560);g.addColorStop(0,'rgba(82,72,59,.94)');g.addColorStop(.55,'rgba(57,51,43,.96)');g.addColorStop(1,'rgba(35,34,31,.98)');
- c.fillStyle=g;c.beginPath();c.moveTo(130,201);c.quadraticCurveTo(cx,170,290,201);c.lineTo(317,522);c.quadraticCurveTo(cx,564,103,522);c.closePath();c.fill();
- c.strokeStyle='rgba(198,181,145,.14)';c.lineWidth=4;for(const dx of [-45,-15,18,48]){c.beginPath();c.moveTo(cx+dx,220);c.lineTo(cx+dx*.7,520);c.stroke();}
- c.fillStyle='#ded5bd';c.beginPath();c.moveTo(167,145);c.quadraticCurveTo(cx,129,253,145);c.lineTo(242,249);c.quadraticCurveTo(cx,294,178,249);c.closePath();c.fill();
- c.strokeStyle='rgba(119,111,97,.35)';c.lineWidth=3;for(let i=0;i<8;i++){c.beginPath();c.moveTo(184+i*7,162);c.lineTo(192+i*5,247);c.stroke();}
- c.fillStyle='#d5d0bd';c.beginPath();c.ellipse(cx,107,63,28,0,0,Math.PI*2);c.fill();c.fillRect(151,105,118,61);c.fillStyle='#f2eee0';c.beginPath();c.ellipse(cx,103,59,21,0,0,Math.PI*2);c.fill();
- c.fillStyle='rgba(37,31,26,.8)';c.beginPath();c.arc(188,152,4,0,Math.PI*2);c.fill();c.beginPath();c.arc(231,152,4,0,Math.PI*2);c.fill();
+ c.globalAlpha=.94;c.drawImage(atlas,sx,sy,sw,sh,111,82,198,474);c.globalAlpha=1;
+ c.save();c.globalCompositeOperation='source-atop';c.fillStyle='rgba(88,79,65,.25)';c.fillRect(95,80,230,490);c.restore();c.globalCompositeOperation='source-over';
+
+ // Heavy muted wool cloak with broad painted folds.
+ let g=c.createLinearGradient(103,184,317,562);g.addColorStop(0,'#74644f');g.addColorStop(.44,'#574d3f');g.addColorStop(1,'#34312c');
+ c.fillStyle=g;c.beginPath();c.moveTo(132,199);c.quadraticCurveTo(cx,171,289,199);c.lineTo(316,522);c.quadraticCurveTo(cx,565,104,522);c.closePath();c.fill();
+ c.save();c.beginPath();c.moveTo(132,199);c.quadraticCurveTo(cx,171,289,199);c.lineTo(316,522);c.quadraticCurveTo(cx,565,104,522);c.closePath();c.clip();
+ c.lineCap='round';
+ for(let i=0;i<115;i++){
+  const x=116+rand()*198,y=199+rand()*325;
+  c.strokeStyle=rand()>.68?'rgba(216,198,160,.09)':'rgba(31,28,25,.13)';
+  c.lineWidth=1+rand()*2.6;c.beginPath();c.moveTo(x,y);c.lineTo(x+(rand()-.5)*8,y+18+rand()*42);c.stroke();
+ }
+ c.restore();
+ c.strokeStyle='rgba(219,198,158,.15)';c.lineWidth=4;for(const dx of [-47,-17,17,48]){c.beginPath();c.moveTo(cx+dx,219);c.lineTo(cx+dx*.70,516);c.stroke();}
+
+ // Weathered face and gray beard, kept broad and painterly for the small world scale.
+ const skin=c.createLinearGradient(174,112,250,196);skin.addColorStop(0,'#b99779');skin.addColorStop(.58,'#967157');skin.addColorStop(1,'#6d5140');
+ c.fillStyle=skin;c.beginPath();c.ellipse(cx,151,45,55,0,0,Math.PI*2);c.fill();
+ c.fillStyle='#d5cdbb';c.beginPath();c.moveTo(170,164);c.quadraticCurveTo(cx,150,251,165);c.lineTo(243,252);c.quadraticCurveTo(cx,286,179,250);c.closePath();c.fill();
+ c.strokeStyle='rgba(105,99,89,.34)';c.lineWidth=2.4;
+ for(let i=0;i<18;i++){const x=181+i*3.5;c.beginPath();c.moveTo(x,177+rand()*10);c.quadraticCurveTo(x+(rand()-.5)*8,214,x+(rand()-.5)*10,249-rand()*7);c.stroke();}
+ c.strokeStyle='rgba(66,52,43,.55)';c.lineWidth=2.5;c.beginPath();c.moveTo(184,143);c.lineTo(199,139);c.moveTo(221,139);c.lineTo(237,143);c.stroke();
+ c.fillStyle='#28231f';c.beginPath();c.ellipse(195,148,3.3,2.2,0,0,Math.PI*2);c.fill();c.beginPath();c.ellipse(225,148,3.3,2.2,0,0,Math.PI*2);c.fill();
+
+ // Low dark wool papakha: restrained, realistic, and clearly separate from the white quest reward.
+ g=c.createLinearGradient(153,73,269,132);g.addColorStop(0,'#4a4941');g.addColorStop(.48,'#302f2b');g.addColorStop(1,'#1e201e');
+ c.fillStyle=g;c.beginPath();c.moveTo(154,128);c.lineTo(159,92);c.quadraticCurveTo(171,70,cx,68);c.quadraticCurveTo(249,69,263,92);c.lineTo(268,128);c.quadraticCurveTo(cx,136,154,128);c.closePath();c.fill();
+ c.strokeStyle='rgba(177,171,151,.16)';c.lineWidth=2;
+ for(let i=0;i<54;i++){const x=160+rand()*101,y=76+rand()*50;c.beginPath();c.arc(x,y,2+rand()*5,rand()*Math.PI,rand()*Math.PI+Math.PI*1.2);c.stroke();}
+
+ // Wooden staff reinforces the elder silhouette without changing gameplay.
+ const staff=c.createLinearGradient(326,188,346,557);staff.addColorStop(0,'#8a6846');staff.addColorStop(.55,'#5b422f');staff.addColorStop(1,'#32271f');
+ c.strokeStyle=staff;c.lineWidth=12;c.lineCap='round';c.beginPath();c.moveTo(326,183);c.lineTo(341,555);c.stroke();
+ c.strokeStyle='rgba(222,181,122,.20)';c.lineWidth=2.2;c.beginPath();c.moveTo(324,198);c.lineTo(339,543);c.stroke();
+
+ // Small contact shadow inside the sprite.
+ const sh=c.createRadialGradient(cx,557,6,cx,557,92);sh.addColorStop(0,'rgba(8,17,13,.34)');sh.addColorStop(1,'rgba(8,17,13,0)');
+ c.fillStyle=sh;c.beginPath();c.ellipse(cx,557,90,18,0,0,Math.PI*2);c.fill();
  t.refresh();
 }
 
