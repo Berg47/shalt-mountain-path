@@ -1,3 +1,4 @@
+import {whitePapakhaImg} from '../data/papakhaArt';
 // Small monochrome UI symbols; world artwork is loaded from raster assets.
 const paths:Record<string,string>={
  heart:'M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z',
@@ -51,5 +52,7 @@ const paths:Record<string,string>={
  whitePapakha:'M5 12c0-6 3-9 7-9s7 3 7 9v7H5v-7Zm0 2c4 2 10 2 14 0M7 19h10',
 
 };
-export const icon=(name:string,cls='')=>`<svg class="icon ${cls}" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[name]||paths.leaf}"/></svg>`;
+export const icon=(name:string,cls='')=>name==='whitePapakha'
+ ? whitePapakhaImg(`icon papakha-ui-icon ${cls}`,'icon','')
+ : `<svg class="icon ${cls}" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[name]||paths.leaf}"/></svg>`;
 export const itemIcon=(id:string)=>icon(id==='pebble'?'stone':id);
