@@ -144,3 +144,27 @@
  .world-cluster{top:max(10px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right))}
  .bottom-actions{right:max(14px,env(safe-area-inset-right));top:74px;bottom:auto;flex-direction:column}
 }
+
+
+/* Trial and adulthood presentation. */
+.trial-panel{max-width:520px;padding:34px;align-items:flex-start}
+.trial-panel h2{margin-top:10px}
+.trial-panel p{font-size:14px;line-height:1.85;color:#b9c4af;margin:18px 0 24px}
+.trial-panel .button{align-self:flex-start}
+
+.adulthood-backdrop{background:#04130fbb}
+.adulthood-panel{max-width:660px;overflow:hidden;padding:0}
+.victory-shot{display:block;width:100%;max-height:52dvh;object-fit:cover;object-position:center}
+.adulthood-copy{padding:25px 28px 30px}
+.adulthood-copy h2{font-size:42px;margin-top:7px}
+.adulthood-copy p{font-family:Georgia,serif;font-size:19px;line-height:1.55;color:#eee3c1;margin:14px 0 22px}
+.adulthood-copy .button{width:100%}
+
+@media(max-width:700px){
+ .trial-panel{padding:26px 21px}
+ .adulthood-panel{max-width:94vw}
+ .victory-shot{max-height:48dvh}
+ .adulthood-copy{padding:20px 19px 23px}
+ .adulthood-copy h2{font-size:34px}
+ .adulthood-copy p{font-size:16px}
+}
