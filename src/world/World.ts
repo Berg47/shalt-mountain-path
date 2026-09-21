@@ -1,4 +1,4 @@
-import {SETTINGS,NODE_DATA,CAVE,type NodeKind,type AnimalKind} from '../data/config';
+import {SETTINGS,NODE_DATA,CAVE,ELDER_QUEST,type NodeKind,type AnimalKind} from '../data/config';
 export interface ResourceNode{id:number;kind:NodeKind;x:number;y:number;hits:number;depleted:boolean;regrow:number}
 export interface Point{x:number;y:number}
 export const distance=(a:Point,b:Point)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -16,19 +16,23 @@ export class World {
   add('branch',1325,1500);add('branch',1362,1522);add('pebble',1380,1460);add('berry',1207,1503);add('grass',1425,1562);add('tree',1465,1400);add('rock',1510,1528);add('pebble',1400,1640);add('pebble',1505,1600);add('pebble',1530,1455);
   for(let i=0;i<850;i++){
    const x=150+this.rand()*3100,y=180+this.rand()*2220;
-   if(distance({x,y},SETTINGS.start)<200||distance({x,y},CAVE.entrance)<205||inRiver(x,y)||Math.abs(x-riverX(y))<100||onPath(x,y))continue;
+   if(distance({x,y},SETTINGS.start)<200||distance({x,y},CAVE.entrance)<205||distance({x,y},ELDER_QUEST.tower)<210||distance({x,y},ELDER_QUEST.elder)<95||inRiver(x,y)||Math.abs(x-riverX(y))<100||onPath(x,y))continue;
    if(x<950&&y>1630)continue;
    const r=this.rand();const dense=(x>2500&&y<1350)||(y<1250&&x>1100&&x<2000);const rockZone=y<650||x<750;
    let kind:NodeKind= r<(dense?.56:rockZone?.08:.23)?(y<1000?'pine':'tree'):r<.62?(rockZone?'rock':'grass'):r<.73?'branch':r<.84?'pebble':r<.94?'berry':'rock';
    if(this.nodes.some(n=>distance(n,{x,y})<(NODE_DATA[kind].radius?62:35)))continue;
    add(kind,x,y);
   }
-  this.animalSeeds=[{kind:'hare',x:1550,y:1780},{kind:'hare',x:1480,y:1870},{kind:'hare',x:1700,y:1800},{kind:'hare',x:1870,y:1390},{kind:'hare',x:1020,y:1450},{kind:'hare',x:2640,y:1660},{kind:'hare',x:2900,y:1390},{kind:'hare',x:1150,y:900},{kind:'boar',x:1710,y:890},{kind:'boar',x:1960,y:1080},{kind:'boar',x:2770,y:990},{kind:'boar',x:2820,y:1880}];
+  this.animalSeeds=[
+   {kind:'hare',x:1550,y:1780},{kind:'hare',x:1480,y:1870},{kind:'hare',x:1700,y:1800},{kind:'hare',x:1870,y:1390},{kind:'hare',x:1020,y:1450},{kind:'hare',x:2640,y:1660},{kind:'hare',x:2900,y:1390},{kind:'hare',x:1150,y:900},{kind:'hare',x:2120,y:1950},{kind:'hare',x:730,y:1240},
+   {kind:'deer',x:1360,y:970},{kind:'deer',x:2050,y:910},{kind:'deer',x:2340,y:1180},{kind:'deer',x:2940,y:720},{kind:'deer',x:1080,y:760},{kind:'deer',x:750,y:530},
+   {kind:'boar',x:1710,y:890},{kind:'boar',x:1960,y:1080},{kind:'boar',x:2770,y:990},{kind:'boar',x:2820,y:1880},{kind:'boar',x:2250,y:2010},{kind:'boar',x:890,y:990},
+  ];
  }
  blocked(x:number,y:number,radius=13,ignoreNode=-1){
   if(x<100||y<150||x>3300||y>2490||inRiver(x,y))return true;
   // Solid village towers and the closed cave mouth.
-  if(distance({x,y},{x:600,y:1730})<radius+50||distance({x,y},{x:810,y:1810})<radius+44)return true;
+  if(distance({x,y},{x:600,y:1730})<radius+50||distance({x,y},{x:810,y:1810})<radius+44||distance({x,y},ELDER_QUEST.tower)<radius+58)return true;
   if(x>1610&&x<1810&&y<310)return true;
   return this.nodes.some(n=>!n.depleted&&n.id!==ignoreNode&&NODE_DATA[n.kind].radius>0&&distance(n,{x,y})<NODE_DATA[n.kind].radius+radius);
  }
