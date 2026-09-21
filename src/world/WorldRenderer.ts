@@ -10,37 +10,170 @@ const FRAMES:Record<string,[number,number,number,number]>={
 const heights:Record<string,number>={tree:225,pine:262,rock:80,berry:61,grass:32,branch:25,pebble:24,wood:34,fire:69,canopy:122,hut:154,workbench:72,cabin:150,hero:78,hare:37,boar:68,tower:310};
 function makeWorkbenchTexture(scene:Phaser.Scene){
  if(scene.textures.exists('workbench'))return;
- const t=scene.textures.createCanvas('workbench',140,100)!;const c=t.getContext();
- c.clearRect(0,0,140,100);c.fillStyle='#493728';c.fillRect(18,38,104,18);c.fillStyle='#6e5339';c.fillRect(14,31,112,12);
- c.fillStyle='#3a2b21';c.fillRect(24,50,10,42);c.fillRect(106,50,10,42);c.fillRect(54,51,7,35);c.fillRect(80,51,7,35);
- c.strokeStyle='#a2a08c';c.lineWidth=4;c.beginPath();c.moveTo(42,29);c.lineTo(62,12);c.moveTo(60,13);c.lineTo(67,24);c.stroke();
- c.strokeStyle='#797567';c.lineWidth=5;c.beginPath();c.moveTo(92,14);c.lineTo(103,31);c.stroke();t.refresh();
+ // Draw at high resolution and scale down in-game for a soft painted look matching the atlas art.
+ const W=560,H=400,t=scene.textures.createCanvas('workbench',W,H)!;const c=t.getContext();
+ c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
+
+ // Ground/contact shadow painted into the sprite so the bench sits naturally in the world.
+ const shadow=c.createRadialGradient(282,344,12,282,344,210);
+ shadow.addColorStop(0,'rgba(12,22,18,.42)');shadow.addColorStop(1,'rgba(12,22,18,0)');
+ c.fillStyle=shadow;c.beginPath();c.ellipse(282,344,210,38,0,0,Math.PI*2);c.fill();
+
+ // Rear legs.
+ const leg=(x:number,y:number,w:number,h:number,flip=false)=>{
+  const g=c.createLinearGradient(x,y,x+w,y+h);
+  g.addColorStop(0,flip?'#5e4630':'#79583a');g.addColorStop(.48,'#4d3828');g.addColorStop(1,'#2c231d');
+  c.fillStyle=g;c.beginPath();c.moveTo(x,y);c.lineTo(x+w,y+3);c.lineTo(x+w-9,y+h);c.lineTo(x+5,y+h);c.closePath();c.fill();
+  c.strokeStyle='rgba(232,201,149,.12)';c.lineWidth=3;c.beginPath();c.moveTo(x+5,y+7);c.lineTo(x+4,y+h-10);c.stroke();
+ };
+ leg(94,196,52,151);leg(414,196,52,151,true);leg(204,202,38,132);leg(323,202,38,132,true);
+
+ // Lower support beam.
+ let g=c.createLinearGradient(112,286,448,316);g.addColorStop(0,'#3b2e25');g.addColorStop(.5,'#60452f');g.addColorStop(1,'#30251e');
+ c.fillStyle=g;c.beginPath();c.roundRect(111,281,338,32,8);c.fill();
+ c.strokeStyle='rgba(229,194,137,.12)';c.lineWidth=3;c.beginPath();c.moveTo(131,291);c.bezierCurveTo(222,300,336,287,428,299);c.stroke();
+
+ // Thick front apron.
+ g=c.createLinearGradient(72,161,72,252);g.addColorStop(0,'#735338');g.addColorStop(.45,'#503a2b');g.addColorStop(1,'#31251e');
+ c.fillStyle=g;c.beginPath();c.roundRect(66,159,428,84,10);c.fill();
+ c.strokeStyle='rgba(31,23,19,.55)';c.lineWidth=5;c.beginPath();c.moveTo(83,218);c.lineTo(478,218);c.stroke();
+
+ // Top board in mild perspective.
+ g=c.createLinearGradient(0,92,0,166);g.addColorStop(0,'#9a734b');g.addColorStop(.45,'#755538');g.addColorStop(1,'#503927');
+ c.fillStyle=g;c.beginPath();c.moveTo(48,106);c.lineTo(492,101);c.lineTo(526,159);c.lineTo(26,165);c.closePath();c.fill();
+ c.strokeStyle='rgba(35,25,19,.6)';c.lineWidth=5;c.stroke();
+ c.strokeStyle='rgba(236,204,150,.28)';c.lineWidth=4;c.beginPath();c.moveTo(58,115);c.lineTo(486,111);c.stroke();
+
+ // Irregular wood grain and age marks.
+ c.lineCap='round';
+ for(let i=0;i<18;i++){
+  const y=121+i*5.5,offset=Math.sin(i*1.7)*17;
+  c.strokeStyle=i%3===0?'rgba(52,35,24,.34)':'rgba(221,178,116,.14)';c.lineWidth=i%3===0?2.6:1.8;
+  c.beginPath();c.moveTo(54,y);c.bezierCurveTo(154+offset,y-7,339-offset,y+8,500,y-2);c.stroke();
+ }
+ // Small nicks along the front edge.
+ c.strokeStyle='rgba(32,24,20,.5)';c.lineWidth=3;
+ for(let x=91;x<478;x+=47){c.beginPath();c.moveTo(x,160);c.lineTo(x+8,169);c.stroke();}
+
+ // Hammer: dark wooden handle and forged steel head.
+ c.save();c.translate(185,101);c.rotate(-.18);
+ g=c.createLinearGradient(0,0,82,9);g.addColorStop(0,'#4b3020');g.addColorStop(.5,'#7b5131');g.addColorStop(1,'#39251b');
+ c.fillStyle=g;c.beginPath();c.roundRect(-4,13,94,13,6);c.fill();
+ g=c.createLinearGradient(61,-5,100,20);g.addColorStop(0,'#b8b7ae');g.addColorStop(.42,'#777b78');g.addColorStop(1,'#3d4443');
+ c.fillStyle=g;c.beginPath();c.roundRect(62,-2,43,24,5);c.fill();
+ c.fillStyle='#555c5b';c.beginPath();c.moveTo(65,1);c.lineTo(51,8);c.lineTo(65,17);c.closePath();c.fill();c.restore();
+
+ // Whetstone and a short metal file/chisel.
+ g=c.createLinearGradient(299,112,367,142);g.addColorStop(0,'#878b7e');g.addColorStop(1,'#454b46');
+ c.fillStyle=g;c.beginPath();c.roundRect(296,118,76,25,8);c.fill();c.strokeStyle='rgba(220,219,190,.18)';c.lineWidth=2;c.stroke();
+ c.save();c.translate(391,120);c.rotate(.12);c.fillStyle='#4b3123';c.beginPath();c.roundRect(-2,10,34,14,6);c.fill();
+ g=c.createLinearGradient(29,8,100,20);g.addColorStop(0,'#bab9ac');g.addColorStop(1,'#555d5b');c.fillStyle=g;c.beginPath();c.roundRect(28,12,76,7,4);c.fill();c.restore();
+
+ // A small forged metal blank for the Shalt upgrades.
+ g=c.createLinearGradient(424,105,472,147);g.addColorStop(0,'#9b9c91');g.addColorStop(.45,'#626864');g.addColorStop(1,'#383f3d');
+ c.fillStyle=g;c.beginPath();c.moveTo(431,121);c.lineTo(467,117);c.lineTo(481,139);c.lineTo(441,145);c.closePath();c.fill();
+ c.strokeStyle='rgba(232,226,197,.2)';c.lineWidth=2;c.stroke();
+
+ // Leather strip hanging from the corner.
+ c.strokeStyle='#5f3e2c';c.lineWidth=10;c.beginPath();c.moveTo(90,164);c.bezierCurveTo(81,201,98,220,85,254);c.stroke();
+ c.strokeStyle='rgba(207,151,96,.25)';c.lineWidth=2;c.beginPath();c.moveTo(91,168);c.bezierCurveTo(84,201,99,222,88,250);c.stroke();
+
+ t.refresh();
 }
+
 function makeEnemyTexture(scene:Phaser.Scene,kind:'dagger'|'shield'|'chaborz'){
  const key='enemy-'+kind;if(scene.textures.exists(key))return;
- const boss=kind==='chaborz',w=boss?190:150,h=boss?270:220,t=scene.textures.createCanvas(key,w,h)!;const c=t.getContext(),cx=w/2;
- c.clearRect(0,0,w,h);
- // Boots and legs.
- c.fillStyle='#251f1a';c.fillRect(cx-26,h-58,16,46);c.fillRect(cx+10,h-58,16,46);
- // Ragged cherkesska without gazyrs.
- c.fillStyle=boss?'#3a3029':'#4a4035';c.beginPath();c.moveTo(cx-38,72);c.lineTo(cx+38,72);c.lineTo(cx+45,h-54);c.lineTo(cx+24,h-44);c.lineTo(cx+10,h-53);c.lineTo(cx-5,h-42);c.lineTo(cx-20,h-52);c.lineTo(cx-43,h-43);c.closePath();c.fill();
- c.fillStyle='#2b241f';c.fillRect(cx-43,92,12,62);c.fillRect(cx+31,92,12,62);
- // Head and triangular face scarf; only eyes remain visible.
- c.fillStyle='#c2a078';c.beginPath();c.ellipse(cx,48,boss?25:21,boss?29:25,0,0,Math.PI*2);c.fill();
- c.fillStyle='#2a2926';c.beginPath();c.moveTo(cx-(boss?28:24),48);c.lineTo(cx+(boss?28:24),48);c.lineTo(cx,82);c.closePath();c.fill();
- c.fillStyle='#171714';c.fillRect(cx-15,40,10,3);c.fillRect(cx+5,40,10,3);
- // Belt.
- c.fillStyle='#1c1815';c.fillRect(cx-39,119,78,8);
+ const boss=kind==='chaborz',strong=kind==='shield';
+ const W=boss?420:360,H=boss?620:540,t=scene.textures.createCanvas(key,W,H)!;const c=t.getContext(),cx=W/2;
+ c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
+
+ // Reuse the illustrated hero as the anatomical/painterly base. This keeps enemies in the exact
+ // same visual language as the player's character instead of looking like flat UI shapes.
+ const atlasSource=scene.textures.get('atlas').getSourceImage() as CanvasImageSource;
+ const [sx,sy,sw,sh]=FRAMES.hero;
+ const bodyH=boss?520:strong?455:440,bodyW=bodyH*sw/sh*(strong?1.08:boss?1.12:.96),bodyX=cx-bodyW/2,bodyY=boss?40:48;
+ c.save();
+ if(kind==='dagger'){c.translate(cx,0);c.scale(.94,1);c.translate(-cx,0);}
+ c.drawImage(atlasSource,sx,sy,sw,sh,bodyX,bodyY,bodyW,bodyH);
+ c.restore();
+
+ // Darken the original clothing while preserving illustrated texture and folds.
+ c.save();c.beginPath();c.rect(cx-bodyW*.49,bodyY+bodyH*.20,bodyW*.98,bodyH*.72);c.clip();
+ c.globalCompositeOperation='source-atop';c.fillStyle=boss?'rgba(31,31,32,.66)':strong?'rgba(35,38,40,.62)':'rgba(41,43,44,.58)';
+ c.fillRect(bodyX-5,bodyY,bodyW+10,bodyH);c.restore();c.globalCompositeOperation='source-over';
+
+ const shoulderY=bodyY+bodyH*.24,waistY=bodyY+bodyH*.48,hemY=bodyY+bodyH*.76;
+ // Cherkesska silhouette: no gazyrs, deliberately worn/torn hem.
+ let cloth=c.createLinearGradient(cx-bodyW*.35,shoulderY,cx+bodyW*.35,hemY);
+ cloth.addColorStop(0,boss?'#292a2c':'#34373a');cloth.addColorStop(.48,strong?'#292d30':'#2d3032');cloth.addColorStop(1,'#1d2021');
+ c.fillStyle=cloth;c.beginPath();
+ c.moveTo(cx-bodyW*.34,shoulderY);c.quadraticCurveTo(cx,shoulderY-18,cx+bodyW*.34,shoulderY);
+ c.lineTo(cx+bodyW*.30,waistY);c.lineTo(cx+bodyW*.39,hemY-18);
+ c.lineTo(cx+bodyW*.26,hemY+17);c.lineTo(cx+bodyW*.13,hemY+1);c.lineTo(cx,hemY+24);
+ c.lineTo(cx-bodyW*.12,hemY+3);c.lineTo(cx-bodyW*.27,hemY+19);c.lineTo(cx-bodyW*.39,hemY-14);
+ c.lineTo(cx-bodyW*.30,waistY);c.closePath();c.fill();
+
+ // Subtle folds/highlights to avoid a flat vector look.
+ c.strokeStyle='rgba(179,184,181,.14)';c.lineWidth=boss?5:4;c.lineCap='round';
+ for(const dx of [-.20,-.08,.08,.20]){c.beginPath();c.moveTo(cx+bodyW*dx,shoulderY+24);c.quadraticCurveTo(cx+bodyW*dx*.7,waistY,cx+bodyW*dx*1.1,hemY-9);c.stroke();}
+ c.strokeStyle='rgba(5,8,8,.28)';c.lineWidth=5;c.beginPath();c.moveTo(cx,shoulderY+16);c.lineTo(cx,hemY-8);c.stroke();
+
+ // Plain belt, intentionally without gazyrs.
+ const beltY=waistY+3;let belt=c.createLinearGradient(cx-bodyW*.3,beltY,cx+bodyW*.3,beltY);
+ belt.addColorStop(0,'#171819');belt.addColorStop(.5,'#39332c');belt.addColorStop(1,'#151718');
+ c.fillStyle=belt;c.beginPath();c.roundRect(cx-bodyW*.31,beltY-7,bodyW*.62,15,6);c.fill();
+ c.fillStyle='#777367';c.beginPath();c.roundRect(cx-10,beltY-8,20,17,4);c.fill();
+
+ // Triangular scarf covering nose, mouth and chin. Eyes are the only exposed face detail.
+ const faceY=bodyY+bodyH*.105,faceW=boss?62:strong?55:50;
+ cloth=c.createLinearGradient(cx-faceW,faceY,cx+faceW,faceY+92);
+ cloth.addColorStop(0,'#222426');cloth.addColorStop(.5,'#343638');cloth.addColorStop(1,'#17191a');
+ c.fillStyle=cloth;c.beginPath();c.moveTo(cx-faceW,faceY+20);c.quadraticCurveTo(cx,faceY+9,cx+faceW,faceY+20);c.lineTo(cx,faceY+92);c.closePath();c.fill();
+ // Cloth fold and knots.
+ c.strokeStyle='rgba(181,184,180,.16)';c.lineWidth=3;c.beginPath();c.moveTo(cx-faceW+9,faceY+28);c.lineTo(cx,faceY+78);c.lineTo(cx+faceW-9,faceY+28);c.stroke();
+ c.fillStyle='#1b1d1e';c.beginPath();c.moveTo(cx-faceW+3,faceY+23);c.lineTo(cx-faceW-25,faceY+41);c.lineTo(cx-faceW+2,faceY+48);c.closePath();c.fill();
+
+ // Dark cloth around brow/hairline frames the exposed eyes.
+ c.fillStyle='rgba(28,30,31,.9)';c.beginPath();c.ellipse(cx,faceY-7,faceW*.88,boss?26:22,0,Math.PI,Math.PI*2);c.fill();
+ c.strokeStyle='rgba(10,11,12,.72)';c.lineWidth=4;
+ c.beginPath();c.moveTo(cx-27,faceY+10);c.lineTo(cx-7,faceY+7);c.moveTo(cx+7,faceY+7);c.lineTo(cx+27,faceY+10);c.stroke();
+
+ // Arms/sleeve overlays make the clothing read as one garment.
+ c.strokeStyle=strong?'#292d30':'#303335';c.lineWidth=boss?30:24;c.lineCap='round';
+ c.beginPath();c.moveTo(cx-bodyW*.30,shoulderY+20);c.lineTo(cx-bodyW*.39,waistY+24);c.moveTo(cx+bodyW*.30,shoulderY+20);c.lineTo(cx+bodyW*.39,waistY+24);c.stroke();
+
  if(kind==='dagger'){
-  c.strokeStyle='#ddd7c2';c.lineWidth=5;c.beginPath();c.moveTo(cx+35,128);c.lineTo(cx+61,104);c.stroke();c.strokeStyle='#5a4530';c.lineWidth=7;c.beginPath();c.moveTo(cx+31,133);c.lineTo(cx+40,124);c.stroke();
+  // Compact Caucasian-style dagger / shalt.
+  c.save();c.translate(cx+bodyW*.42,waistY+24);c.rotate(-.58);
+  let metal=c.createLinearGradient(0,-12,0,84);metal.addColorStop(0,'#f0ead8');metal.addColorStop(.42,'#aeb4ad');metal.addColorStop(1,'#5b6461');
+  c.fillStyle=metal;c.beginPath();c.moveTo(-7,-4);c.lineTo(7,-4);c.lineTo(2,73);c.lineTo(0,88);c.lineTo(-2,73);c.closePath();c.fill();
+  c.fillStyle='#5a3e29';c.beginPath();c.roundRect(-10,-30,20,31,7);c.fill();c.fillStyle='#90866f';c.fillRect(-16,-5,32,5);c.restore();
  }else if(kind==='shield'){
-  c.fillStyle='#594b3b';c.strokeStyle='#aaa487';c.lineWidth=4;c.beginPath();c.ellipse(cx-47,125,28,38,0,0,Math.PI*2);c.fill();c.stroke();
-  c.strokeStyle='#d3ceb8';c.lineWidth=5;c.beginPath();c.moveTo(cx+35,145);c.lineTo(cx+63,85);c.stroke();
+  // Larger fighter: weathered round shield and longer sword.
+  const shX=cx-bodyW*.48,shY=waistY+16,shW=92,shH=122;
+  let sg=c.createRadialGradient(shX-16,shY-25,8,shX,shY,70);sg.addColorStop(0,'#6b655a');sg.addColorStop(.52,'#454945');sg.addColorStop(1,'#252a28');
+  c.fillStyle=sg;c.beginPath();c.ellipse(shX,shY,shW/2,shH/2,-.08,0,Math.PI*2);c.fill();
+  c.strokeStyle='#8f8c7b';c.lineWidth=7;c.stroke();c.strokeStyle='rgba(210,207,184,.18)';c.lineWidth=3;
+  c.beginPath();c.moveTo(shX-26,shY-42);c.lineTo(shX+21,shY+37);c.moveTo(shX+31,shY-26);c.lineTo(shX-22,shY+31);c.stroke();
+  c.fillStyle='#79796f';c.beginPath();c.arc(shX,shY,13,0,Math.PI*2);c.fill();
+  c.save();c.translate(cx+bodyW*.38,waistY+42);c.rotate(.38);
+  let metal=c.createLinearGradient(0,-110,0,62);metal.addColorStop(0,'#e6e3d5');metal.addColorStop(.55,'#969d98');metal.addColorStop(1,'#4a5350');
+  c.fillStyle=metal;c.beginPath();c.moveTo(-7,-108);c.lineTo(7,-108);c.lineTo(5,35);c.lineTo(-5,35);c.closePath();c.fill();
+  c.fillStyle='#553a29';c.beginPath();c.roundRect(-10,32,20,48,6);c.fill();c.fillStyle='#8a826f';c.fillRect(-18,28,36,7);c.restore();
  }else{
-  // Large two-handed battle axe.
-  c.strokeStyle='#5b4432';c.lineWidth=9;c.beginPath();c.moveTo(cx+43,174);c.lineTo(cx-31,52);c.stroke();
-  c.fillStyle='#9d9a8f';c.beginPath();c.moveTo(cx-42,39);c.lineTo(cx-6,50);c.lineTo(cx-23,78);c.lineTo(cx-56,65);c.closePath();c.fill();
+  // Chaborz: oversized two-handed axe; heavier proportions come from the scaled illustrated body.
+  c.save();c.translate(cx+18,waistY+64);c.rotate(-.48);
+  const haft=c.createLinearGradient(-8,-190,9,140);haft.addColorStop(0,'#78543a');haft.addColorStop(.55,'#4d3426');haft.addColorStop(1,'#2c211b');
+  c.fillStyle=haft;c.beginPath();c.roundRect(-8,-185,16,335,7);c.fill();
+  let metal=c.createLinearGradient(-80,-230,48,-160);metal.addColorStop(0,'#c4c3b6');metal.addColorStop(.5,'#7d8580');metal.addColorStop(1,'#3f4845');
+  c.fillStyle=metal;c.beginPath();c.moveTo(-11,-196);c.lineTo(-90,-226);c.quadraticCurveTo(-76,-162,-18,-145);c.lineTo(5,-183);c.lineTo(63,-209);c.quadraticCurveTo(50,-164,12,-145);c.lineTo(8,-195);c.closePath();c.fill();
+  c.strokeStyle='rgba(235,231,207,.3)';c.lineWidth=4;c.stroke();c.restore();
  }
+
+ // Ground shadow within the transparent sprite strengthens the illustrated cutout.
+ const shad=c.createRadialGradient(cx,H-48,5,cx,H-48,boss?105:82);shad.addColorStop(0,'rgba(7,18,14,.34)');shad.addColorStop(1,'rgba(7,18,14,0)');
+ c.fillStyle=shad;c.beginPath();c.ellipse(cx,H-48,boss?100:78,boss?21:17,0,0,Math.PI*2);c.fill();
+
  t.refresh();
 }
 export function setupFrames(scene:Phaser.Scene){
