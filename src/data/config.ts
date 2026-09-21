@@ -2,7 +2,7 @@ export type ResourceId = 'branch'|'wood'|'stone'|'grass'|'berry'|'meat'|'hide'|'
 export type ToolId = 'shalt'|'axe'|'pickaxe';
 export type EquipmentSlot = 'weapon'|'headwear'|'clothing'|'mantle'|'shoes'|'belt';
 export type EquipmentId = ToolId|'wolfMantle'|'whitePapakha';
-export type RecipeId = 'axe'|'pickaxe'|'bag'|'bag3'|'shalt2'|'shalt3';
+export type RecipeId = 'axe'|'pickaxe'|'bag'|'bag3'|'bag4'|'bag5'|'bag6'|'shalt2'|'shalt3';
 export type BuildingId = 'fire'|'canopy'|'hut'|'workbench';
 export type NodeKind = 'branch'|'pebble'|'berry'|'grass'|'tree'|'pine'|'rock';
 export type AnimalKind = 'hare'|'deer'|'boar';
@@ -11,7 +11,7 @@ export type Cost = Partial<Record<ResourceId,number>>;
 
 export const SETTINGS = {
   version:1, seed:1712, world:{width:3400,height:2600}, start:{x:1280,y:1530},
-  inventory:{slots:8,bagSlots:[8,16,24],stack:20}, player:{speed:158,sprint:240,radius:13},
+  inventory:{slots:8,bagSlots:[8,16,24,32,40,48],stack:20}, player:{speed:158,sprint:240,radius:13},
   daySeconds:720, startTime:8/24, hungerLoss:0.068,
   xp:{first:9,repeat:2,repeatEvery:8,repeatFloor:0.2,night:30,area:18},
   levels:[0,80,200,360,580,860,1250,1750,2400,3300,4500,6100,8200,10800,14000,18000,22500,27500,33000,39000,47000,57000,70000,86000,106000,131000,161000,196000,236000,281000],
@@ -62,6 +62,9 @@ export const RECIPES:Record<RecipeId,{name:string,cost:Cost,xp:number,requires?:
  pickaxe:{name:'Каменная кирка',cost:{branch:3,stone:5},xp:28,requires:'axe',description:'Крупные валуны станут источником камня.'},
  bag:{name:'Кожаная сумка II',cost:{hide:3,grass:4},xp:65,description:'Крепкая дорожная сумка. 8 → 16 ячеек.'},
  bag3:{name:'Укреплённая сумка III',cost:{hide:6,grass:6,metal:3},xp:120,bench:true,description:'Большая кожаная сумка с металлическим усилением. 16 → 24 ячейки.'},
+ bag4:{name:'Походная сумка IV',cost:{hide:8,grass:8,metal:5,wood:4},xp:180,bench:true,description:'Усиленная походная сумка с дополнительными отделениями. 24 → 32 ячейки.'},
+ bag5:{name:'Большая походная сумка V',cost:{hide:10,grass:10,metal:8,wood:6},xp:260,bench:true,description:'Вместительная многосекционная сумка для долгих походов. 32 → 40 ячеек.'},
+ bag6:{name:'Тяжёлая походная сумка VI',cost:{hide:14,grass:12,metal:12,wood:8},xp:360,bench:true,description:'Максимально укреплённая сумка с большой вместимостью. 40 → 48 ячеек.'},
  shalt2:{name:'Шалт II · Заточенный',cost:{metal:2,stone:2,hide:1},xp:90,description:'Заточить клинок и укрепить рукоять. Урон 32 → 38.'},
  shalt3:{name:'Шалт III · Закалённый',cost:{metal:5,stone:3,wood:2,hide:2},xp:180,bench:true,description:'Глубокая доработка на верстаке. Урон 38 → 44.'},
 };
