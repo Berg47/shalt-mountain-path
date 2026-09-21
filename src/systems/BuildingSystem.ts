@@ -13,6 +13,7 @@ export class BuildingSystem {
   this.objects.push({id:this.objects.length+1,kind,x,y,born:0});this.xp.award('build:'+kind,BUILDINGS[kind].xp,10);return null;
  }
  nearFire(p:Point){return this.objects.some(b=>b.kind==='fire'&&distance(b,p)<170);}
- shelter(p:Point){return this.objects.find(b=>b.kind!=='fire'&&distance(b,p)<115);}
+ shelter(p:Point){return this.objects.find(b=>(b.kind==='canopy'||b.kind==='hut')&&distance(b,p)<115);}
+ nearWorkbench(p:Point){return this.objects.some(b=>b.kind==='workbench'&&distance(b,p)<125);}
  blocked(x:number,y:number,r=13){return this.objects.some(b=>b.kind!=='fire'&&distance(b,{x,y})<BUILDINGS[b.kind].radius+r);}
 }
