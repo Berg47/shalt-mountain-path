@@ -46,7 +46,7 @@ export class SaveSystem {
   if(d.version!==1||!d.player||!d.inventory||!d.experience||!d.day||!d.weather)return null;
   if(!number(d.player.x,100,3300)||!number(d.player.y,150,2490)||!number(d.player.health,0,350)||!number(d.player.hunger,0,100)||!number(d.player.stamina,0,350)||!number(d.player.temperature,30,42))return null;
   const bagLevel=Number.isInteger(d.inventory.bagLevel)?d.inventory.bagLevel:(d.inventory.bag?2:1);
-  if(!number(bagLevel,1,3))return null;
+  if(!number(bagLevel,1,6))return null;
   const cap=SETTINGS.inventory.bagSlots[bagLevel-1];
   if(typeof d.inventory.bag!=='boolean'||!Array.isArray(d.inventory.slots)||d.inventory.slots.length>cap||!d.inventory.slots.every((s:any)=>s&&s.id in ITEMS&&number(s.count,1,20)&&Number.isInteger(s.count)))return null;
   const validTools=['shalt','axe','pickaxe'] as ToolId[];
