@@ -1,4 +1,4 @@
-import {SETTINGS,NODE_DATA,type NodeKind,type AnimalKind} from '../data/config';
+import {SETTINGS,NODE_DATA,CAVE,type NodeKind,type AnimalKind} from '../data/config';
 export interface ResourceNode{id:number;kind:NodeKind;x:number;y:number;hits:number;depleted:boolean;regrow:number}
 export interface Point{x:number;y:number}
 export const distance=(a:Point,b:Point)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -16,7 +16,7 @@ export class World {
   add('branch',1325,1500);add('branch',1362,1522);add('pebble',1380,1460);add('berry',1207,1503);add('grass',1425,1562);add('tree',1465,1400);add('rock',1510,1528);add('pebble',1400,1640);add('pebble',1505,1600);add('pebble',1530,1455);
   for(let i=0;i<850;i++){
    const x=150+this.rand()*3100,y=180+this.rand()*2220;
-   if(distance({x,y},SETTINGS.start)<200||inRiver(x,y)||Math.abs(x-riverX(y))<100||onPath(x,y))continue;
+   if(distance({x,y},SETTINGS.start)<200||distance({x,y},CAVE.entrance)<205||inRiver(x,y)||Math.abs(x-riverX(y))<100||onPath(x,y))continue;
    if(x<950&&y>1630)continue;
    const r=this.rand();const dense=(x>2500&&y<1350)||(y<1250&&x>1100&&x<2000);const rockZone=y<650||x<750;
    let kind:NodeKind= r<(dense?.56:rockZone?.08:.23)?(y<1000?'pine':'tree'):r<.62?(rockZone?'rock':'grass'):r<.73?'branch':r<.84?'pebble':r<.94?'berry':'rock';
