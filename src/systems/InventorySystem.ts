@@ -4,8 +4,8 @@ export class InventorySystem {
  slots:Stack[]=[];
  tools:ToolId[]=['shalt'];
  equipped:ToolId='shalt';
- bag=false;
- get capacity(){return this.bag?SETTINGS.inventory.bagSlots:SETTINGS.inventory.slots;}
+ bag=false;bagLevel=1;shaltLevel=1;
+ get capacity(){return SETTINGS.inventory.bagSlots[Math.max(0,Math.min(2,this.bagLevel-1))];}
  count(id:ResourceId){return this.slots.filter(s=>s.id===id).reduce((n,s)=>n+s.count,0);}
  canAfford(cost:Cost){return Object.entries(cost).every(([id,n])=>this.count(id as ResourceId)>=n!);}
  canAdd(id:ResourceId,count:number){return this.freeFor(id)>=count;}
@@ -24,5 +24,5 @@ export class InventorySystem {
   return true;
  }
  pay(cost:Cost){if(!this.canAfford(cost))return false;for(const [id,n]of Object.entries(cost))this.remove(id as ResourceId,n!);return true;}
- snapshot(){return {slots:this.slots.map(s=>({...s})),tools:[...this.tools],equipped:this.equipped,bag:this.bag};}
+ snapshot(){return {slots:this.slots.map(s=>({...s})),tools:[...this.tools],equipped:this.equipped,bag:this.bag,bagLevel:this.bagLevel,shaltLevel:this.shaltLevel};}
 }
