@@ -2,7 +2,7 @@ import {SETTINGS,ITEMS,ANIMALS,ENEMIES,type ToolId,type EquipmentSlot} from '../
 import type {GameModel} from './GameModel';
 
 export const SAVE_KEY='shalt.mountain-path.v1';
-const EQUIPMENT_SLOTS:EquipmentSlot[]=['weapon','headwear','clothing','mantle','shoes'];
+const EQUIPMENT_SLOTS:EquipmentSlot[]=['weapon','headwear','clothing','mantle','shoes']; // belt is optional for older saves
 
 export class SaveSystem {
  static save(model:GameModel){
@@ -41,6 +41,7 @@ export class SaveSystem {
    for(const slot of EQUIPMENT_SLOTS)if(!(slot in eq))return null;
    if(eq.weapon!==null&&!validTools.includes(eq.weapon))return null;
    if(eq.headwear!==null||eq.clothing!==null||eq.shoes!==null)return null;
+   if(eq.belt!==undefined&&eq.belt!==null)return null;
    if(eq.mantle!==null&&eq.mantle!=='wolfMantle')return null;
   }
   if(!number(d.experience.total,0,1e9)||!d.experience.actions||typeof d.experience.actions!=='object'||Array.isArray(d.experience.actions)||!Object.values(d.experience.actions).every(n=>number(n,0,1e9)))return null;
