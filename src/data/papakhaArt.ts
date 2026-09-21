@@ -5,8 +5,10 @@ function mulberry32(seed:number){
 }
 
 export const PAPAKHA_FIT={
- world:{width:36,height:27,foreheadY:.80,originY:.878},
- preview:{width:54,height:41,left:50,top:0},
+ // The anchor is the forehead/hairline, not a free-floating point above the hero.
+ // Keep the world version only slightly wider than the head.
+ world:{width:29,height:23,foreheadY:.94,originY:.91},
+ preview:{width:46,height:39,left:50,top:1},
 } as const;
 
 export function drawWhitePapakha(ctx:CanvasRenderingContext2D,width:number,height:number,mode:PapakhaMode='wear'){
@@ -14,81 +16,115 @@ export function drawWhitePapakha(ctx:CanvasRenderingContext2D,width:number,heigh
  ctx.clearRect(0,0,width,height);ctx.imageSmoothingEnabled=true;
  const sx=width/420,sy=height/320;
  ctx.save();ctx.scale(sx,sy);
- if(mode==='icon'){ctx.translate(210,160);ctx.rotate(-.065);ctx.scale(.94,1);ctx.translate(-210,-160);}
+ if(mode==='icon'){ctx.translate(210,160);ctx.rotate(-.055);ctx.scale(.96,1);ctx.translate(-210,-160);}
+
  const path=()=>{
   ctx.beginPath();
-  ctx.moveTo(101,253);
-  ctx.bezierCurveTo(91,224,88,176,95,125);
-  ctx.bezierCurveTo(104,64,151,34,207,31);
-  ctx.bezierCurveTo(267,27,313,56,326,116);
-  ctx.bezierCurveTo(336,164,334,215,322,252);
-  ctx.bezierCurveTo(292,269,256,277,210,276);
-  ctx.bezierCurveTo(165,277,129,269,101,253);
+  // Tall sheepskin papakha: almost vertical sides, softly uneven crown, compact lower edge.
+  ctx.moveTo(88,271);
+  ctx.bezierCurveTo(82,230,82,161,90,105);
+  ctx.bezierCurveTo(96,71,121,49,154,41);
+  ctx.bezierCurveTo(183,33,205,35,218,32);
+  ctx.bezierCurveTo(242,32,270,35,292,43);
+  ctx.bezierCurveTo(323,54,337,77,341,108);
+  ctx.bezierCurveTo(348,166,347,226,337,270);
+  ctx.bezierCurveTo(296,280,255,283,211,282);
+  ctx.bezierCurveTo(166,283,124,279,88,271);
   ctx.closePath();
  };
- const shadow=ctx.createRadialGradient(210,265,18,210,265,128);
- shadow.addColorStop(0,'rgba(45,42,36,.28)');shadow.addColorStop(1,'rgba(45,42,36,0)');
- ctx.fillStyle=shadow;ctx.beginPath();ctx.ellipse(210,265,128,19,0,0,Math.PI*2);ctx.fill();
- const base=ctx.createLinearGradient(128,49,292,267);
- base.addColorStop(0,'#fffdf1');base.addColorStop(.27,'#f1ecdd');base.addColorStop(.56,'#ded8c8');base.addColorStop(.80,'#c9c2b3');base.addColorStop(1,'#aaa497');
+
+ // Very soft object shadow. No dark "helmet opening".
+ const shadow=ctx.createRadialGradient(210,278,15,210,278,143);
+ shadow.addColorStop(0,'rgba(48,44,38,.18)');shadow.addColorStop(1,'rgba(48,44,38,0)');
+ ctx.fillStyle=shadow;ctx.beginPath();ctx.ellipse(210,278,143,15,0,0,Math.PI*2);ctx.fill();
+
+ const base=ctx.createLinearGradient(108,43,326,276);
+ base.addColorStop(0,'#fffdf2');
+ base.addColorStop(.25,'#f3eee0');
+ base.addColorStop(.55,'#ded8c9');
+ base.addColorStop(.78,'#cbc4b5');
+ base.addColorStop(1,'#aaa397');
  ctx.fillStyle=base;path();ctx.fill();
+
  ctx.save();path();ctx.clip();
- // Broad tonal modeling: brighter crown, darker side/lower edge.
- let light=ctx.createRadialGradient(170,84,12,192,126,150);
- light.addColorStop(0,'rgba(255,255,248,.48)');light.addColorStop(.55,'rgba(255,250,235,.12)');light.addColorStop(1,'rgba(255,250,235,0)');
- ctx.fillStyle=light;ctx.fillRect(70,20,290,270);
- let side=ctx.createLinearGradient(82,0,342,0);
- side.addColorStop(0,'rgba(93,88,80,.16)');side.addColorStop(.19,'rgba(93,88,80,0)');side.addColorStop(.72,'rgba(96,91,82,0)');side.addColorStop(1,'rgba(76,72,67,.20)');
- ctx.fillStyle=side;ctx.fillRect(78,45,270,230);
- // Dense wool curls. Larger curled loops remain visible when scaled to game size.
+
+ // Volume: bright crown/front, restrained gray-cream side shading.
+ let light=ctx.createRadialGradient(171,86,8,200,127,175);
+ light.addColorStop(0,'rgba(255,255,250,.54)');
+ light.addColorStop(.55,'rgba(255,250,237,.13)');
+ light.addColorStop(1,'rgba(255,250,237,0)');
+ ctx.fillStyle=light;ctx.fillRect(65,20,305,280);
+
+ let side=ctx.createLinearGradient(78,0,350,0);
+ side.addColorStop(0,'rgba(88,84,78,.18)');
+ side.addColorStop(.18,'rgba(88,84,78,0)');
+ side.addColorStop(.70,'rgba(92,87,80,0)');
+ side.addColorStop(1,'rgba(72,69,64,.22)');
+ ctx.fillStyle=side;ctx.fillRect(70,36,300,245);
+
+ // Large curls survive downscaling and still read as sheep wool in the game.
  ctx.lineCap='round';ctx.lineJoin='round';
- for(let i=0;i<390;i++){
-  const x=103+rand()*220,y=48+rand()*202;
-  const edge=Math.min((x-95)/30,(330-x)/30,(y-34)/35,(270-y)/32);
-  if(edge<rand()*.75)continue;
-  const r=3.2+rand()*8.2,turn=.9+rand()*1.45,ang=rand()*Math.PI*2;
-  ctx.strokeStyle=rand()>.72?'rgba(255,255,250,.72)':rand()>.28?'rgba(173,166,151,.34)':'rgba(102,98,91,.22)';
-  ctx.lineWidth=1.35+rand()*2.7;
+ for(let i=0;i<430;i++){
+  const x=93+rand()*243,y=45+rand()*221;
+  const edge=Math.min((x-86)/32,(343-x)/32,(y-36)/35,(278-y)/30);
+  if(edge<rand()*.68)continue;
+  const r=3.8+rand()*8.7,turn=.75+rand()*1.15,ang=rand()*Math.PI*2;
+  ctx.strokeStyle=rand()>.70?'rgba(255,255,249,.75)':rand()>.28?'rgba(168,161,148,.36)':'rgba(96,91,84,.22)';
+  ctx.lineWidth=1.4+rand()*2.5;
   ctx.beginPath();
-  for(let s=0;s<=9;s++){
-   const a=ang+s/9*Math.PI*2*turn,rr=r*(.62+s/22);
+  for(let s=0;s<=10;s++){
+   const a=ang+s/10*Math.PI*2*turn,rr=r*(.58+s/24);
    const px=x+Math.cos(a)*rr,py=y+Math.sin(a)*rr*.62;
    if(s===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
   }
   ctx.stroke();
  }
- // Soft tufts and deeper curl shadows.
- for(let i=0;i<95;i++){
-  const x=112+rand()*198,y=56+rand()*185,rx=5+rand()*11,ry=3+rand()*7;
-  ctx.strokeStyle=rand()>.55?'rgba(255,255,246,.32)':'rgba(87,84,78,.13)';
-  ctx.lineWidth=1.1+rand()*2;ctx.beginPath();ctx.ellipse(x,y,rx,ry,rand()*1.2,0,Math.PI*1.55);ctx.stroke();
+
+ // Softer wool tufts break up the surface without turning it into a white blob.
+ for(let i=0;i<110;i++){
+  const x=103+rand()*221,y=53+rand()*206,rx=4+rand()*10,ry=2.7+rand()*6;
+  ctx.strokeStyle=rand()>.57?'rgba(255,255,246,.30)':'rgba(84,80,74,.12)';
+  ctx.lineWidth=1+rand()*1.9;
+  ctx.beginPath();ctx.ellipse(x,y,rx,ry,rand()*1.2,0,Math.PI*1.6);ctx.stroke();
  }
- // Lower fur band that visually hugs the forehead rather than floating above it.
- const band=ctx.createLinearGradient(0,228,0,278);
- band.addColorStop(0,'rgba(216,210,195,.12)');band.addColorStop(.55,'rgba(118,113,102,.20)');band.addColorStop(1,'rgba(65,62,57,.28)');
- ctx.fillStyle=band;ctx.beginPath();ctx.moveTo(101,247);ctx.bezierCurveTo(145,260,174,265,210,264);ctx.bezierCurveTo(248,265,282,260,322,246);ctx.lineTo(322,258);ctx.bezierCurveTo(281,276,248,282,210,281);ctx.bezierCurveTo(170,282,135,275,101,257);ctx.closePath();ctx.fill();
+
+ // Slightly darker, almost-horizontal lower fur edge that sits on the hairline.
+ const band=ctx.createLinearGradient(0,247,0,284);
+ band.addColorStop(0,'rgba(213,206,191,.04)');
+ band.addColorStop(.62,'rgba(118,111,100,.16)');
+ band.addColorStop(1,'rgba(64,60,55,.24)');
+ ctx.fillStyle=band;
+ ctx.beginPath();
+ ctx.moveTo(89,260);
+ ctx.bezierCurveTo(132,270,171,273,211,272);
+ ctx.bezierCurveTo(252,273,294,269,336,259);
+ ctx.lineTo(337,272);
+ ctx.bezierCurveTo(294,282,252,285,211,284);
+ ctx.bezierCurveTo(166,285,125,281,88,272);
+ ctx.closePath();ctx.fill();
+
  ctx.restore();
- // Fine irregular silhouette fibers so it never reads as a smooth cylinder.
- ctx.strokeStyle='rgba(241,236,221,.76)';ctx.lineWidth=1.3;
- for(let i=0;i<64;i++){
-  const sidePick=rand();
-  let x:number,y:number,dx:number,dy:number;
-  if(sidePick<.26){x=102+rand()*35;y=92+rand()*148;dx=-2-rand()*5;dy=(rand()-.5)*7;}
-  else if(sidePick<.52){x=318-rand()*31;y=91+rand()*149;dx=2+rand()*5;dy=(rand()-.5)*7;}
-  else{x=132+rand()*158;y=40+rand()*17;dx=(rand()-.5)*7;dy=-2-rand()*5;}
+
+ // Irregular fibers around the silhouette.
+ ctx.strokeStyle='rgba(242,237,222,.78)';ctx.lineWidth=1.25;
+ for(let i=0;i<72;i++){
+  const sidePick=rand();let x:number,y:number,dx:number,dy:number;
+  if(sidePick<.28){x=91+rand()*28;y=83+rand()*168;dx=-2-rand()*5;dy=(rand()-.5)*7;}
+  else if(sidePick<.56){x=333-rand()*28;y=83+rand()*168;dx=2+rand()*5;dy=(rand()-.5)*7;}
+  else{x=132+rand()*170;y=39+rand()*14;dx=(rand()-.5)*7;dy=-2-rand()*5;}
   ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+dx*.5,y+dy*.35,x+dx,y+dy);ctx.stroke();
  }
- // Defined but soft bottom contour.
- ctx.strokeStyle='rgba(75,71,64,.30)';ctx.lineWidth=4.5;
- ctx.beginPath();ctx.moveTo(104,252);ctx.bezierCurveTo(145,269,176,273,210,272);ctx.bezierCurveTo(245,273,279,268,318,251);ctx.stroke();
+
+ // Clear lower contour helps the hat read at 20-30px without covering the face.
+ ctx.strokeStyle='rgba(77,72,65,.30)';ctx.lineWidth=3.8;
+ ctx.beginPath();ctx.moveTo(91,267);ctx.bezierCurveTo(135,276,172,279,211,278);ctx.bezierCurveTo(250,279,292,275,334,266);ctx.stroke();
  ctx.restore();
 }
 
 let wearUrl='',iconUrl='';
 function makeUrl(mode:PapakhaMode){
  if(typeof document==='undefined')return '';
- const canvas=document.createElement('canvas');
- canvas.width=mode==='icon'?420:420;canvas.height=320;
+ const canvas=document.createElement('canvas');canvas.width=420;canvas.height=320;
  drawWhitePapakha(canvas.getContext('2d')!,canvas.width,canvas.height,mode);
  return canvas.toDataURL('image/png');
 }
