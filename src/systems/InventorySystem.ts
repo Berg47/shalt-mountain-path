@@ -6,7 +6,7 @@ export class InventorySystem {
  equipped:ToolId='shalt';
  bag=false;bagLevel=1;shaltLevel=1;
  equipment:Record<EquipmentSlot,EquipmentId|null>={weapon:'shalt',headwear:null,clothing:null,mantle:null,shoes:null,belt:null};
- get capacity(){return SETTINGS.inventory.bagSlots[Math.max(0,Math.min(2,this.bagLevel-1))];}
+ get capacity(){return SETTINGS.inventory.bagSlots[Math.max(0,Math.min(SETTINGS.inventory.bagSlots.length-1,this.bagLevel-1))];}
  count(id:ResourceId){return this.slots.filter(s=>s.id===id).reduce((n,s)=>n+s.count,0);}
  canAfford(cost:Cost){return Object.entries(cost).every(([id,n])=>this.count(id as ResourceId)>=n!);}
  canAdd(id:ResourceId,count:number){return this.freeFor(id)>=count;}
