@@ -114,3 +114,33 @@
  .goal{left:auto;right:60px;bottom:80px;transform:none;width:250px}
  .goal.is-open{width:250px}
 }
+
+
+/* HUD layout update 2026-09-21: top HUD raised and utility buttons moved into right stack. */
+.game-brand,.top-actions{display:none!important}
+
+/* Raise the hero stats and the time/map cluster now that the brand is gone. */
+.vitals{top:20px}
+.world-cluster{top:20px}
+
+/* Keep all utility controls together as one right-side stack. */
+@media(pointer:coarse),(max-width:700px){
+ .vitals{top:max(14px,env(safe-area-inset-top));left:max(13px,env(safe-area-inset-left))}
+ .world-cluster{top:max(14px,env(safe-area-inset-top));right:max(13px,env(safe-area-inset-right))}
+ .bottom-actions{right:max(14px,env(safe-area-inset-right));bottom:211px;flex-direction:column;gap:5px}
+ .bottom-actions button{width:40px;height:40px;padding:8px;justify-content:center}
+ .bottom-actions button span,.bottom-actions kbd{display:none}
+}
+
+@media(max-width:700px) and (orientation:portrait){
+ .vitals{top:max(14px,env(safe-area-inset-top))}
+ .world-cluster{top:max(14px,env(safe-area-inset-top))}
+ .place-label{top:170px}
+ .bottom-actions{right:max(14px,env(safe-area-inset-right));bottom:calc(198px + env(safe-area-inset-bottom))}
+}
+
+@media(max-height:560px) and (orientation:landscape){
+ .vitals{top:max(10px,env(safe-area-inset-top));left:max(14px,env(safe-area-inset-left))}
+ .world-cluster{top:max(10px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right))}
+ .bottom-actions{right:max(14px,env(safe-area-inset-right));top:74px;bottom:auto;flex-direction:column}
+}
