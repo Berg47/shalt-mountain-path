@@ -44,6 +44,7 @@ const paths:Record<string,string>={
  headwear:'M5 12c0-5 3-9 7-9s7 4 7 9M3 13h18M7 13v4h10v-4',
  clothing:'M8 4 4 7l2 5 3-2v11h6V10l3 2 2-5-4-3-2 3h-4L8 4Z',
  shoes:'M5 4h5v10c0 3-2 5-5 5H2v-4h3V4Zm9 0h5v11h3v4h-3c-3 0-5-2-5-5V4Z',
+ belt:'M3 9h18v6H3V9Zm7 0v6m4-6v6M7 12h10',
  wolfFang:'M8 3c1 8 2 14 4 18 3-5 4-11 4-18-2 3-6 3-8 0Z',
  wolfHide:'M5 3c2 3 4 3 7 3s5 0 7-3l2 5c-5 3-5 5 0 8l-2 5c-3-3-11-3-14 0l-2-5c5-3 5-5 0-8l2-5Z',
  wolfMantle:'M7 8 4 4l4 1 4-3 4 3 4-1-3 4 2 13H5L7 8Zm1-3 2 5 2-3 2 3 2-5M9 12c1-2 5-2 6 0',
