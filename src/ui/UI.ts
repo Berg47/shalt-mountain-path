@@ -87,14 +87,27 @@ export class UI {
    else body+='<p class="panel-note">Выбери предмет. Инструменты хранятся отдельно на поясе.</p>';
    body+=`<div class="equipment">${m.inventory.tools.map(t=>`<button data-hotbar="${t}" class="${m.inventory.equipped===t?'selected':''}">${icon(t)}${t==='shalt'?`Шалт ${m.inventory.shaltLevel}`:TOOLS[t].name}${m.inventory.equipped===t?icon('check'):''}</button>`).join('')}</div>`;
   }else if(this.panel==='character'){
-   const slotData:{slot:EquipmentSlot;label:string;iconName:string;value:string;detail:string}[]=[
-    {slot:'weapon',label:'Оружие',iconName:'weapon',value:m.inventory.equipment.weapon?(m.inventory.equipment.weapon==='shalt'?`Шалт ${m.inventory.shaltLevel}`:TOOLS[m.inventory.equipment.weapon as ToolId]?.name??'Оружие'):'Пусто',detail:'Активное оружие'},
-    {slot:'headwear',label:'Головной убор',iconName:'headwear',value:'Пусто',detail:'Ничего не надето'},
-    {slot:'clothing',label:'Одежда',iconName:'clothing',value:'Пусто',detail:'Основная одежда'},
-    {slot:'mantle',label:'Накидка',iconName:'wolfMantle',value:m.inventory.equipment.mantle==='wolfMantle'?ITEMS.wolfMantle.name:'Пусто',detail:m.inventory.equipment.mantle==='wolfMantle'?'Волчья голова входит в комплект':'Особая верхняя экипировка'},
-    {slot:'shoes',label:'Обувь',iconName:'shoes',value:'Пусто',detail:'Ничего не надето'},
-   ];
-   body=`<div class="character-layout"><section class="character-preview ${m.inventory.equipment.mantle==='wolfMantle'?'wearing-wolf':''}"><div class="character-silhouette">${icon('character')}${m.inventory.equipment.mantle==='wolfMantle'?'<span class="wolf-preview">'+icon('wolfMantle')+'</span>':''}</div><span class="eyebrow">ЭКИПИРОВКА</span><h3>Герой · ${m.age} лет</h3><p>Уровень ${m.xp.level}. Предметы в слотах сразу отображаются на персонаже в мире.</p></section><div class="character-slots">${slotData.map(s=>`<article class="character-slot ${s.value==='Пусто'?'empty':''}"><span class="slot-icon">${icon(s.iconName)}</span><div><small>${s.label}</small><strong>${s.value}</strong><span>${s.detail}</span></div>${s.slot==='mantle'&&m.inventory.equipment.mantle==='wolfMantle'?'<button class="text-button" data-unequip="mantle">Снять</button>':s.slot==='mantle'&&m.inventory.count('wolfMantle')?'<button class="button small" data-equip="wolfMantle">Надеть</button>':''}</article>`).join('')}</div></div>`;
+   const weapon=m.inventory.equipment.weapon?(m.inventory.equipment.weapon==='shalt'?`Шалт ${m.inventory.shaltLevel}`:TOOLS[m.inventory.equipment.weapon as ToolId]?.name??'Оружие'):'Пусто';
+   const mantleEquipped=m.inventory.equipment.mantle==='wolfMantle',mantleOwned=m.inventory.count('wolfMantle')>0;
+   const slot=(label:string,iconName:string,value:string,attrs='',disabled=false)=>`<button class="equipment-square ${value==='Пусто'?'empty':''}" ${attrs} ${disabled?'disabled':''}><span class="equipment-square-icon">${icon(iconName)}</span><strong>${label}</strong><small>${value}</small></button>`;
+   body=`<div class="character-stage ${mantleEquipped?'wearing-wolf':''}">
+    <div class="equipment-column left">
+     ${slot('Головной убор','headwear','Пусто','',true)}
+     ${slot('Одежда','clothing','Пусто','',true)}
+     ${slot('Обувь','shoes','Пусто','',true)}
+    </div>
+    <section class="character-center" aria-label="Игровой персонаж">
+     <div class="character-aura"></div>
+     <div class="actual-game-hero" aria-hidden="true"></div>
+     <div class="character-ground"></div>
+     <div class="character-caption"><strong>Герой · ${m.age} лет</strong><span>Уровень ${m.xp.level}</span></div>
+    </section>
+    <div class="equipment-column right">
+     ${slot('Оружие','weapon',weapon,'',true)}
+     ${slot('Накидка','wolfMantle',mantleEquipped?'Надето':mantleOwned?'В рюкзаке':'Пусто',mantleEquipped?'data-unequip="mantle"':mantleOwned?'data-equip="wolfMantle"':'',!mantleOwned&&!mantleEquipped)}
+     ${slot('Пояс','belt','Пусто','',true)}
+    </div>
+   </div>`;
   }else if(this.panel==='craft'){
    body='<p class="panel-intro">Простые вещи и улучшения снаряжения.</p><div class="recipe-list">'+Object.entries(RECIPES).map(([id,r])=>{const owned=m.crafting.owned(id as RecipeId),unlocked=!r.requires||m.inventory.tools.includes(r.requires),benchReady=!r.bench||m.buildings.nearWorkbench(m.player),recipeIcon=id.startsWith('bag')?'bag':id.startsWith('shalt')?'shalt':id;return `<article class="recipe"><div class="recipe-symbol">${icon(recipeIcon)}</div><div class="recipe-content"><h3>${r.name}</h3><p>${r.description}</p>${r.bench&&!owned?'<span class="made">'+icon('workbench')+' Требуется верстак рядом</span>':''}${!owned?this.costs(r.cost):'<span class="made">'+icon('check')+' Изготовлено</span>'}</div><button class="button small" data-craft="${id}" ${owned||!unlocked||!benchReady||!m.inventory.canAfford(r.cost)?'disabled':''}>${owned?'Готово':!unlocked?'После топора':!benchReady?'У верстака':'Создать'}</button></article>`;}).join('')+'</div>';
   }else if(this.panel==='build'){
@@ -107,7 +120,7 @@ export class UI {
    body=`<div class="pause-stats"><span><b>${m.age}</b> лет</span><span><b>${m.xp.level}</b> уровень</span><span><b>${m.day.day}</b> день в горах</span></div><div class="pause-buttons"><button class="button" data-action="close">Продолжить путь ${icon('arrow')}</button><button class="button secondary" data-action="save">${icon('save')} Сохранить</button><button class="button secondary" data-action="fullscreen">${icon('expand')} Во весь экран</button><button class="button secondary" data-panel="help">${icon('help')} Управление</button><button class="text-button" data-action="exit">Сохранить и выйти в главное меню</button></div><p class="panel-note">Прогресс сохраняется автоматически в этом браузере.</p>`;
   }
   const tabs=['inventory','character','craft','build','map'].includes(this.panel)?`<nav class="panel-tabs" aria-label="Разделы">${[['inventory','bag','Рюкзак'],['character','character','Персонаж'],['craft','craft','Ремесло'],['build','canopy','Лагерь'],['map','map','Карта']].map(([id,i,label])=>`<button data-panel="${id}" class="${id===this.panel?'active':''}">${icon(i)}${label}</button>`).join('')}</nav>`:'';
-  this.root.querySelector('#modal-root')!.innerHTML=`<div class="modal-backdrop"><section class="game-panel ${this.panel==='map'?'map-panel':''}" role="dialog" aria-modal="true" aria-labelledby="panel-title"><header><div><span class="eyebrow">ШАЛТ · ПУТЬ В ГОРЫ</span><h2 id="panel-title">${names[this.panel]}</h2></div><button class="icon-button" data-action="close" aria-label="Закрыть">${icon('close')}</button></header>${tabs}<div class="panel-body">${body}</div><footer><span>${m.region}</span><span>День ${m.day.day} · ${m.day.clock}</span></footer></section></div>`;
+  this.root.querySelector('#modal-root')!.innerHTML=`<div class="modal-backdrop"><section class="game-panel ${this.panel==='map'?'map-panel':this.panel==='character'?'character-panel':''}" role="dialog" aria-modal="true" aria-labelledby="panel-title"><header><div><span class="eyebrow">ШАЛТ · ПУТЬ В ГОРЫ</span><h2 id="panel-title">${names[this.panel]}</h2></div><button class="icon-button" data-action="close" aria-label="Закрыть">${icon('close')}</button></header>${tabs}<div class="panel-body">${body}</div><footer><span>${m.region}</span><span>День ${m.day.day} · ${m.day.clock}</span></footer></section></div>`;
  }
  update(force=false){
   const m=this.model,p=m.player;const set=(id:string,text:string)=>{const e=this.root.querySelector<HTMLElement>('#'+id);if(e&&e.textContent!==text)e.textContent=text;};
