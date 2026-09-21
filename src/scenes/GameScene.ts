@@ -46,7 +46,7 @@ export class GameScene extends Phaser.Scene {
   this.model.update(dt,input);this.focus.setPosition(this.model.player.x,this.model.player.y-30);this.worldRenderer.draw(dt,this.building,this.placement);
   this.uiTimer+=dt;if(this.uiTimer>.12){this.uiTimer=0;this.ui.update();}
   for(const event of this.model.events.splice(0)){
-   if(event.type==='toast')this.ui.toast(event.text!);else if(event.type==='discover')this.ui.discover(event.text!);else if(event.type==='level'){this.ui.discover(event.text!,true);this.audio.play('level');}else if(event.type==='death')this.ui.death();else{this.worldRenderer.event(event);this.audio.play(event.type);if(event.type==='damage')this.cameras.main.shake(100,.003);}
+   if(event.type==='toast')this.ui.toast(event.text!);else if(event.type==='discover')this.ui.discover(event.text!);else if(event.type==='level'){this.ui.discover(event.text!,true);this.audio.play('level');}else if(event.type==='trial'){this.ui.trial();this.audio.play('level');}else if(event.type==='adulthood'){this.ui.adulthood();this.audio.play('level');}else if(event.type==='death')this.ui.death();else{this.worldRenderer.event(event);this.audio.play(event.type);if(event.type==='damage')this.cameras.main.shake(100,.003);}
   }
   if(!this.model.paused)this.audio.update(dt,this.model.day.night,Math.abs(this.model.player.x-riverX(this.model.player.y))<240,this.model.buildings.nearFire(this.model.player));
  }
