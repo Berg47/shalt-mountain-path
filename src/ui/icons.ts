@@ -39,6 +39,15 @@ const paths:Record<string,string>={
  goal:'M6 3h12v18H6V3Zm3 5h6M9 12h6M9 16h4',
  metal:'M5 8h14l-2 11H7L5 8Zm3-5h8l2 5H6l2-5ZM9 12h6M8 16h8',
  workbench:'M4 9h16v4H4V9Zm2 4v8m12-8v8M8 5h8v4',
+ character:'M12 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8ZM5 22v-3a7 7 0 0 1 14 0v3M8 22v-5m8 5v-5',
+ weapon:'m6 22 5-8m-4-2 7 4M12 13 19 2l-1 8-5 6',
+ headwear:'M5 12c0-5 3-9 7-9s7 4 7 9M3 13h18M7 13v4h10v-4',
+ clothing:'M8 4 4 7l2 5 3-2v11h6V10l3 2 2-5-4-3-2 3h-4L8 4Z',
+ shoes:'M5 4h5v10c0 3-2 5-5 5H2v-4h3V4Zm9 0h5v11h3v4h-3c-3 0-5-2-5-5V4Z',
+ wolfFang:'M8 3c1 8 2 14 4 18 3-5 4-11 4-18-2 3-6 3-8 0Z',
+ wolfHide:'M5 3c2 3 4 3 7 3s5 0 7-3l2 5c-5 3-5 5 0 8l-2 5c-3-3-11-3-14 0l-2-5c5-3 5-5 0-8l2-5Z',
+ wolfMantle:'M7 8 4 4l4 1 4-3 4 3 4-1-3 4 2 13H5L7 8Zm1-3 2 5 2-3 2 3 2-5M9 12c1-2 5-2 6 0',
+
 };
 export const icon=(name:string,cls='')=>`<svg class="icon ${cls}" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[name]||paths.leaf}"/></svg>`;
 export const itemIcon=(id:string)=>icon(id==='pebble'?'stone':id);
