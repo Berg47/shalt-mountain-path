@@ -18,6 +18,8 @@ export const SETTINGS = {
   ages:[{level:1,age:15},{level:3,age:16},{level:5,age:17}],
 } as const;
 
+export const WOLF_MANTLE_BONUS = {health:5,stamina:10,damage:10} as const;
+
 export const CAVE = {
  name:'Пещера Чёрного Волка',entrance:{x:1710,y:330},exit:{x:1710,y:848},playerSpawn:{x:1710,y:748},wolfSpawn:{x:1710,y:500},
  bounds:{cx:1710,cy:590,rx:440,ry:365},respawnDays:3,
@@ -35,7 +37,7 @@ export const ITEMS:Record<ResourceId,{name:string,short:string,icon:string,descr
  metal:{name:'Металл',short:'металла',icon:'metal',description:'Редкая добыча с разбойников. Нужен для верстака и улучшения шалта.'},
  wolfFang:{name:'Клык Чёрного Волка',short:'клыка',icon:'wolfFang',description:'Редкий трофей из пещеры. Пока хранится в сумке.'},
  wolfHide:{name:'Шкура Чёрного Волка',short:'шкуры',icon:'wolfHide',description:'Тяжёлая чёрная шкура босса. Пригодится позже.'},
- wolfMantle:{name:'Накидка Чёрного Волка',short:'накидки',icon:'wolfMantle',description:'Трофейная чёрная накидка-плащ. Волчья голова лежит сверху на макушке как головной убор и не закрывает лицо.'},
+ wolfMantle:{name:'Накидка Чёрного Волка',short:'накидки',icon:'wolfMantle',description:'Чёрная меховая накидка из шкуры Чёрного Волка. Без капюшона и головного убора. Бонусы: +10 выносливости, +10 урона, +5 HP.'},
 };
 export const TOOLS:Record<ToolId,{name:string,description:string}> = {
  shalt:{name:'Шалт',description:'Первый кинжал, вручённый дедушкой. Для охоты и защиты.'},
