@@ -25,7 +25,7 @@ export class InventorySystem {
   return true;
  }
  pay(cost:Cost){if(!this.canAfford(cost))return false;for(const [id,n]of Object.entries(cost))this.remove(id as ResourceId,n!);return true;}
- equipWearable(id:'wolfMantle'){return this.equipItem('mantle',id);}
+ equipWearable(id:'wolfMantle'|'whitePapakha'){return this.equipItem(id==='whitePapakha'?'headwear':'mantle',id);}
  equipItem(slot:EquipmentSlot,id:EquipmentId){
   if(slot==='weapon'){
    if(!this.tools.includes(id as ToolId))return false;
@@ -34,6 +34,10 @@ export class InventorySystem {
   if(slot==='mantle'){
    if(id!=='wolfMantle'||!this.count('wolfMantle'))return false;
    this.equipment.mantle=id;return true;
+  }
+  if(slot==='headwear'){
+   if(id!=='whitePapakha'||!this.count('whitePapakha'))return false;
+   this.equipment.headwear=id;return true;
   }
   return false;
  }
