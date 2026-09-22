@@ -448,32 +448,101 @@ function makeChechenTowerTexture(scene:Phaser.Scene){
 
 function makeChechenHouseTexture(scene:Phaser.Scene){
  if(scene.textures.exists('chechen-house'))scene.textures.remove('chechen-house');
- const W=720,H=500,t=scene.textures.createCanvas('chechen-house',W,H)!;const c=t.getContext(),rand=seeded(99407);
+ // High-resolution rectangular mountain dwelling. The game scales this down, matching
+ // the soft painted atlas look instead of the previous flat geometric placeholder.
+ const W=960,H=620,t=scene.textures.createCanvas('chechen-house',W,H)!;const c=t.getContext(),rand=seeded(99407);
  c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
 
- const shadow=c.createRadialGradient(360,430,15,360,430,260);shadow.addColorStop(0,'rgba(10,24,18,.34)');shadow.addColorStop(1,'rgba(10,24,18,0)');
- c.fillStyle=shadow;c.beginPath();c.ellipse(360,430,255,38,0,0,Math.PI*2);c.fill();
+ // Ground/contact shadow.
+ let g=c.createRadialGradient(480,545,18,480,545,340);
+ g.addColorStop(0,'rgba(9,21,16,.38)');g.addColorStop(.62,'rgba(9,21,16,.16)');g.addColorStop(1,'rgba(9,21,16,0)');
+ c.fillStyle=g;c.beginPath();c.ellipse(480,545,334,48,0,0,Math.PI*2);c.fill();
 
- // Low rectangular stone dwelling.
- let wall=c.createLinearGradient(110,176,590,423);wall.addColorStop(0,'#978e79');wall.addColorStop(.42,'#746e5e');wall.addColorStop(1,'#4e5047');
- c.fillStyle=wall;c.beginPath();c.moveTo(108,184);c.lineTo(605,184);c.lineTo(626,418);c.lineTo(88,418);c.closePath();c.fill();
- c.strokeStyle='rgba(44,44,39,.66)';c.lineWidth=7;c.stroke();
+ // Wide, compact two-storey stone body: clearly more rectangular than the towers.
+ const body=()=>{c.beginPath();c.moveTo(150,230);c.lineTo(806,230);c.lineTo(830,520);c.lineTo(126,520);c.closePath();};
+ g=c.createLinearGradient(120,230,836,520);
+ g.addColorStop(0,'#aaa08b');g.addColorStop(.23,'#8d8370');g.addColorStop(.58,'#6c6758');g.addColorStop(1,'#494b43');
+ c.fillStyle=g;body();c.fill();
+ c.strokeStyle='rgba(48,47,41,.82)';c.lineWidth=8;body();c.stroke();
 
- // Thick stone/earth roof with a slight perspective pitch.
- const roof=c.createLinearGradient(100,112,630,206);roof.addColorStop(0,'#777361');roof.addColorStop(.52,'#5e5e52');roof.addColorStop(1,'#464943');
- c.fillStyle=roof;c.beginPath();c.moveTo(128,126);c.lineTo(588,119);c.lineTo(654,190);c.lineTo(72,197);c.closePath();c.fill();
- c.strokeStyle='rgba(43,44,39,.72)';c.lineWidth=7;c.stroke();
- c.strokeStyle='rgba(203,190,160,.16)';c.lineWidth=4;c.beginPath();c.moveTo(121,139);c.lineTo(594,132);c.stroke();
+ // Slightly projecting dark stone-shingle hipped roof, matching the existing atlas tower roof.
+ const roofGrad=c.createLinearGradient(0,108,0,250);
+ roofGrad.addColorStop(0,'#65665f');roofGrad.addColorStop(.45,'#50534f');roofGrad.addColorStop(1,'#343a38');
+ c.fillStyle=roofGrad;
+ c.beginPath();c.moveTo(210,106);c.lineTo(744,106);c.lineTo(886,242);c.lineTo(70,242);c.closePath();c.fill();
+ c.strokeStyle='rgba(34,38,36,.88)';c.lineWidth=8;c.stroke();
 
- c.save();c.beginPath();c.moveTo(108,184);c.lineTo(605,184);c.lineTo(626,418);c.lineTo(88,418);c.closePath();c.clip();
- c.strokeStyle='rgba(43,43,38,.27)';c.lineWidth=3;
- for(let y=211,row=0;y<410;y+=32,row++){c.beginPath();c.moveTo(86,y);c.lineTo(629,y);c.stroke();for(let x=108+(row%2?25:0);x<620;x+=68+rand()*18){c.beginPath();c.moveTo(x,y-31);c.lineTo(x+(rand()-.5)*8,y);c.stroke();}}
- for(let i=0;i<140;i++){const x=95+rand()*520,y=190+rand()*220;c.fillStyle=rand()>.5?'rgba(215,203,171,.055)':'rgba(27,29,26,.06)';c.beginPath();c.ellipse(x,y,4+rand()*12,2+rand()*6,rand(),0,Math.PI*2);c.fill();}
+ // Roof tiles/shingles and ridge.
+ c.lineCap='round';c.strokeStyle='rgba(194,190,166,.20)';c.lineWidth=3.2;
+ for(let row=0;row<5;row++){
+  const y=133+row*23,expand=row*24;
+  c.beginPath();c.moveTo(205-expand,y);c.lineTo(750+expand,y);c.stroke();
+  for(let x=236-expand;x<752+expand;x+=45){c.beginPath();c.moveTo(x,y-20);c.lineTo(x-7,y);c.stroke();}
+ }
+ c.strokeStyle='rgba(24,28,27,.52)';c.lineWidth=6;c.beginPath();c.moveTo(210,111);c.lineTo(744,111);c.stroke();
+
+ // Corner stones, larger and cleaner like the good tower already present in the game.
+ const cornerStone=(x:number,y:number,w:number,h:number,light:boolean)=>{
+  const cg=c.createLinearGradient(x,y,x+w,y+h);
+  cg.addColorStop(0,light?'#b9ae97':'#9b927d');cg.addColorStop(.56,light?'#8e8571':'#766f60');cg.addColorStop(1,'#5b594f');
+  c.fillStyle=cg;c.beginPath();c.roundRect(x,y,w,h,8);c.fill();
+  c.strokeStyle='rgba(52,50,43,.48)';c.lineWidth=2.5;c.stroke();
+ };
+ for(let y=248,row=0;y<507;y+=38,row++){
+  const h=32+rand()*8,w=38+rand()*11;
+  cornerStone(128+rand()*5,y,w,h,row%2===0);
+  cornerStone(785-w+rand()*6,y,w,h,row%2!==0);
+ }
+
+ // Irregular individual masonry rather than a flat grid.
+ c.save();body();c.clip();
+ for(let y=250,row=0;y<510;y+=33,row++){
+  let x=168+(row%2?14:0);
+  while(x<785){
+   const sw=44+rand()*38,sh=24+rand()*11,jx=(rand()-.5)*7,jy=(rand()-.5)*4;
+   const sg=c.createLinearGradient(x,y,x+sw,y+sh);
+   const tone=rand();
+   sg.addColorStop(0,tone>.66?'#aaa18d':tone>.32?'#918875':'#807866');
+   sg.addColorStop(.55,tone>.66?'#8f8674':tone>.32?'#776f61':'#696356');
+   sg.addColorStop(1,'#55534b');
+   c.fillStyle=sg;c.beginPath();c.roundRect(x+jx,y+jy,sw,sh,5+rand()*4);c.fill();
+   c.strokeStyle='rgba(46,45,39,.33)';c.lineWidth=2;c.stroke();
+   x+=sw+5+rand()*7;
+  }
+ }
+ // Moss, age, highlights and tiny stone variation.
+ for(let i=0;i<260;i++){
+  const x=150+rand()*650,y=242+rand()*270;
+  c.fillStyle=rand()>.72?'rgba(207,198,166,.11)':rand()>.36?'rgba(59,73,46,.10)':'rgba(27,31,27,.08)';
+  c.beginPath();c.ellipse(x,y,2+rand()*10,1+rand()*5,rand(),0,Math.PI*2);c.fill();
+ }
  c.restore();
 
- c.fillStyle='#242a25';c.beginPath();c.roundRect(316,314,73,104,8);c.fill();
- c.fillStyle='#303833';for(const [x,y] of [[181,278],[510,272]] as const){c.beginPath();c.roundRect(x-22,y-28,44,56,5);c.fill();}
- c.strokeStyle='rgba(210,197,165,.14)';c.lineWidth=3;c.beginPath();c.moveTo(112,208);c.lineTo(599,390);c.stroke();
+ // Dark recessed wooden doorway with stone lintel and steps.
+ c.fillStyle='#202620';c.beginPath();c.roundRect(438,392,92,128,7);c.fill();
+ let wood=c.createLinearGradient(448,402,520,514);wood.addColorStop(0,'#6b4c34');wood.addColorStop(.55,'#4b3427');wood.addColorStop(1,'#2d241f');
+ c.fillStyle=wood;c.beginPath();c.roundRect(451,403,66,116,4);c.fill();
+ c.strokeStyle='rgba(23,19,17,.55)';c.lineWidth=3;for(let x=460;x<516;x+=14){c.beginPath();c.moveTo(x,407);c.lineTo(x,515);c.stroke();}
+ c.fillStyle='#a29a84';c.beginPath();c.roundRect(426,381,116,17,5);c.fill();
+ c.fillStyle='#8b8371';for(let i=0;i<3;i++){c.beginPath();c.roundRect(418-i*10,520+i*10,132+i*20,10,4);c.fill();}
+
+ // Small deep-set windows with stone lintels, deliberately not huge modern openings.
+ const window=(x:number,y:number,w=50,h=58)=>{
+  c.fillStyle='#202822';c.beginPath();c.roundRect(x-w/2,y-h/2,w,h,4);c.fill();
+  c.fillStyle='rgba(45,54,46,.65)';c.beginPath();c.roundRect(x-w/2+7,y-h/2+7,w-14,h-14,3);c.fill();
+  c.strokeStyle='rgba(180,169,145,.32)';c.lineWidth=5;c.beginPath();c.moveTo(x-w/2-5,y-h/2-7);c.lineTo(x+w/2+5,y-h/2-7);c.stroke();
+ };
+ window(268,337,46,56);window(690,337,46,56);window(285,445,42,50);window(674,445,42,50);
+
+ // Optional timber balcony on one façade for lived-in detail, kept compact.
+ c.fillStyle='#453226';c.beginPath();c.roundRect(562,270,146,18,5);c.fill();
+ c.strokeStyle='#493428';c.lineWidth=13;c.beginPath();c.moveTo(582,282);c.lineTo(582,364);c.moveTo(688,282);c.lineTo(688,364);c.stroke();
+ c.fillStyle='#5a4030';c.beginPath();c.roundRect(570,345,128,16,4);c.fill();
+ c.strokeStyle='rgba(199,158,112,.23)';c.lineWidth=3;for(let x=586;x<687;x+=25){c.beginPath();c.moveTo(x,292);c.lineTo(x,343);c.stroke();}
+
+ // Strong painterly top-left light and bottom shade for volume at mobile scale.
+ c.strokeStyle='rgba(234,222,189,.18)';c.lineWidth=7;c.beginPath();c.moveTo(161,253);c.lineTo(154,485);c.stroke();
+ c.strokeStyle='rgba(28,30,27,.24)';c.lineWidth=12;c.beginPath();c.moveTo(160,510);c.lineTo(797,510);c.stroke();
  t.refresh();
 }
 
@@ -603,19 +672,20 @@ export class WorldRenderer {
   // Expanded Chechen mountain settlement: tall Vainakh-style stone towers,
   // low stone dwellings and broken courtyard walls, all drawn in the game's painterly style.
   for(const tower of SETTLEMENT.towers){
-   const img=scene.add.image(tower.x,tower.y,'chechen-tower').setOrigin(.5,.92).setDisplaySize(126*tower.scale,198*tower.scale).setDepth(tower.y);
+   // Reuse the original tower sprite already present elsewhere in the game, so the
+   // settlement towers have exactly the same stonework, roof, perspective and quality.
+   const img=this.sprite('tower',tower.x,tower.y);
+   img.setScale(img.scaleX*tower.scale,img.scaleY*tower.scale).setDepth(tower.y);
    this.worldDecor.push(img);
   }
   for(const house of SETTLEMENT.houses){
-   const img=scene.add.image(house.x,house.y,'chechen-house').setOrigin(.5,.88).setDisplaySize(154*house.scale,107*house.scale).setDepth(house.y);
+   const img=scene.add.image(house.x,house.y,'chechen-house').setOrigin(.5,.90).setDisplaySize(210*house.scale,136*house.scale).setDepth(house.y);
    this.worldDecor.push(img);
   }
   for(const wall of SETTLEMENT.walls){
    const img=scene.add.image(wall.x,wall.y,'chechen-wall').setOrigin(.5,.72).setDisplaySize(wall.w,55).setRotation(wall.angle).setDepth(wall.y-2);
    this.worldDecor.push(img);
   }
-  const settlementName=scene.add.text(SETTLEMENT.center.x,SETTLEMENT.center.y-390,'Башенное селение',{fontFamily:'Georgia, serif',fontSize:'18px',color:'#d8ceac',stroke:'#21392e',strokeThickness:4}).setOrigin(.5).setDepth(SETTLEMENT.center.y+2).setAlpha(.72);
-  this.worldDecor.push(settlementName);
   const rand=seeded(191);for(let x=80;x<SETTINGS.world.width-100;x+=125){if(x>1540&&x<1880)continue;const rock=this.sprite('rock',x,160+rand()*110);rock.setDisplaySize(180+rand()*90,125+rand()*90);this.worldDecor.push(rock);}
   // The visible cave mouth is anchored exactly to the map region "Вход в пещеру".
   const ex=CAVE.entrance.x,ey=CAVE.entrance.y;
