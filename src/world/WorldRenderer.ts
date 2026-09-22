@@ -1,8 +1,8 @@
 import Phaser from 'phaser';
 import {heroArt} from '../data/heroArt';
 import {drawWhitePapakha,PAPAKHA_FIT} from '../data/papakhaArt';
-import {SETTINGS,NODE_DATA,ANIMALS,ENEMIES,CAVE,ELDER_QUEST,type BuildingId} from '../data/config';
-import {seeded,riverX,distance,type World} from './World';
+import {SETTINGS,NODE_DATA,ANIMALS,ENEMIES,CAVE,ELDER_QUEST,SETTLEMENT,type BuildingId} from '../data/config';
+import {seeded,riverX,distance,settlementPathY,type World} from './World';
 import type {GameModel,GameEvent} from '../systems/GameModel';
 
 const FRAMES:Record<string,[number,number,number,number]>={
@@ -321,61 +321,172 @@ function makePapakhaTexture(scene:Phaser.Scene){
 }
 
 function makeDeerTexture(scene:Phaser.Scene){
+ // Full replacement for the previous deer. Drawn at high resolution then reduced in-world,
+ // using the same soft painted rendering language as the atlas hare and boar.
  if(scene.textures.exists('deer'))scene.textures.remove('deer');
- const W=640,H=500,t=scene.textures.createCanvas('deer',W,H)!;const c=t.getContext(),rand=seeded(27183);
+ const W=960,H=720,t=scene.textures.createCanvas('deer',W,H)!;const c=t.getContext(),rand=seeded(731904);
  c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
 
- // Contact shadow like the hare/boar atlas art.
- let g=c.createRadialGradient(310,414,18,310,414,190);g.addColorStop(0,'rgba(16,31,22,.33)');g.addColorStop(.65,'rgba(16,31,22,.13)');g.addColorStop(1,'rgba(16,31,22,0)');
- c.fillStyle=g;c.beginPath();c.ellipse(310,414,188,30,0,0,Math.PI*2);c.fill();
+ // Soft contact shadow keeps the animal grounded in the top-down world.
+ let g=c.createRadialGradient(462,603,24,462,603,282);
+ g.addColorStop(0,'rgba(12,29,20,.36)');g.addColorStop(.62,'rgba(12,29,20,.14)');g.addColorStop(1,'rgba(12,29,20,0)');
+ c.fillStyle=g;c.beginPath();c.ellipse(462,603,278,48,-.03,0,Math.PI*2);c.fill();
 
- // Body in a three-quarter top-down read, not a side-profile cutout.
- g=c.createLinearGradient(130,138,500,390);g.addColorStop(0,'#ad875c');g.addColorStop(.35,'#896445');g.addColorStop(.72,'#624833');g.addColorStop(1,'#3f3229');
- c.fillStyle=g;c.beginPath();c.ellipse(295,292,166,87,-.075,0,Math.PI*2);c.fill();
+ // Hindquarters and rib cage: compact three-quarter anatomy, with a readable shoulder mass.
+ g=c.createLinearGradient(190,228,700,548);
+ g.addColorStop(0,'#b28a5e');g.addColorStop(.27,'#946b48');g.addColorStop(.62,'#73513a');g.addColorStop(1,'#49372d');
+ c.fillStyle=g;c.beginPath();
+ c.moveTo(184,410);c.bezierCurveTo(193,306,292,249,420,253);c.bezierCurveTo(536,250,620,290,653,361);
+ c.bezierCurveTo(681,422,632,488,531,513);c.bezierCurveTo(413,543,269,531,203,474);c.bezierCurveTo(183,456,176,434,184,410);c.closePath();c.fill();
 
- // Shoulder and neck overlap the body to give depth.
- let neck=c.createLinearGradient(370,150,510,330);neck.addColorStop(0,'#99704a');neck.addColorStop(.52,'#76543a');neck.addColorStop(1,'#4e3c30');
- c.fillStyle=neck;c.beginPath();c.ellipse(433,229,57,107,-.30,0,Math.PI*2);c.fill();
- c.fillStyle='#805c3f';c.beginPath();c.ellipse(504,149,67,45,-.16,0,Math.PI*2);c.fill();
+ // Shoulder/chest plane.
+ let chest=c.createRadialGradient(603,322,18,596,356,145);
+ chest.addColorStop(0,'#a57b53');chest.addColorStop(.54,'#7f5a3f');chest.addColorStop(1,'#5a4233');
+ c.fillStyle=chest;c.beginPath();c.ellipse(597,373,112,135,-.18,0,Math.PI*2);c.fill();
 
- // Muzzle and ears are broad enough to survive downscaling.
- c.fillStyle='#d7c39d';c.beginPath();c.ellipse(547,166,35,23,.03,0,Math.PI*2);c.fill();
- c.fillStyle='#b88d60';c.beginPath();c.moveTo(474,126);c.lineTo(445,75);c.lineTo(492,111);c.closePath();c.fill();
- c.beginPath();c.moveTo(522,116);c.lineTo(557,70);c.lineTo(542,127);c.closePath();c.fill();
- c.fillStyle='rgba(74,54,42,.34)';c.beginPath();c.moveTo(476,118);c.lineTo(456,88);c.lineTo(487,112);c.closePath();c.fill();c.beginPath();c.moveTo(527,113);c.lineTo(551,84);c.lineTo(540,121);c.closePath();c.fill();
+ // Long neck rises toward the head but still reads from the game camera.
+ let neck=c.createLinearGradient(604,184,760,430);
+ neck.addColorStop(0,'#9b704b');neck.addColorStop(.54,'#79543b');neck.addColorStop(1,'#574034');
+ c.fillStyle=neck;c.beginPath();
+ c.moveTo(570,367);c.bezierCurveTo(597,294,626,224,681,168);c.bezierCurveTo(713,137,748,143,769,171);
+ c.bezierCurveTo(751,235,724,303,689,382);c.bezierCurveTo(650,408,604,403,570,367);c.closePath();c.fill();
 
- // Legs: tapered dark lower legs make the silhouette closer to the painted boar/hare.
- const leg=(x:number,y:number,dx:number,front=false)=>{
-  const lg=c.createLinearGradient(x,y,x+dx,y+118);lg.addColorStop(0,front?'#72513a':'#684a36');lg.addColorStop(.70,'#4a392d');lg.addColorStop(1,'#282522');
-  c.strokeStyle=lg;c.lineWidth=16;c.lineCap='round';c.beginPath();c.moveTo(x,y);c.lineTo(x+dx*.55,y+72);c.lineTo(x+dx,y+112);c.stroke();
-  c.strokeStyle='#24221f';c.lineWidth=9;c.beginPath();c.moveTo(x+dx,y+108);c.lineTo(x+dx+(dx>=0?7:-7),y+128);c.stroke();
+ // Head and muzzle: natural, not icon-like.
+ g=c.createLinearGradient(667,111,846,252);g.addColorStop(0,'#a97d52');g.addColorStop(.58,'#7f5a3d');g.addColorStop(1,'#584132');
+ c.fillStyle=g;c.beginPath();
+ c.moveTo(673,169);c.bezierCurveTo(704,117,772,104,817,132);c.bezierCurveTo(853,154,862,196,837,221);
+ c.bezierCurveTo(802,251,727,247,688,215);c.bezierCurveTo(670,201,663,185,673,169);c.closePath();c.fill();
+ c.fillStyle='#cbb58e';c.beginPath();c.ellipse(838,211,54,30,.06,0,Math.PI*2);c.fill();
+ c.fillStyle='#3c3029';c.beginPath();c.ellipse(878,214,8,6,0,0,Math.PI*2);c.fill();
+
+ // Ears with darker inner planes.
+ c.fillStyle='#b4875a';c.beginPath();c.moveTo(708,145);c.lineTo(655,80);c.lineTo(731,124);c.closePath();c.fill();
+ c.beginPath();c.moveTo(773,126);c.lineTo(826,67);c.lineTo(806,150);c.closePath();c.fill();
+ c.fillStyle='rgba(83,58,44,.40)';c.beginPath();c.moveTo(707,133);c.lineTo(673,94);c.lineTo(722,124);c.closePath();c.fill();
+ c.beginPath();c.moveTo(786,124);c.lineTo(815,85);c.lineTo(801,139);c.closePath();c.fill();
+
+ // Four slim legs with painted taper and small dark hooves.
+ const leg=(x:number,y:number,kneeX:number,hoofX:number,front=false)=>{
+  const lg=c.createLinearGradient(x,y,hoofX,y+214);lg.addColorStop(0,front?'#79563d':'#725039');lg.addColorStop(.58,'#594234');lg.addColorStop(1,'#2a2824');
+  c.strokeStyle=lg;c.lineWidth=23;c.lineCap='round';c.lineJoin='round';
+  c.beginPath();c.moveTo(x,y);c.lineTo(kneeX,y+109);c.lineTo(hoofX,y+198);c.stroke();
+  c.strokeStyle='#24231f';c.lineWidth=12;c.beginPath();c.moveTo(hoofX,y+192);c.lineTo(hoofX+(hoofX>=kneeX?10:-10),y+220);c.stroke();
  };
- leg(204,341,-8);leg(286,350,8);leg(390,337,-5,true);leg(448,316,10,true);
+ leg(300,480,290,280,false);leg(407,496,421,430,false);leg(580,462,568,559,true);leg(655,430,679,694,true);
 
- // Short tail.
- c.strokeStyle='#6a4d38';c.lineWidth=11;c.lineCap='round';c.beginPath();c.moveTo(150,271);c.quadraticCurveTo(102,245,82,219);c.stroke();
- c.strokeStyle='#e5d9bc';c.lineWidth=5;c.beginPath();c.moveTo(91,223);c.lineTo(75,208);c.stroke();
+ // Small tail with a pale underside.
+ c.strokeStyle='#76543d';c.lineWidth=18;c.lineCap='round';c.beginPath();c.moveTo(204,369);c.quadraticCurveTo(134,338,111,294);c.stroke();
+ c.strokeStyle='#ded0ae';c.lineWidth=7;c.beginPath();c.moveTo(123,308);c.lineTo(101,280);c.stroke();
 
- // Antlers: slim and muted, integrated rather than oversized icon-like branches.
- c.strokeStyle='#66513d';c.lineWidth=7;c.lineCap='round';
- c.beginPath();c.moveTo(490,112);c.lineTo(472,62);c.lineTo(449,38);c.moveTo(472,71);c.lineTo(494,47);c.moveTo(518,108);c.lineTo(534,60);c.lineTo(555,38);c.moveTo(534,70);c.lineTo(515,47);c.stroke();
+ // Antlers are fine and asymmetric enough to feel organic, not like a symbol.
+ c.strokeStyle='#65513e';c.lineWidth=10;c.lineCap='round';c.lineJoin='round';
+ c.beginPath();
+ c.moveTo(716,119);c.lineTo(685,61);c.lineTo(644,29);c.moveTo(686,65);c.lineTo(714,31);c.moveTo(671,51);c.lineTo(658,10);
+ c.moveTo(774,109);c.lineTo(797,53);c.lineTo(833,18);c.moveTo(797,59);c.lineTo(773,27);c.moveTo(815,40);c.lineTo(827,4);
+ c.stroke();
+ c.strokeStyle='rgba(222,203,165,.18)';c.lineWidth=3;c.beginPath();c.moveTo(711,116);c.lineTo(684,62);c.moveTo(779,108);c.lineTo(799,54);c.stroke();
 
- // Painterly fur dabs, clipped to body/neck/head silhouette via source-atop.
+ // Pale throat and rump details characteristic of a deer, kept subtle at game scale.
+ c.fillStyle='rgba(231,216,184,.55)';c.beginPath();c.ellipse(699,286,27,58,-.22,0,Math.PI*2);c.fill();
+ c.fillStyle='rgba(224,209,175,.46)';c.beginPath();c.ellipse(223,403,44,57,-.08,0,Math.PI*2);c.fill();
+
+ // Hundreds of directional fur strokes create painterly surface variation after downsampling.
  c.save();c.globalCompositeOperation='source-atop';c.lineCap='round';
- for(let i=0;i<430;i++){
-  const x=128+rand()*430,y=105+rand()*278,len=5+rand()*18,ang=-.35+rand()*.75;
-  c.strokeStyle=rand()>.72?'rgba(231,210,170,.17)':rand()>.30?'rgba(88,62,45,.15)':'rgba(255,238,196,.08)';
-  c.lineWidth=.7+rand()*1.7;c.beginPath();c.moveTo(x,y);c.lineTo(x+Math.cos(ang)*len,y+Math.sin(ang)*len);c.stroke();
+ for(let i=0;i<980;i++){
+  const x=168+rand()*690,y=102+rand()*430,len=6+rand()*24,ang=-.32+rand()*.66;
+  c.strokeStyle=rand()>.78?'rgba(245,225,187,.16)':rand()>.36?'rgba(84,58,44,.16)':'rgba(255,239,204,.07)';
+  c.lineWidth=.75+rand()*2.0;c.beginPath();c.moveTo(x,y);c.lineTo(x+Math.cos(ang)*len,y+Math.sin(ang)*len);c.stroke();
  }
  c.restore();c.globalCompositeOperation='source-over';
 
- // Warm highlight on the back and pale throat/belly, matching the soft atlas lighting.
- c.strokeStyle='rgba(235,211,172,.22)';c.lineWidth=9;c.beginPath();c.arc(283,275,124,.15,2.64);c.stroke();
- c.fillStyle='rgba(231,218,190,.58)';c.beginPath();c.ellipse(473,205,22,42,-.28,0,Math.PI*2);c.fill();
- c.fillStyle='#171817';c.beginPath();c.arc(529,139,5,0,Math.PI*2);c.fill();
- c.fillStyle='#2f2822';c.beginPath();c.ellipse(569,166,5.5,4,0,0,Math.PI*2);c.fill();
- c.fillStyle='rgba(255,244,211,.65)';c.beginPath();c.arc(527,137,1.4,0,Math.PI*2);c.fill();
+ // Back highlight and underside shade match the soft directional lighting in the atlas.
+ c.strokeStyle='rgba(241,218,177,.22)';c.lineWidth=12;c.lineCap='round';c.beginPath();c.moveTo(249,319);c.bezierCurveTo(372,260,507,276,603,324);c.stroke();
+ c.strokeStyle='rgba(45,31,26,.20)';c.lineWidth=18;c.beginPath();c.moveTo(259,474);c.bezierCurveTo(406,529,566,495,628,449);c.stroke();
+
+ // Face detail remains legible at 100px.
+ c.fillStyle='#171817';c.beginPath();c.ellipse(790,166,7,5,-.15,0,Math.PI*2);c.fill();
+ c.fillStyle='rgba(255,242,205,.80)';c.beginPath();c.arc(788,164,1.8,0,Math.PI*2);c.fill();
+ c.strokeStyle='rgba(71,48,37,.55)';c.lineWidth=4;c.beginPath();c.moveTo(811,224);c.quadraticCurveTo(846,232,872,218);c.stroke();
  t.refresh();
+}
+
+function makeChechenTowerTexture(scene:Phaser.Scene){
+ if(scene.textures.exists('chechen-tower'))scene.textures.remove('chechen-tower');
+ const W=520,H=820,t=scene.textures.createCanvas('chechen-tower',W,H)!;const c=t.getContext(),rand=seeded(87031);
+ c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
+
+ const shadow=c.createRadialGradient(260,755,20,260,755,205);shadow.addColorStop(0,'rgba(11,23,18,.40)');shadow.addColorStop(1,'rgba(11,23,18,0)');
+ c.fillStyle=shadow;c.beginPath();c.ellipse(260,755,205,38,0,0,Math.PI*2);c.fill();
+
+ // Tall tapering stone shaft typical of a Vainakh mountain tower.
+ let wall=c.createLinearGradient(118,230,410,730);wall.addColorStop(0,'#9c927e');wall.addColorStop(.30,'#797261');wall.addColorStop(.70,'#5c584d');wall.addColorStop(1,'#3f4039');
+ c.fillStyle=wall;c.beginPath();c.moveTo(151,231);c.lineTo(369,231);c.lineTo(414,724);c.lineTo(101,724);c.closePath();c.fill();
+ c.strokeStyle='rgba(42,43,38,.72)';c.lineWidth=8;c.stroke();
+
+ // Stepped pyramidal stone roof and capstone.
+ const roof=c.createLinearGradient(260,34,260,246);roof.addColorStop(0,'#7f7c6d');roof.addColorStop(.42,'#66655b');roof.addColorStop(1,'#494c46');
+ c.fillStyle=roof;c.beginPath();c.moveTo(260,36);c.lineTo(105,237);c.lineTo(415,237);c.closePath();c.fill();
+ c.strokeStyle='rgba(40,42,38,.76)';c.lineWidth=7;c.stroke();
+ c.strokeStyle='rgba(202,194,168,.19)';c.lineWidth=4;
+ for(let y=92;y<225;y+=35){const ratio=(y-36)/201,half=ratio*155;c.beginPath();c.moveTo(260-half,y);c.lineTo(260+half,y);c.stroke();}
+ c.fillStyle='#56584f';c.beginPath();c.moveTo(252,35);c.lineTo(260,12);c.lineTo(268,35);c.closePath();c.fill();
+
+ // Masonry courses with irregular vertical joints.
+ c.save();c.beginPath();c.moveTo(151,231);c.lineTo(369,231);c.lineTo(414,724);c.lineTo(101,724);c.closePath();c.clip();
+ c.strokeStyle='rgba(45,45,39,.28)';c.lineWidth=3;
+ for(let y=258,row=0;y<715;y+=35,row++){c.beginPath();c.moveTo(100,y);c.lineTo(416,y);c.stroke();const offset=row%2?18:0;for(let x=123+offset;x<405;x+=54+rand()*15){c.beginPath();c.moveTo(x,y-34);c.lineTo(x+(rand()-.5)*6,y);c.stroke();}}
+ for(let i=0;i<190;i++){const x=112+rand()*290,y=238+rand()*476;c.fillStyle=rand()>.55?'rgba(214,203,174,.055)':'rgba(28,30,27,.065)';c.beginPath();c.ellipse(x,y,3+rand()*9,2+rand()*5,rand(),0,Math.PI*2);c.fill();}
+ c.restore();
+
+ // Narrow slit windows and high doorway.
+ c.fillStyle='#202824';
+ for(const [x,y,w,h] of [[260,316,18,54],[210,412,14,42],[310,500,14,46],[260,586,19,48]] as const){c.beginPath();c.roundRect(x-w/2,y-h/2,w,h,3);c.fill();}
+ c.fillStyle='#272d28';c.beginPath();c.roundRect(232,645,56,79,9);c.fill();
+ c.strokeStyle='rgba(210,198,168,.12)';c.lineWidth=4;c.beginPath();c.moveTo(132,256);c.lineTo(382,694);c.stroke();
+ t.refresh();
+}
+
+function makeChechenHouseTexture(scene:Phaser.Scene){
+ if(scene.textures.exists('chechen-house'))scene.textures.remove('chechen-house');
+ const W=720,H=500,t=scene.textures.createCanvas('chechen-house',W,H)!;const c=t.getContext(),rand=seeded(99407);
+ c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
+
+ const shadow=c.createRadialGradient(360,430,15,360,430,260);shadow.addColorStop(0,'rgba(10,24,18,.34)');shadow.addColorStop(1,'rgba(10,24,18,0)');
+ c.fillStyle=shadow;c.beginPath();c.ellipse(360,430,255,38,0,0,Math.PI*2);c.fill();
+
+ // Low rectangular stone dwelling.
+ let wall=c.createLinearGradient(110,176,590,423);wall.addColorStop(0,'#978e79');wall.addColorStop(.42,'#746e5e');wall.addColorStop(1,'#4e5047');
+ c.fillStyle=wall;c.beginPath();c.moveTo(108,184);c.lineTo(605,184);c.lineTo(626,418);c.lineTo(88,418);c.closePath();c.fill();
+ c.strokeStyle='rgba(44,44,39,.66)';c.lineWidth=7;c.stroke();
+
+ // Thick stone/earth roof with a slight perspective pitch.
+ const roof=c.createLinearGradient(100,112,630,206);roof.addColorStop(0,'#777361');roof.addColorStop(.52,'#5e5e52');roof.addColorStop(1,'#464943');
+ c.fillStyle=roof;c.beginPath();c.moveTo(128,126);c.lineTo(588,119);c.lineTo(654,190);c.lineTo(72,197);c.closePath();c.fill();
+ c.strokeStyle='rgba(43,44,39,.72)';c.lineWidth=7;c.stroke();
+ c.strokeStyle='rgba(203,190,160,.16)';c.lineWidth=4;c.beginPath();c.moveTo(121,139);c.lineTo(594,132);c.stroke();
+
+ c.save();c.beginPath();c.moveTo(108,184);c.lineTo(605,184);c.lineTo(626,418);c.lineTo(88,418);c.closePath();c.clip();
+ c.strokeStyle='rgba(43,43,38,.27)';c.lineWidth=3;
+ for(let y=211,row=0;y<410;y+=32,row++){c.beginPath();c.moveTo(86,y);c.lineTo(629,y);c.stroke();for(let x=108+(row%2?25:0);x<620;x+=68+rand()*18){c.beginPath();c.moveTo(x,y-31);c.lineTo(x+(rand()-.5)*8,y);c.stroke();}}
+ for(let i=0;i<140;i++){const x=95+rand()*520,y=190+rand()*220;c.fillStyle=rand()>.5?'rgba(215,203,171,.055)':'rgba(27,29,26,.06)';c.beginPath();c.ellipse(x,y,4+rand()*12,2+rand()*6,rand(),0,Math.PI*2);c.fill();}
+ c.restore();
+
+ c.fillStyle='#242a25';c.beginPath();c.roundRect(316,314,73,104,8);c.fill();
+ c.fillStyle='#303833';for(const [x,y] of [[181,278],[510,272]] as const){c.beginPath();c.roundRect(x-22,y-28,44,56,5);c.fill();}
+ c.strokeStyle='rgba(210,197,165,.14)';c.lineWidth=3;c.beginPath();c.moveTo(112,208);c.lineTo(599,390);c.stroke();
+ t.refresh();
+}
+
+function makeChechenWallTexture(scene:Phaser.Scene){
+ if(scene.textures.exists('chechen-wall'))scene.textures.remove('chechen-wall');
+ const W=760,H=150,t=scene.textures.createCanvas('chechen-wall',W,H)!;const c=t.getContext(),rand=seeded(11929);
+ c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
+ const sh=c.createRadialGradient(W/2,116,20,W/2,116,W*.46);sh.addColorStop(0,'rgba(8,20,15,.25)');sh.addColorStop(1,'rgba(8,20,15,0)');
+ c.fillStyle=sh;c.beginPath();c.ellipse(W/2,116,W*.46,22,0,0,Math.PI*2);c.fill();
+ const g=c.createLinearGradient(0,38,0,119);g.addColorStop(0,'#8f8875');g.addColorStop(.55,'#686557');g.addColorStop(1,'#484b43');
+ c.fillStyle=g;c.beginPath();c.roundRect(18,35,W-36,80,12);c.fill();c.strokeStyle='rgba(42,43,38,.60)';c.lineWidth=5;c.stroke();
+ c.strokeStyle='rgba(40,41,36,.25)';c.lineWidth=2.5;for(let x=32;x<W-30;x+=45+rand()*25){c.beginPath();c.moveTo(x,38);c.lineTo(x+(rand()-.5)*12,112);c.stroke();}
+ c.beginPath();c.moveTo(20,75);c.lineTo(W-20,75);c.stroke();t.refresh();
 }
 
 function makeElderTexture(scene:Phaser.Scene){
@@ -429,7 +540,7 @@ function makeElderTexture(scene:Phaser.Scene){
 
 export function setupFrames(scene:Phaser.Scene){
  const t=scene.textures.get('atlas');for(const [name,b]of Object.entries(FRAMES))if(!t.has(name))t.add(name,0,...b);
- makeWorkbenchTexture(scene);makeEnemyTexture(scene,'dagger');makeEnemyTexture(scene,'shield');makeEnemyTexture(scene,'chaborz');makeWolfTexture(scene);makePapakhaTexture(scene);makeDeerTexture(scene);makeElderTexture(scene);makeBonesTexture(scene);makeTorchTexture(scene);makeCaveInteriorTexture(scene);makeCaveExitTexture(scene);
+ makeWorkbenchTexture(scene);makeEnemyTexture(scene,'dagger');makeEnemyTexture(scene,'shield');makeEnemyTexture(scene,'chaborz');makeWolfTexture(scene);makePapakhaTexture(scene);makeDeerTexture(scene);makeChechenTowerTexture(scene);makeChechenHouseTexture(scene);makeChechenWallTexture(scene);makeElderTexture(scene);makeBonesTexture(scene);makeTorchTexture(scene);makeCaveInteriorTexture(scene);makeCaveExitTexture(scene);
 }
 
 function makeTerrain(scene:Phaser.Scene,world:World){
