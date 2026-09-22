@@ -410,42 +410,6 @@ function makeDeerTexture(scene:Phaser.Scene){
  t.refresh();
 }
 
-function makeChechenTowerTexture(scene:Phaser.Scene){
- if(scene.textures.exists('chechen-tower'))scene.textures.remove('chechen-tower');
- const W=520,H=820,t=scene.textures.createCanvas('chechen-tower',W,H)!;const c=t.getContext(),rand=seeded(87031);
- c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
-
- const shadow=c.createRadialGradient(260,755,20,260,755,205);shadow.addColorStop(0,'rgba(11,23,18,.40)');shadow.addColorStop(1,'rgba(11,23,18,0)');
- c.fillStyle=shadow;c.beginPath();c.ellipse(260,755,205,38,0,0,Math.PI*2);c.fill();
-
- // Tall tapering stone shaft typical of a Vainakh mountain tower.
- let wall=c.createLinearGradient(118,230,410,730);wall.addColorStop(0,'#9c927e');wall.addColorStop(.30,'#797261');wall.addColorStop(.70,'#5c584d');wall.addColorStop(1,'#3f4039');
- c.fillStyle=wall;c.beginPath();c.moveTo(151,231);c.lineTo(369,231);c.lineTo(414,724);c.lineTo(101,724);c.closePath();c.fill();
- c.strokeStyle='rgba(42,43,38,.72)';c.lineWidth=8;c.stroke();
-
- // Stepped pyramidal stone roof and capstone.
- const roof=c.createLinearGradient(260,34,260,246);roof.addColorStop(0,'#7f7c6d');roof.addColorStop(.42,'#66655b');roof.addColorStop(1,'#494c46');
- c.fillStyle=roof;c.beginPath();c.moveTo(260,36);c.lineTo(105,237);c.lineTo(415,237);c.closePath();c.fill();
- c.strokeStyle='rgba(40,42,38,.76)';c.lineWidth=7;c.stroke();
- c.strokeStyle='rgba(202,194,168,.19)';c.lineWidth=4;
- for(let y=92;y<225;y+=35){const ratio=(y-36)/201,half=ratio*155;c.beginPath();c.moveTo(260-half,y);c.lineTo(260+half,y);c.stroke();}
- c.fillStyle='#56584f';c.beginPath();c.moveTo(252,35);c.lineTo(260,12);c.lineTo(268,35);c.closePath();c.fill();
-
- // Masonry courses with irregular vertical joints.
- c.save();c.beginPath();c.moveTo(151,231);c.lineTo(369,231);c.lineTo(414,724);c.lineTo(101,724);c.closePath();c.clip();
- c.strokeStyle='rgba(45,45,39,.28)';c.lineWidth=3;
- for(let y=258,row=0;y<715;y+=35,row++){c.beginPath();c.moveTo(100,y);c.lineTo(416,y);c.stroke();const offset=row%2?18:0;for(let x=123+offset;x<405;x+=54+rand()*15){c.beginPath();c.moveTo(x,y-34);c.lineTo(x+(rand()-.5)*6,y);c.stroke();}}
- for(let i=0;i<190;i++){const x=112+rand()*290,y=238+rand()*476;c.fillStyle=rand()>.55?'rgba(214,203,174,.055)':'rgba(28,30,27,.065)';c.beginPath();c.ellipse(x,y,3+rand()*9,2+rand()*5,rand(),0,Math.PI*2);c.fill();}
- c.restore();
-
- // Narrow slit windows and high doorway.
- c.fillStyle='#202824';
- for(const [x,y,w,h] of [[260,316,18,54],[210,412,14,42],[310,500,14,46],[260,586,19,48]] as const){c.beginPath();c.roundRect(x-w/2,y-h/2,w,h,3);c.fill();}
- c.fillStyle='#272d28';c.beginPath();c.roundRect(232,645,56,79,9);c.fill();
- c.strokeStyle='rgba(210,198,168,.12)';c.lineWidth=4;c.beginPath();c.moveTo(132,256);c.lineTo(382,694);c.stroke();
- t.refresh();
-}
-
 function makeChechenHouseTexture(scene:Phaser.Scene){
  if(scene.textures.exists('chechen-house'))scene.textures.remove('chechen-house');
  // High-resolution rectangular mountain dwelling. The game scales this down, matching
@@ -609,7 +573,7 @@ function makeElderTexture(scene:Phaser.Scene){
 
 export function setupFrames(scene:Phaser.Scene){
  const t=scene.textures.get('atlas');for(const [name,b]of Object.entries(FRAMES))if(!t.has(name))t.add(name,0,...b);
- makeWorkbenchTexture(scene);makeEnemyTexture(scene,'dagger');makeEnemyTexture(scene,'shield');makeEnemyTexture(scene,'chaborz');makeWolfTexture(scene);makePapakhaTexture(scene);makeDeerTexture(scene);makeChechenTowerTexture(scene);makeChechenHouseTexture(scene);makeChechenWallTexture(scene);makeElderTexture(scene);makeBonesTexture(scene);makeTorchTexture(scene);makeCaveInteriorTexture(scene);makeCaveExitTexture(scene);
+ makeWorkbenchTexture(scene);makeEnemyTexture(scene,'dagger');makeEnemyTexture(scene,'shield');makeEnemyTexture(scene,'chaborz');makeWolfTexture(scene);makePapakhaTexture(scene);makeDeerTexture(scene);makeChechenHouseTexture(scene);makeChechenWallTexture(scene);makeElderTexture(scene);makeBonesTexture(scene);makeTorchTexture(scene);makeCaveInteriorTexture(scene);makeCaveExitTexture(scene);
 }
 
 function makeTerrain(scene:Phaser.Scene,world:World){
