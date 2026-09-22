@@ -6,8 +6,8 @@ import {AgeSystem} from '../src/systems/AgeSystem';
 import {DayNightSystem} from '../src/systems/DayNightSystem';
 import {SaveSystem,SAVE_KEY} from '../src/systems/SaveSystem';
 import {Animal} from '../src/entities/Animal';
-import {SETTINGS,BUILDINGS,NODE_DATA,RECIPES,type BuildingId,type RecipeId} from '../src/data/config';
-import {World,distance,riverX} from '../src/world/World';
+import {SETTINGS,BUILDINGS,NODE_DATA,RECIPES,SETTLEMENT,type BuildingId,type RecipeId} from '../src/data/config';
+import {World,distance,riverX,settlementPathY} from '../src/world/World';
 
 const storage=new Map<string,string>();Object.defineProperty(globalThis,'localStorage',{value:{getItem:(k:string)=>storage.get(k)??null,setItem:(k:string,v:string)=>storage.set(k,v)},configurable:true});
 let passed=0;const test=(name:string,fn:()=>void)=>{fn();passed++;console.log('PASS '+name);};
@@ -15,6 +15,7 @@ const idle={x:0,y:0,sprint:false};const step=(m:GameModel,seconds=1)=>{for(let i
 const gather=(m:GameModel,id:number)=>{const n=m.world.nodes[id];let found=false;for(let a=0;a<Math.PI*2;a+=.2){m.player.x=n.x+Math.cos(a)*52;m.player.y=n.y+Math.sin(a)*52;const i=m.interaction();if(!m.blocked(m.player.x,m.player.y)&&i?.kind==='node'&&i.target.id===id){found=true;break;}}assert(found,'reachable target '+id);m.player.actionTimer=0;m.interact();};
 
 test('Deterministic world, safe starting clearing and valid bounds',()=>{const a=new World(),b=new World();assert.deepEqual(a.nodes,b.nodes);assert.equal(a.blocked(SETTINGS.start.x,SETTINGS.start.y),false);assert(a.nodes.length>300);assert(a.blocked(15,20));assert(a.blocked(riverX(1000),1000));assert.equal(a.blocked(riverX(1555),1555),false);});
+test('Expanded eastern highlands and tower settlement are reachable and save-safe',()=>{const w=new World();assert.equal(SETTINGS.world.width,4400);assert.equal(w.blocked(3350,settlementPathY(3350)),false);assert.equal(w.blocked(SETTLEMENT.towers[0].x,SETTLEMENT.towers[0].y),true);assert(w.nodes.some(n=>n.x>3350));assert(w.animalSeeds.some(a=>a.x>4000));const q=new GameModel();q.player.x=4200;q.player.y=1900;const packed=SaveSystem.pack(q);assert(SaveSystem.validate(packed));const restored=new GameModel(packed);assert.equal(restored.player.x,4200);assert.equal(restored.player.y,1900);});
 test('Movement is normalized; collision cannot tunnel through a tree',()=>{const m=new GameModel();const p=m.player;const x=p.x,y=p.y;p.update(1,{x:1,y:1,sprint:false},()=>false);assert(Math.abs(Math.hypot(p.x-x,p.y-y)-SETTINGS.player.speed)<.01);const t=m.world.nodes[5];p.x=t.x-100;p.y=t.y;for(let i=0;i<70;i++)p.update(.05,{x:1,y:0,sprint:true},m.blocked);assert(p.x<t.x-30);});
 test('Inventory uses stacks, refuses overflow without losing items',()=>{const i=new InventorySystem();assert(i.add('branch',160));assert.equal(i.slots.length,8);const old=i.snapshot();assert.equal(i.add('stone',1),false);assert.deepEqual(i.snapshot(),old);assert.equal(i.remove('branch',161),false);assert(i.remove('branch',21));assert.equal(i.count('branch'),139);assert.equal(i.add('stone',20),true);});
 const m=new GameModel();
