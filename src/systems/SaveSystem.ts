@@ -44,7 +44,7 @@ export class SaveSystem {
   if(!value||typeof value!=='object')return null;const d=value as any;
   const number=(x:unknown,min:number,max:number)=>typeof x==='number'&&Number.isFinite(x)&&x>=min&&x<=max;
   if(d.version!==1||!d.player||!d.inventory||!d.experience||!d.day||!d.weather)return null;
-  if(!number(d.player.x,100,3300)||!number(d.player.y,150,2490)||!number(d.player.health,0,350)||!number(d.player.hunger,0,100)||!number(d.player.stamina,0,350)||!number(d.player.temperature,30,42))return null;
+  if(!number(d.player.x,100,SETTINGS.world.width-100)||!number(d.player.y,150,SETTINGS.world.height-110)||!number(d.player.health,0,350)||!number(d.player.hunger,0,100)||!number(d.player.stamina,0,350)||!number(d.player.temperature,30,42))return null;
   const bagLevel=Number.isInteger(d.inventory.bagLevel)?d.inventory.bagLevel:(d.inventory.bag?2:1);
   if(!number(bagLevel,1,6))return null;
   const cap=SETTINGS.inventory.bagSlots[bagLevel-1];
@@ -64,7 +64,7 @@ export class SaveSystem {
   if(!number(d.experience.total,0,1e9)||!d.experience.actions||typeof d.experience.actions!=='object'||Array.isArray(d.experience.actions)||!Object.values(d.experience.actions).every(n=>number(n,0,1e9)))return null;
   if(!number(d.day.time,0,1)||!number(d.day.day,1,1e7)||!number(d.elapsed,0,1e9)||!number(d.nights,0,1e7))return null;
   if(!['clear','rain','snow'].includes(d.weather.kind)||!['clear','rain','snow'].includes(d.weather.target)||!number(d.weather.elapsed,0,200)||!number(d.weather.index,0,1e8)||!number(d.weather.blend,0,1))return null;
-  if(!Array.isArray(d.buildings)||d.buildings.length>200||!d.buildings.every((b:any)=>['fire','canopy','hut','workbench'].includes(b.kind)&&number(b.x,100,3300)&&number(b.y,150,2490)&&number(b.id,1,201)&&number(b.born,0,1e9)))return null;
+  if(!Array.isArray(d.buildings)||d.buildings.length>200||!d.buildings.every((b:any)=>['fire','canopy','hut','workbench'].includes(b.kind)&&number(b.x,100,SETTINGS.world.width-100)&&number(b.y,150,SETTINGS.world.height-110)&&number(b.id,1,201)&&number(b.born,0,1e9)))return null;
   if(!Array.isArray(d.nodes)||d.nodes.length>1000||!d.nodes.every((n:any)=>Number.isInteger(n.id)&&number(n.id,0,1000)&&number(n.hits,0,3)&&typeof n.depleted==='boolean'&&number(n.regrow,0,1000)))return null;
   if(!Array.isArray(d.animals)||d.animals.length>30||!d.animals.every((a:any)=>number(a.id,0,40)&&number(a.x,70,3330)&&number(a.y,120,2520)&&number(a.hp,-100,Math.max(ANIMALS.boar.hp,ANIMALS.deer.hp))&&['wander','flee','windup','charge','recover','dead'].includes(a.state)&&number(a.lootMeat,0,4)&&number(a.lootHide,0,3)&&number(a.respawn,0,1000)))return null;
   if(d.enemies!==undefined){
@@ -78,7 +78,7 @@ export class SaveSystem {
   if(d.location!==undefined&&!['world','cave'].includes(d.location))return null;
   if(d.caveWolf!==undefined){
    const w=d.caveWolf;
-   if(!w||!number(w.x,100,3300)||!number(w.y,150,2490)||!number(w.hp,0,ENEMIES.wolf.hp)||!['idle','chase','windup','recover','dead'].includes(w.state)||!number(w.respawn,0,1e7)||!number(w.kills,0,1e6)||typeof w.active!=='boolean'||!w.loot||typeof w.loot!=='object'||Array.isArray(w.loot))return null;
+   if(!w||!number(w.x,100,SETTINGS.world.width-100)||!number(w.y,150,SETTINGS.world.height-110)||!number(w.hp,0,ENEMIES.wolf.hp)||!['idle','chase','windup','recover','dead'].includes(w.state)||!number(w.respawn,0,1e7)||!number(w.kills,0,1e6)||typeof w.active!=='boolean'||!w.loot||typeof w.loot!=='object'||Array.isArray(w.loot))return null;
    for(const [id,n]of Object.entries(w.loot)){if(!(id in ITEMS)||!number(n,0,100))return null;}
   }
   if(d.progress!==undefined){
