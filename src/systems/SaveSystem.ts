@@ -66,11 +66,11 @@ export class SaveSystem {
   if(!['clear','rain','snow'].includes(d.weather.kind)||!['clear','rain','snow'].includes(d.weather.target)||!number(d.weather.elapsed,0,200)||!number(d.weather.index,0,1e8)||!number(d.weather.blend,0,1))return null;
   if(!Array.isArray(d.buildings)||d.buildings.length>200||!d.buildings.every((b:any)=>['fire','canopy','hut','workbench'].includes(b.kind)&&number(b.x,100,SETTINGS.world.width-100)&&number(b.y,150,SETTINGS.world.height-110)&&number(b.id,1,201)&&number(b.born,0,1e9)))return null;
   if(!Array.isArray(d.nodes)||d.nodes.length>1000||!d.nodes.every((n:any)=>Number.isInteger(n.id)&&number(n.id,0,1000)&&number(n.hits,0,3)&&typeof n.depleted==='boolean'&&number(n.regrow,0,1000)))return null;
-  if(!Array.isArray(d.animals)||d.animals.length>30||!d.animals.every((a:any)=>number(a.id,0,40)&&number(a.x,70,3330)&&number(a.y,120,2520)&&number(a.hp,-100,Math.max(ANIMALS.boar.hp,ANIMALS.deer.hp))&&['wander','flee','windup','charge','recover','dead'].includes(a.state)&&number(a.lootMeat,0,4)&&number(a.lootHide,0,3)&&number(a.respawn,0,1000)))return null;
+  if(!Array.isArray(d.animals)||d.animals.length>30||!d.animals.every((a:any)=>number(a.id,0,40)&&number(a.x,70,SETTINGS.world.width-70)&&number(a.y,120,SETTINGS.world.height-80)&&number(a.hp,-100,Math.max(ANIMALS.boar.hp,ANIMALS.deer.hp))&&['wander','flee','windup','charge','recover','dead'].includes(a.state)&&number(a.lootMeat,0,4)&&number(a.lootHide,0,3)&&number(a.respawn,0,1000)))return null;
   if(d.enemies!==undefined){
    if(!Array.isArray(d.enemies)||d.enemies.length>20)return null;
    for(const e of d.enemies){
-    if(!number(e.id,0,30)||!ENEMIES[e.kind as keyof typeof ENEMIES]||e.kind==='wolf'||!number(e.x,70,3330)||!number(e.y,120,2520)||!number(e.hp,0,ENEMIES[e.kind as keyof typeof ENEMIES].hp)||!['idle','chase','windup','recover','dead'].includes(e.state)||!number(e.respawn,0,2000)||!number(e.kills,0,1e6)||typeof e.active!=='boolean')return null;
+    if(!number(e.id,0,30)||!ENEMIES[e.kind as keyof typeof ENEMIES]||e.kind==='wolf'||!number(e.x,70,SETTINGS.world.width-70)||!number(e.y,120,SETTINGS.world.height-80)||!number(e.hp,0,ENEMIES[e.kind as keyof typeof ENEMIES].hp)||!['idle','chase','windup','recover','dead'].includes(e.state)||!number(e.respawn,0,2000)||!number(e.kills,0,1e6)||typeof e.active!=='boolean')return null;
     if(!e.loot||typeof e.loot!=='object'||Array.isArray(e.loot))return null;
     for(const [id,n] of Object.entries(e.loot)){if(!(id in ITEMS)||!number(n,0,100))return null;}
    }
