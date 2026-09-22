@@ -16,6 +16,7 @@ export class GameScene extends Phaser.Scene {
  preload(){
   const label=this.add.text(this.scale.width/2,this.scale.height/2,'Тропа открывается…',{fontFamily:'Georgia',fontSize:'22px',color:'#d8ceac'}).setOrigin(.5);
   if(!this.textures.exists('atlas'))this.load.image('atlas','/art/shalt-sprite-atlas.png');
+  if(!this.textures.exists('deer-sprite'))this.load.image('deer-sprite','/art/deer-shalt.webp');
   for(const art of Object.values(HERO_ART))if(!this.textures.exists(art.key))this.load.image(art.key,art.url);
   this.load.once('complete',()=>label.destroy());
   this.load.on('loaderror',()=>{document.getElementById('ui')!.innerHTML='<div class="fatal">Не удалось загрузить рисунки. Обнови страницу, когда появится соединение.</div>';});
