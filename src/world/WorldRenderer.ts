@@ -320,96 +320,6 @@ function makePapakhaTexture(scene:Phaser.Scene){
  drawWhitePapakha(t.getContext(),W,H,'wear');t.refresh();
 }
 
-function makeDeerTexture(scene:Phaser.Scene){
- // Full replacement for the previous deer. Drawn at high resolution then reduced in-world,
- // using the same soft painted rendering language as the atlas hare and boar.
- if(scene.textures.exists('deer'))scene.textures.remove('deer');
- const W=960,H=720,t=scene.textures.createCanvas('deer',W,H)!;const c=t.getContext(),rand=seeded(731904);
- c.clearRect(0,0,W,H);c.imageSmoothingEnabled=true;
-
- // Soft contact shadow keeps the animal grounded in the top-down world.
- let g=c.createRadialGradient(462,603,24,462,603,282);
- g.addColorStop(0,'rgba(12,29,20,.36)');g.addColorStop(.62,'rgba(12,29,20,.14)');g.addColorStop(1,'rgba(12,29,20,0)');
- c.fillStyle=g;c.beginPath();c.ellipse(462,603,278,48,-.03,0,Math.PI*2);c.fill();
-
- // Hindquarters and rib cage: compact three-quarter anatomy, with a readable shoulder mass.
- g=c.createLinearGradient(190,228,700,548);
- g.addColorStop(0,'#b28a5e');g.addColorStop(.27,'#946b48');g.addColorStop(.62,'#73513a');g.addColorStop(1,'#49372d');
- c.fillStyle=g;c.beginPath();
- c.moveTo(184,410);c.bezierCurveTo(193,306,292,249,420,253);c.bezierCurveTo(536,250,620,290,653,361);
- c.bezierCurveTo(681,422,632,488,531,513);c.bezierCurveTo(413,543,269,531,203,474);c.bezierCurveTo(183,456,176,434,184,410);c.closePath();c.fill();
-
- // Shoulder/chest plane.
- let chest=c.createRadialGradient(603,322,18,596,356,145);
- chest.addColorStop(0,'#a57b53');chest.addColorStop(.54,'#7f5a3f');chest.addColorStop(1,'#5a4233');
- c.fillStyle=chest;c.beginPath();c.ellipse(597,373,112,135,-.18,0,Math.PI*2);c.fill();
-
- // Long neck rises toward the head but still reads from the game camera.
- let neck=c.createLinearGradient(604,184,760,430);
- neck.addColorStop(0,'#9b704b');neck.addColorStop(.54,'#79543b');neck.addColorStop(1,'#574034');
- c.fillStyle=neck;c.beginPath();
- c.moveTo(570,367);c.bezierCurveTo(597,294,626,224,681,168);c.bezierCurveTo(713,137,748,143,769,171);
- c.bezierCurveTo(751,235,724,303,689,382);c.bezierCurveTo(650,408,604,403,570,367);c.closePath();c.fill();
-
- // Head and muzzle: natural, not icon-like.
- g=c.createLinearGradient(667,111,846,252);g.addColorStop(0,'#a97d52');g.addColorStop(.58,'#7f5a3d');g.addColorStop(1,'#584132');
- c.fillStyle=g;c.beginPath();
- c.moveTo(673,169);c.bezierCurveTo(704,117,772,104,817,132);c.bezierCurveTo(853,154,862,196,837,221);
- c.bezierCurveTo(802,251,727,247,688,215);c.bezierCurveTo(670,201,663,185,673,169);c.closePath();c.fill();
- c.fillStyle='#cbb58e';c.beginPath();c.ellipse(838,211,54,30,.06,0,Math.PI*2);c.fill();
- c.fillStyle='#3c3029';c.beginPath();c.ellipse(878,214,8,6,0,0,Math.PI*2);c.fill();
-
- // Ears with darker inner planes.
- c.fillStyle='#b4875a';c.beginPath();c.moveTo(708,145);c.lineTo(655,80);c.lineTo(731,124);c.closePath();c.fill();
- c.beginPath();c.moveTo(773,126);c.lineTo(826,67);c.lineTo(806,150);c.closePath();c.fill();
- c.fillStyle='rgba(83,58,44,.40)';c.beginPath();c.moveTo(707,133);c.lineTo(673,94);c.lineTo(722,124);c.closePath();c.fill();
- c.beginPath();c.moveTo(786,124);c.lineTo(815,85);c.lineTo(801,139);c.closePath();c.fill();
-
- // Four slim legs with painted taper and small dark hooves.
- const leg=(x:number,y:number,kneeX:number,hoofX:number,front=false)=>{
-  const lg=c.createLinearGradient(x,y,hoofX,y+214);lg.addColorStop(0,front?'#79563d':'#725039');lg.addColorStop(.58,'#594234');lg.addColorStop(1,'#2a2824');
-  c.strokeStyle=lg;c.lineWidth=23;c.lineCap='round';c.lineJoin='round';
-  c.beginPath();c.moveTo(x,y);c.lineTo(kneeX,y+109);c.lineTo(hoofX,y+198);c.stroke();
-  c.strokeStyle='#24231f';c.lineWidth=12;c.beginPath();c.moveTo(hoofX,y+192);c.lineTo(hoofX+(hoofX>=kneeX?10:-10),y+220);c.stroke();
- };
- leg(300,480,290,280,false);leg(407,496,421,430,false);leg(580,462,568,559,true);leg(655,430,679,694,true);
-
- // Small tail with a pale underside.
- c.strokeStyle='#76543d';c.lineWidth=18;c.lineCap='round';c.beginPath();c.moveTo(204,369);c.quadraticCurveTo(134,338,111,294);c.stroke();
- c.strokeStyle='#ded0ae';c.lineWidth=7;c.beginPath();c.moveTo(123,308);c.lineTo(101,280);c.stroke();
-
- // Antlers are fine and asymmetric enough to feel organic, not like a symbol.
- c.strokeStyle='#65513e';c.lineWidth=10;c.lineCap='round';c.lineJoin='round';
- c.beginPath();
- c.moveTo(716,119);c.lineTo(685,61);c.lineTo(644,29);c.moveTo(686,65);c.lineTo(714,31);c.moveTo(671,51);c.lineTo(658,10);
- c.moveTo(774,109);c.lineTo(797,53);c.lineTo(833,18);c.moveTo(797,59);c.lineTo(773,27);c.moveTo(815,40);c.lineTo(827,4);
- c.stroke();
- c.strokeStyle='rgba(222,203,165,.18)';c.lineWidth=3;c.beginPath();c.moveTo(711,116);c.lineTo(684,62);c.moveTo(779,108);c.lineTo(799,54);c.stroke();
-
- // Pale throat and rump details characteristic of a deer, kept subtle at game scale.
- c.fillStyle='rgba(231,216,184,.55)';c.beginPath();c.ellipse(699,286,27,58,-.22,0,Math.PI*2);c.fill();
- c.fillStyle='rgba(224,209,175,.46)';c.beginPath();c.ellipse(223,403,44,57,-.08,0,Math.PI*2);c.fill();
-
- // Hundreds of directional fur strokes create painterly surface variation after downsampling.
- c.save();c.globalCompositeOperation='source-atop';c.lineCap='round';
- for(let i=0;i<980;i++){
-  const x=168+rand()*690,y=102+rand()*430,len=6+rand()*24,ang=-.32+rand()*.66;
-  c.strokeStyle=rand()>.78?'rgba(245,225,187,.16)':rand()>.36?'rgba(84,58,44,.16)':'rgba(255,239,204,.07)';
-  c.lineWidth=.75+rand()*2.0;c.beginPath();c.moveTo(x,y);c.lineTo(x+Math.cos(ang)*len,y+Math.sin(ang)*len);c.stroke();
- }
- c.restore();c.globalCompositeOperation='source-over';
-
- // Back highlight and underside shade match the soft directional lighting in the atlas.
- c.strokeStyle='rgba(241,218,177,.22)';c.lineWidth=12;c.lineCap='round';c.beginPath();c.moveTo(249,319);c.bezierCurveTo(372,260,507,276,603,324);c.stroke();
- c.strokeStyle='rgba(45,31,26,.20)';c.lineWidth=18;c.beginPath();c.moveTo(259,474);c.bezierCurveTo(406,529,566,495,628,449);c.stroke();
-
- // Face detail remains legible at 100px.
- c.fillStyle='#171817';c.beginPath();c.ellipse(790,166,7,5,-.15,0,Math.PI*2);c.fill();
- c.fillStyle='rgba(255,242,205,.80)';c.beginPath();c.arc(788,164,1.8,0,Math.PI*2);c.fill();
- c.strokeStyle='rgba(71,48,37,.55)';c.lineWidth=4;c.beginPath();c.moveTo(811,224);c.quadraticCurveTo(846,232,872,218);c.stroke();
- t.refresh();
-}
-
 function makeChechenHouseTexture(scene:Phaser.Scene){
  if(scene.textures.exists('chechen-house'))scene.textures.remove('chechen-house');
  // High-resolution rectangular mountain dwelling. The game scales this down, matching
@@ -573,7 +483,7 @@ function makeElderTexture(scene:Phaser.Scene){
 
 export function setupFrames(scene:Phaser.Scene){
  const t=scene.textures.get('atlas');for(const [name,b]of Object.entries(FRAMES))if(!t.has(name))t.add(name,0,...b);
- makeWorkbenchTexture(scene);makeEnemyTexture(scene,'dagger');makeEnemyTexture(scene,'shield');makeEnemyTexture(scene,'chaborz');makeWolfTexture(scene);makePapakhaTexture(scene);makeDeerTexture(scene);makeChechenHouseTexture(scene);makeChechenWallTexture(scene);makeElderTexture(scene);makeBonesTexture(scene);makeTorchTexture(scene);makeCaveInteriorTexture(scene);makeCaveExitTexture(scene);
+ makeWorkbenchTexture(scene);makeEnemyTexture(scene,'dagger');makeEnemyTexture(scene,'shield');makeEnemyTexture(scene,'chaborz');makeWolfTexture(scene);makePapakhaTexture(scene);makeChechenHouseTexture(scene);makeChechenWallTexture(scene);makeElderTexture(scene);makeBonesTexture(scene);makeTorchTexture(scene);makeCaveInteriorTexture(scene);makeCaveExitTexture(scene);
 }
 
 function makeTerrain(scene:Phaser.Scene,world:World){
@@ -660,7 +570,7 @@ export class WorldRenderer {
   const capRock=this.sprite('rock',ex,ey-73).setDisplaySize(210,96).setDepth(ey+20);
   const pathGlow=scene.add.ellipse(ex,ey+45,116,32,0x9c8b5d,.16).setDepth(ey+21);
   this.worldDecor.push(caveShadow,caveMouth,leftRock,rightRock,capRock,pathGlow);
-  this.animalSprites=model.animals.map(a=>a.kind==='deer'?scene.add.image(a.x,a.y,'deer').setOrigin(.5,.88).setDisplaySize(108,81).setDepth(a.y):this.sprite(a.kind,a.x,a.y));this.animalShadows=model.animals.map(a=>scene.add.ellipse(a.x,a.y,a.kind==='hare'?23:a.kind==='deer'?64:49,a.kind==='deer'?14:10,0x0a2119,.25).setDepth(a.y-1));
+  this.animalSprites=model.animals.map(a=>a.kind==='deer'?scene.add.image(a.x,a.y,'deer-sprite').setOrigin(.5,.94).setDisplaySize(92,104).setDepth(a.y):this.sprite(a.kind,a.x,a.y));this.animalShadows=model.animals.map(a=>scene.add.ellipse(a.x,a.y,a.kind==='hare'?23:a.kind==='deer'?52:49,a.kind==='deer'?12:10,0x0a2119,.25).setDepth(a.y-1));
   this.enemySprites=model.enemies.map(e=>scene.add.image(e.x,e.y,'enemy-'+e.kind).setOrigin(.5,.9).setDisplaySize(e.kind==='chaborz'?104:e.kind==='shield'?74:68,e.kind==='chaborz'?148:e.kind==='shield'?108:102).setDepth(e.y));
   this.enemyShadows=model.enemies.map(e=>scene.add.ellipse(e.x,e.y,e.kind==='chaborz'?60:42,e.kind==='chaborz'?18:13,0x081c17,.34).setDepth(e.y-1));
   this.playerShadow=scene.add.ellipse(model.player.x,model.player.y,33,13,0x081c17,.36);
