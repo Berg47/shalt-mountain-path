@@ -562,10 +562,15 @@ function makeTerrain(scene:Phaser.Scene,world:World){
  for(let i=0;i<36000;i++){
   const x=rand()*W,y=rand()*H;c.strokeStyle=rand()>.4?'rgba(182,188,113,.17)':'rgba(20,57,29,.20)';c.lineWidth=.7+rand();c.beginPath();c.moveTo(x,y);c.lineTo(x-1+rand()*4,y-2-rand()*5);c.stroke();
  }
- // The home trail curves naturally through the glade.
- const path=()=>{c.beginPath();c.moveTo(420,1940);c.bezierCurveTo(640,1780,1050,1760,1260,1580);c.bezierCurveTo(1450,1380,1600,1400,1810,1350);c.bezierCurveTo(2090,1270,2040,1620,2370,1555);c.bezierCurveTo(2620,1510,2780,1480,2950,1260);};
+ // The original valley trail now continues naturally into the expanded eastern highlands.
+ const path=()=>{c.beginPath();c.moveTo(420,1940);c.bezierCurveTo(640,1780,1050,1760,1260,1580);c.bezierCurveTo(1450,1380,1600,1400,1810,1350);c.bezierCurveTo(2090,1270,2040,1620,2370,1555);c.bezierCurveTo(2620,1510,2780,1480,2950,1260);c.bezierCurveTo(3190,1190,3400,1340,3580,1415);c.bezierCurveTo(3740,1480,3870,1510,SETTLEMENT.center.x,SETTLEMENT.center.y);};
  c.save();c.lineCap='round';c.filter='blur(9px)';path();c.strokeStyle='rgba(125,123,77,.30)';c.lineWidth=101;c.stroke();path();c.strokeStyle='rgba(165,146,97,.44)';c.lineWidth=63;c.stroke();path();c.strokeStyle='rgba(178,154,103,.26)';c.lineWidth=35;c.stroke();c.restore();
- c.lineWidth=63;path();for(let i=0;i<14000;i++){const x=390+rand()*2580,y=1160+rand()*830;if(!c.isPointInStroke(x,y))continue;c.fillStyle=rand()>.5?'rgba(69,78,43,.15)':'rgba(209,188,133,.17)';c.fillRect(x,y,1+rand()*3,1+rand()*2);}
+ c.lineWidth=63;path();for(let i=0;i<19000;i++){const x=390+rand()*3500,y=1050+rand()*980;if(!c.isPointInStroke(x,y))continue;c.fillStyle=rand()>.5?'rgba(69,78,43,.15)':'rgba(209,188,133,.17)';c.fillRect(x,y,1+rand()*3,1+rand()*2);}
+ // Stone-worn ground around the tower settlement blends the architecture into the valley.
+ const villageGround=c.createRadialGradient(SETTLEMENT.center.x,SETTLEMENT.center.y,45,SETTLEMENT.center.x,SETTLEMENT.center.y,520);
+ villageGround.addColorStop(0,'rgba(151,142,116,.26)');villageGround.addColorStop(.58,'rgba(121,119,91,.14)');villageGround.addColorStop(1,'rgba(121,119,91,0)');
+ c.fillStyle=villageGround;c.fillRect(SETTLEMENT.center.x-540,SETTLEMENT.center.y-520,1080,1040);
+ for(let i=0;i<720;i++){const x=3300+rand()*940,y=1130+rand()*920;if(Math.hypot(x-SETTLEMENT.center.x,y-SETTLEMENT.center.y)>570)continue;const nearRoad=Math.abs(y-settlementPathY(x))<75;c.fillStyle=nearRoad?'rgba(187,174,137,.22)':'rgba(94,92,74,.16)';c.beginPath();c.ellipse(x,y,1+rand()*4,.8+rand()*2,rand(),0,Math.PI*2);c.fill();}
  for(const n of world.nodes){if(n.kind!=='tree'&&n.kind!=='pine')continue;const g=c.createRadialGradient(n.x+39,n.y+9,4,n.x+39,n.y+9,91);g.addColorStop(0,'rgba(9,39,22,.25)');g.addColorStop(.6,'rgba(9,39,22,.12)');g.addColorStop(1,'rgba(9,39,22,0)');c.save();c.translate(n.x+39,n.y+9);c.scale(1,.46);c.translate(-n.x-39,-n.y-9);c.fillStyle=g;c.fillRect(n.x-60,n.y-95,200,205);c.restore();}
  const river=()=>{c.beginPath();for(let y=-40;y<H+40;y+=12){const x=riverX(y);if(y===-40)c.moveTo(x,y);else c.lineTo(x,y);}};
  river();c.strokeStyle='#636e55';c.lineWidth=166;c.stroke();river();c.strokeStyle='#919279';c.lineWidth=143;c.stroke();river();c.strokeStyle='#91a692';c.lineWidth=123;c.stroke();river();c.strokeStyle='#578c87';c.lineWidth=103;c.stroke();river();c.strokeStyle='#487976';c.lineWidth=65;c.stroke();
@@ -594,7 +599,24 @@ export class WorldRenderer {
   this.elderSprite=scene.add.image(ELDER_QUEST.elder.x,ELDER_QUEST.elder.y,'elder').setOrigin(.5,.92).setDisplaySize(62,92).setDepth(ELDER_QUEST.elder.y);
   this.elderQuestMarker=scene.add.text(ELDER_QUEST.elder.x,ELDER_QUEST.elder.y-104,'!',{fontFamily:'Georgia, serif',fontSize:'28px',fontStyle:'bold',color:'#f2df9b',stroke:'#183126',strokeThickness:5}).setOrigin(.5).setDepth(ELDER_QUEST.elder.y+2);
   this.worldDecor.push(elderTower,this.elderShadow,this.elderSprite,this.elderQuestMarker);
-  const rand=seeded(191);for(let x=80;x<3300;x+=125){if(x>1540&&x<1880)continue;const rock=this.sprite('rock',x,160+rand()*110);rock.setDisplaySize(180+rand()*90,125+rand()*90);this.worldDecor.push(rock);}
+
+  // Expanded Chechen mountain settlement: tall Vainakh-style stone towers,
+  // low stone dwellings and broken courtyard walls, all drawn in the game's painterly style.
+  for(const tower of SETTLEMENT.towers){
+   const img=scene.add.image(tower.x,tower.y,'chechen-tower').setOrigin(.5,.92).setDisplaySize(126*tower.scale,198*tower.scale).setDepth(tower.y);
+   this.worldDecor.push(img);
+  }
+  for(const house of SETTLEMENT.houses){
+   const img=scene.add.image(house.x,house.y,'chechen-house').setOrigin(.5,.88).setDisplaySize(154*house.scale,107*house.scale).setDepth(house.y);
+   this.worldDecor.push(img);
+  }
+  for(const wall of SETTLEMENT.walls){
+   const img=scene.add.image(wall.x,wall.y,'chechen-wall').setOrigin(.5,.72).setDisplaySize(wall.w,55).setRotation(wall.angle).setDepth(wall.y-2);
+   this.worldDecor.push(img);
+  }
+  const settlementName=scene.add.text(SETTLEMENT.center.x,SETTLEMENT.center.y-390,'Башенное селение',{fontFamily:'Georgia, serif',fontSize:'18px',color:'#d8ceac',stroke:'#21392e',strokeThickness:4}).setOrigin(.5).setDepth(SETTLEMENT.center.y+2).setAlpha(.72);
+  this.worldDecor.push(settlementName);
+  const rand=seeded(191);for(let x=80;x<SETTINGS.world.width-100;x+=125){if(x>1540&&x<1880)continue;const rock=this.sprite('rock',x,160+rand()*110);rock.setDisplaySize(180+rand()*90,125+rand()*90);this.worldDecor.push(rock);}
   // The visible cave mouth is anchored exactly to the map region "Вход в пещеру".
   const ex=CAVE.entrance.x,ey=CAVE.entrance.y;
   const caveShadow=scene.add.ellipse(ex,ey-15,190,132,0x101918,.98).setDepth(ey-48);
@@ -604,7 +626,7 @@ export class WorldRenderer {
   const capRock=this.sprite('rock',ex,ey-73).setDisplaySize(210,96).setDepth(ey+20);
   const pathGlow=scene.add.ellipse(ex,ey+45,116,32,0x9c8b5d,.16).setDepth(ey+21);
   this.worldDecor.push(caveShadow,caveMouth,leftRock,rightRock,capRock,pathGlow);
-  this.animalSprites=model.animals.map(a=>a.kind==='deer'?scene.add.image(a.x,a.y,'deer').setOrigin(.5,.88).setDisplaySize(94,73).setDepth(a.y):this.sprite(a.kind,a.x,a.y));this.animalShadows=model.animals.map(a=>scene.add.ellipse(a.x,a.y,a.kind==='hare'?23:a.kind==='deer'?58:49,a.kind==='deer'?13:10,0x0a2119,.25).setDepth(a.y-1));
+  this.animalSprites=model.animals.map(a=>a.kind==='deer'?scene.add.image(a.x,a.y,'deer').setOrigin(.5,.88).setDisplaySize(108,81).setDepth(a.y):this.sprite(a.kind,a.x,a.y));this.animalShadows=model.animals.map(a=>scene.add.ellipse(a.x,a.y,a.kind==='hare'?23:a.kind==='deer'?64:49,a.kind==='deer'?14:10,0x0a2119,.25).setDepth(a.y-1));
   this.enemySprites=model.enemies.map(e=>scene.add.image(e.x,e.y,'enemy-'+e.kind).setOrigin(.5,.9).setDisplaySize(e.kind==='chaborz'?104:e.kind==='shield'?74:68,e.kind==='chaborz'?148:e.kind==='shield'?108:102).setDepth(e.y));
   this.enemyShadows=model.enemies.map(e=>scene.add.ellipse(e.x,e.y,e.kind==='chaborz'?60:42,e.kind==='chaborz'?18:13,0x081c17,.34).setDepth(e.y-1));
   this.playerShadow=scene.add.ellipse(model.player.x,model.player.y,33,13,0x081c17,.36);
