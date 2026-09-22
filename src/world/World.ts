@@ -47,7 +47,7 @@ export class World {
   // Solid village towers, the new mountain settlement and the closed cave mouth.
   if(distance({x,y},{x:600,y:1730})<radius+50||distance({x,y},{x:810,y:1810})<radius+44||distance({x,y},ELDER_QUEST.tower)<radius+58)return true;
   for(const tower of SETTLEMENT.towers)if(distance({x,y},tower)<radius+48*tower.scale)return true;
-  for(const house of SETTLEMENT.houses)if(Math.abs(x-house.x)<radius+52*house.scale&&Math.abs(y-house.y)<radius+34*house.scale)return true;
+  for(const house of SETTLEMENT.houses)if(Math.abs(x-house.x)<radius+78*house.scale&&Math.abs(y-house.y)<radius+46*house.scale)return true;
   for(const wall of SETTLEMENT.walls){
    const dx=x-wall.x,dy=y-wall.y,cos=Math.cos(-wall.angle),sin=Math.sin(-wall.angle),lx=dx*cos-dy*sin,ly=dx*sin+dy*cos;
    if(Math.abs(lx)<wall.w/2+radius&&Math.abs(ly)<18+radius)return true;
