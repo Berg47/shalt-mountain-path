@@ -10,7 +10,7 @@ export type WeatherKind = 'clear'|'rain'|'snow';
 export type Cost = Partial<Record<ResourceId,number>>;
 
 export const SETTINGS = {
-  version:1, seed:1712, world:{width:3400,height:2600}, start:{x:1280,y:1530},
+  version:1, seed:1712, world:{width:4400,height:2600}, start:{x:1280,y:1530},
   inventory:{slots:8,bagSlots:[8,16,24,32,40,48],stack:20}, player:{speed:158,sprint:240,radius:13},
   daySeconds:360, startTime:8/24, hungerLoss:0.068,
   xp:{first:9,repeat:2,repeatEvery:8,repeatFloor:0.2,night:30,area:18},
@@ -29,6 +29,33 @@ export const ELDER_QUEST = {
   {kind:'shield' as const,x:2645,y:785},
   {kind:'dagger' as const,x:2525,y:860},
   {kind:'shield' as const,x:2675,y:900},
+ ],
+} as const;
+
+export const SETTLEMENT = {
+ name:'Башенное селение',
+ center:{x:3820,y:1540},
+ radius:560,
+ towers:[
+  {x:3550,y:1370,scale:.92},
+  {x:3785,y:1235,scale:1.08},
+  {x:4025,y:1395,scale:.96},
+  {x:3680,y:1705,scale:.84},
+  {x:4100,y:1715,scale:.88},
+ ],
+ houses:[
+  {x:3485,y:1545,scale:.95},
+  {x:3655,y:1490,scale:1.05},
+  {x:3890,y:1480,scale:.98},
+  {x:4150,y:1535,scale:1.02},
+  {x:3570,y:1825,scale:.92},
+  {x:3825,y:1815,scale:1.00},
+  {x:4050,y:1880,scale:.94},
+ ],
+ walls:[
+  {x:3425,y:1640,w:250,angle:-.08},
+  {x:3970,y:1635,w:315,angle:.05},
+  {x:3690,y:1910,w:320,angle:.03},
  ],
 } as const;
 
@@ -87,6 +114,7 @@ export const REGIONS=[
  {id:'dense',name:'Тихий лес',x:2750,y:860,radius:430},
  {id:'foothills',name:'Предгорья',x:900,y:570,radius:450},
  {id:'cave',name:'Вход в пещеру',x:1710,y:330,radius:230},
+ {id:'settlement',name:'Башенное селение',x:3820,y:1540,radius:560},
 ];
 export const NODE_DATA:Record<NodeKind,{name:string,item:ResourceId,count:number,hits:number,tool?:ToolId,radius:number}>={
  branch:{name:'Сухие ветки',item:'branch',count:2,hits:1,radius:0},
